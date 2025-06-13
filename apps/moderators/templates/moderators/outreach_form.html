@@ -1,0 +1,796 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Outreach Post - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Enhanced Button Styles */
+    .btn-gradient {
+        background: linear-gradient(135deg, var(--color-1), var(--color-2));
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-transform: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-gradient::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-gradient:hover::before {
+        left: 100%;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .btn-success-gradient {
+        --color-1: #10b981;
+        --color-2: #059669;
+    }
+    
+    .btn-purple-gradient {
+        --color-1: #8b5cf6;
+        --color-2: #7c3aed;
+    }
+    
+    .btn-info-gradient {
+        --color-1: #3b82f6;
+        --color-2: #1d4ed8;
+    }
+    
+    .btn-warning-gradient {
+        --color-1: #f59e0b;
+        --color-2: #d97706;
+    }
+    
+    /* Enhanced Form Container */
+    .form-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding-top: 2rem;
+        padding-bottom: 4rem;
+    }
+    
+    .form-main-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 24px;
+        border: 3px solid transparent;
+        background-clip: padding-box;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-main-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%);
+        opacity: 0.05;
+        z-index: 0;
+    }
+    
+    .form-content {
+        position: relative;
+        z-index: 1;
+        padding: 3rem;
+    }
+    
+    /* Enhanced Form Sections */
+    .form-section {
+        background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+        border: 2px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .form-section:hover::before {
+        opacity: 1;
+    }
+    
+    .form-section:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+    
+    .section-post-details {
+        --bg-1: #fef3c7;
+        --bg-2: #fed7aa;
+        --border-color: #f59e0b;
+    }
+    
+    .section-targeting {
+        --bg-1: #dbeafe;
+        --bg-2: #bfdbfe;
+        --border-color: #3b82f6;
+    }
+    
+    .section-preview {
+        --bg-1: #d1fae5;
+        --bg-2: #a7f3d0;
+        --border-color: #10b981;
+    }
+    
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .section-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, var(--border-color), var(--border-color));
+        color: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--border-color);
+        margin: 0;
+    }
+    
+    /* Enhanced Form Controls */
+    .form-group {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        position: relative;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .form-textarea {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .form-textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    /* Enhanced Checkbox Grid */
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .checkbox-item {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .checkbox-item:hover {
+        border-color: #3b82f6;
+        background: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .checkbox-item input {
+        margin-right: 0.75rem;
+        transform: scale(1.2);
+    }
+    
+    .checkbox-item label {
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+    
+    .checkbox-item:has(input:checked) {
+        border-color: #10b981;
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    }
+    
+    /* Toggle Switch Styling */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .toggle-container:hover {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 60px;
+        height: 30px;
+        background: #e5e7eb;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        transform: translateX(30px);
+    }
+    
+    .toggle-switch:has(input:checked) {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    /* Banner Preview */
+    .banner-preview {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .preview-image {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Error Styling */
+    .error-message {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-input:invalid,
+    .form-textarea:invalid {
+        border-color: #dc2626;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e5e7eb;
+    }
+    
+    /* Loading State */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+    
+    .loading-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-content {
+            padding: 1.5rem;
+        }
+        
+        .checkbox-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="container mx-auto px-6">
+        <!-- Enhanced Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                {% if object %}✏️ Edit Outreach Post{% else %}✨ Create New Outreach Post{% endif %}
+            </h1>
+            <p class="text-xl text-white opacity-90 max-w-2xl mx-auto">
+                Engage with your community through targeted outreach campaigns that inform, inspire, and connect
+            </p>
+        </div>
+
+        <div class="max-w-5xl mx-auto">
+            <div class="form-main-card">
+                <div class="form-content">
+                    <form method="post" id="outreachForm" class="space-y-8">
+                        {% csrf_token %}
+                        
+                        <!-- Post Details Section -->
+                        <div class="form-section section-post-details">
+                            <div class="section-header">
+                                <div class="section-icon">📝</div>
+                                <h3 class="section-title">Post Content & Details</h3>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Post Title *
+                                </label>
+                                <input type="text" 
+                                       name="title" 
+                                       class="form-input" 
+                                       placeholder="Enter an engaging title for your outreach post..."
+                                       value="{{ form.title.value|default:'' }}"
+                                       required>
+                                {% if form.title.errors %}
+                                    <div class="error-message">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ form.title.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Content *
+                                </label>
+                                <textarea name="content" 
+                                          class="form-textarea" 
+                                          placeholder="Write your outreach message here. Be clear, engaging, and informative..."
+                                          required>{{ form.content.value|default:'' }}</textarea>
+                                {% if form.content.errors %}
+                                    <div class="error-message">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ form.content.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Banner Image URL (Optional)
+                                </label>
+                                <input type="url" 
+                                       name="banner_image_url" 
+                                       class="form-input" 
+                                       placeholder="https://example.com/image.jpg"
+                                       value="{{ form.banner_image_url.value|default:'' }}"
+                                       id="bannerInput">
+                                {% if form.banner_image_url.errors %}
+                                    <div class="error-message">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ form.banner_image_url.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="text-sm text-gray-600 mt-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Provide a URL to an image that will be displayed with your post
+                                </div>
+                                <div id="bannerPreview" class="banner-preview" style="display: none;">
+                                    <p class="text-sm font-semibold text-gray-600 mb-2">🖼️ Banner Preview:</p>
+                                    <img id="previewImage" src="" alt="Banner Preview" class="preview-image">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Targeting & Settings Section -->
+                        <div class="form-section section-targeting">
+                            <div class="section-header">
+                                <div class="section-icon">🎯</div>
+                                <h3 class="section-title">Targeting & Settings</h3>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Target Categories
+                                </label>
+                                <div class="text-sm text-gray-600 mb-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Select which service categories this post should target
+                                </div>
+                                <div class="checkbox-grid">
+                                    {% for choice in form.target_categories %}
+                                        <div class="checkbox-item">
+                                            {{ choice.tag }}
+                                            <label for="{{ choice.id_for_label }}">
+                                                📂 {{ choice.choice_label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.target_categories.errors %}
+                                    <div class="error-message">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ form.target_categories.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Active Status
+                                    </label>
+                                    <div class="toggle-container">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" 
+                                                   name="is_active" 
+                                                   id="activeToggle"
+                                                   {% if form.is_active.value %}checked{% endif %}>
+                                            <div class="toggle-slider"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700">
+                                            <span id="activeLabel">
+                                                {% if form.is_active.value %}✅ Post is active and visible to users{% else %}❌ Post is inactive and hidden{% endif %}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="error-message">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                            {{ form.is_active.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Expiry Date (Optional)
+                                    </label>
+                                    <input type="datetime-local" 
+                                           name="expires_at" 
+                                           class="form-input"
+                                           value="{{ form.expires_at.value|default:'' }}">
+                                    {% if form.expires_at.errors %}
+                                        <div class="error-message">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                            {{ form.expires_at.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="text-sm text-gray-600 mt-2 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Leave empty for no expiry date
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-gradient btn-success-gradient btn-lg" id="submitBtn">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                {% if object %}💾 Update Post{% else %}✨ Create Post{% endif %}
+                            </button>
+                            <a href="{% url 'moderators:outreach' %}" class="btn btn-gradient btn-info-gradient btn-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                                ❌ Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="text-4xl mb-4">⏳</div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">Processing Your Post</h3>
+        <p class="text-gray-600">Please wait while we save your outreach post...</p>
+        <div class="mt-4">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('outreachForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const bannerInput = document.getElementById('bannerInput');
+    const bannerPreview = document.getElementById('bannerPreview');
+    const previewImage = document.getElementById('previewImage');
+    const activeToggle = document.getElementById('activeToggle');
+    const activeLabel = document.getElementById('activeLabel');
+
+    // Banner image preview
+    bannerInput.addEventListener('blur', function() {
+        const url = this.value.trim();
+        if (url) {
+            previewImage.src = url;
+            previewImage.onload = function() {
+                bannerPreview.style.display = 'block';
+            };
+            previewImage.onerror = function() {
+                bannerPreview.innerHTML = `
+                    <div class="text-red-500 p-4">
+                        <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <p class="font-semibold">Invalid image URL</p>
+                        <p class="text-sm">Please check the URL and try again</p>
+                    </div>
+                `;
+                bannerPreview.style.display = 'block';
+            };
+        } else {
+            bannerPreview.style.display = 'none';
+        }
+    });
+
+    // Active toggle functionality
+    activeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            activeLabel.innerHTML = '✅ Post is active and visible to users';
+        } else {
+            activeLabel.innerHTML = '❌ Post is inactive and hidden';
+        }
+    });
+
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        // Show loading overlay
+        loadingOverlay.style.display = 'flex';
+        
+        // Update submit button
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+            Saving...
+        `;
+        submitBtn.disabled = true;
+        
+        // Re-enable if there's an error (form doesn't submit)
+        setTimeout(() => {
+            if (!form.checkValidity()) {
+                loadingOverlay.style.display = 'none';
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }, 1000);
+    });
+
+    // Enhanced form interactions
+    const inputs = document.querySelectorAll('.form-input, .form-textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // Character counter for title and content
+    const titleInput = document.querySelector('input[name="title"]');
+    const contentTextarea = document.querySelector('textarea[name="content"]');
+    
+    function addCharacterCounter(element, maxLength) {
+        const counter = document.createElement('div');
+        counter.className = 'text-sm text-gray-500 mt-2 text-right';
+        counter.innerHTML = `<span class="font-semibold">${element.value.length}</span>/${maxLength} characters`;
+        element.parentElement.appendChild(counter);
+        
+        element.addEventListener('input', function() {
+            const length = this.value.length;
+            counter.innerHTML = `<span class="font-semibold ${length > maxLength * 0.9 ? 'text-red-500' : ''}">${length}</span>/${maxLength} characters`;
+        });
+    }
+    
+    addCharacterCounter(titleInput, 200);
+    addCharacterCounter(contentTextarea, 1000);
+
+    // Auto-save to localStorage
+    function autoSave() {
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        localStorage.setItem('outreach_draft', JSON.stringify(data));
+    }
+    
+    // Load draft on page load
+    const savedDraft = localStorage.getItem('outreach_draft');
+    if (savedDraft && !{% if object %}true{% else %}false{% endif %}) {
+        const data = JSON.parse(savedDraft);
+        for (let key in data) {
+            const element = form.querySelector(`[name="${key}"]`);
+            if (element && element.type !== 'checkbox') {
+                element.value = data[key];
+            } else if (element && element.type === 'checkbox') {
+                element.checked = data[key] === 'on';
+            }
+        }
+    }
+    
+    // Auto-save every 30 seconds
+    setInterval(autoSave, 30000);
+    
+    // Clear draft on successful submission
+    form.addEventListener('submit', function() {
+        setTimeout(() => {
+            localStorage.removeItem('outreach_draft');
+        }, 2000);
+    });
+    
+    // Smooth animations
+    const sections = document.querySelectorAll('.form-section');
+    sections.forEach((section, index) => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            section.style.transition = 'all 0.6s ease';
+            section.style.opacity = '1';
+            section.style.transform = 'translateY(0)';
+        }, index * 200);
+    });
+});
+</script>
+{% endblock %} 

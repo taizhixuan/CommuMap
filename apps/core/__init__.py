@@ -1,0 +1,1 @@
+# Core app for CommuMap - authentication, landing pages, common utilities 

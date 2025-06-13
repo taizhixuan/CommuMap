@@ -1,0 +1,655 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome to CommuMap! - Registration Successful{% endblock %}
+
+{% block content %}
+<div class="registration-success-page success-page">
+    <div class="content-container">
+        <!-- Main Welcome Section -->
+        <div class="welcome-section">
+            <div class="welcome-header">
+                <span class="success-icon">🎉</span>
+                <h1 class="welcome-title">Welcome to CommuMap!</h1>
+                <p class="welcome-subtitle">Your community connection starts here</p>
+            </div>
+            
+            <div class="welcome-content">
+                <div class="success-badge">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Account Successfully Created
+                </div>
+                
+                <p class="welcome-message">
+                    <strong>Congratulations!</strong> You've successfully joined our community platform. 
+                    You now have access to local services, resources, and connections that matter to you. 
+                    Let's get you started on your journey to discover everything your community has to offer.
+                </p>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'core:login' %}" class="action-btn action-btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1"/>
+                        </svg>
+                        Start Your Journey
+                    </a>
+                    <a href="{% url 'services:map' %}" class="action-btn action-btn-secondary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/>
+                        </svg>
+                        Explore the Map
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-section">
+            <h2 class="progress-title">Your Registration Journey</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-icon">✓</div>
+                    <span class="step-label">Account Created</span>
+                    <div class="step-connector"></div>
+                </div>
+                <div class="step">
+                    <div class="step-icon">✓</div>
+                    <span class="step-label">Email Verified</span>
+                    <div class="step-connector"></div>
+                </div>
+                <div class="step">
+                    <div class="step-icon">→</div>
+                    <span class="step-label">Start Exploring</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features-section">
+            <h2 class="features-title">What You Can Do Now</h2>
+            <p class="features-subtitle">
+                Discover the powerful features that will help you connect with your community and find the services you need.
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-card" tabindex="0">
+                    <span class="feature-icon">🔍</span>
+                    <h3 class="feature-title">Discover Local Services</h3>
+                    <p class="feature-description">
+                        Search and find community services tailored to your location and needs with our intelligent search system.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Smart Search</span>
+                        <span class="feature-tag">Location-Based</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" tabindex="0">
+                    <span class="feature-icon">🗺️</span>
+                    <h3 class="feature-title">Interactive Community Map</h3>
+                    <p class="feature-description">
+                        Visualize services on our interactive map with real-time information, directions, and service availability.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Real-Time</span>
+                        <span class="feature-tag">GPS Navigation</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" tabindex="0">
+                    <span class="feature-icon">💾</span>
+                    <h3 class="feature-title">Personal Service Library</h3>
+                    <p class="feature-description">
+                        Save your favorite services and create custom collections for quick access whenever you need them.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Bookmarks</span>
+                        <span class="feature-tag">Collections</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" tabindex="0">
+                    <span class="feature-icon">🔔</span>
+                    <h3 class="feature-title">Smart Notifications</h3>
+                    <p class="feature-description">
+                        Get timely updates about service changes, new offerings, and important community announcements.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Personalized</span>
+                        <span class="feature-tag">Timely</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" tabindex="0">
+                    <span class="feature-icon">🚨</span>
+                    <h3 class="feature-title">Emergency Resources</h3>
+                    <p class="feature-description">
+                        Quick access to emergency services and critical community resources when you need them most.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">24/7 Access</span>
+                        <span class="feature-tag">Emergency</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" tabindex="0">
+                    <span class="feature-icon">👥</span>
+                    <h3 class="feature-title">Community Reviews</h3>
+                    <p class="feature-description">
+                        Read and share experiences with community services to help others make informed decisions.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Reviews</span>
+                        <span class="feature-tag">Community</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-section">
+            <span class="cta-icon">🚀</span>
+            <h2 class="cta-title">Ready to Explore?</h2>
+            <p class="cta-description">
+                Your community is waiting for you. Sign in now to start discovering services, connecting with neighbors, and making the most of your local resources.
+            </p>
+            <div class="action-buttons">
+                <a href="{% url 'core:login' %}" class="action-btn action-btn-primary">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1"/>
+                    </svg>
+                    Sign In to Continue
+                </a>
+                <a href="{% url 'core:landing' %}" class="action-btn action-btn-secondary">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Place CSS at the end to ensure it overrides framework styles -->
+<style>
+/* Ultra-High Specificity CSS to Override All Framework Styles */
+body .registration-success-page * {
+    box-sizing: border-box !important;
+}
+
+/* Main Container Styling with Maximum Specificity */
+body .registration-success-page.success-page {
+    min-height: 100vh !important;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    padding: 6rem 0 4rem !important;
+    margin: 0 !important;
+    width: 100% !important;
+    position: relative !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+body .registration-success-page .content-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 0 1.5rem !important;
+    position: relative !important;
+}
+
+/* Welcome Section */
+body .registration-success-page .welcome-section {
+    background: #ffffff !important;
+    border-radius: 1.5rem !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e5e7eb !important;
+    margin-bottom: 3rem !important;
+    overflow: hidden !important;
+}
+
+body .registration-success-page .welcome-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    padding: 3rem 2rem 2rem !important;
+    text-align: center !important;
+    position: relative !important;
+}
+
+body .registration-success-page .success-icon {
+    font-size: 4rem !important;
+    margin-bottom: 1rem !important;
+    display: block !important;
+}
+
+body .registration-success-page .welcome-title {
+    font-size: 3rem !important;
+    font-weight: 800 !important;
+    margin-bottom: 0.5rem !important;
+    color: white !important;
+    line-height: 1.1 !important;
+}
+
+body .registration-success-page .welcome-subtitle {
+    font-size: 1.25rem !important;
+    opacity: 0.9 !important;
+    font-weight: 500 !important;
+    color: white !important;
+}
+
+body .registration-success-page .welcome-content {
+    padding: 3rem 2rem !important;
+    text-align: center !important;
+}
+
+body .registration-success-page .success-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+    color: white !important;
+    padding: 1rem 2rem !important;
+    border-radius: 9999px !important;
+    font-weight: 600 !important;
+    margin-bottom: 2rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border: none !important;
+}
+
+body .registration-success-page .welcome-message {
+    max-width: 600px !important;
+    margin: 0 auto 3rem !important;
+    color: #6b7280 !important;
+    font-size: 1.125rem !important;
+    line-height: 1.75 !important;
+}
+
+/* Action Buttons */
+body .registration-success-page .action-buttons {
+    display: flex !important;
+    gap: 1rem !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    margin-bottom: 2rem !important;
+}
+
+body .registration-success-page .action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    padding: 1rem 2rem !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    min-height: 3.5rem !important;
+    border: 2px solid transparent !important;
+    cursor: pointer !important;
+}
+
+body .registration-success-page .action-btn:hover {
+    text-decoration: none !important;
+    transform: translateY(-2px) !important;
+}
+
+body .registration-success-page .action-btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+body .registration-success-page .action-btn-primary:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+}
+
+body .registration-success-page .action-btn-secondary {
+    background: #ffffff !important;
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+body .registration-success-page .action-btn-secondary:hover {
+    background: #3b82f6 !important;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Progress Section */
+body .registration-success-page .progress-section {
+    background: #f1f5f9 !important;
+    border-radius: 0.75rem !important;
+    padding: 2rem !important;
+    margin-bottom: 3rem !important;
+}
+
+body .registration-success-page .progress-title {
+    text-align: center !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    margin-bottom: 1.5rem !important;
+}
+
+body .registration-success-page .steps-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
+}
+
+body .registration-success-page .step {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    flex: 1 !important;
+    position: relative !important;
+}
+
+body .registration-success-page .step-icon {
+    width: 3rem !important;
+    height: 3rem !important;
+    border-radius: 50% !important;
+    background: #10b981 !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 1.25rem !important;
+}
+
+body .registration-success-page .step-label {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    text-align: center !important;
+}
+
+body .registration-success-page .step-connector {
+    position: absolute !important;
+    top: 1.5rem !important;
+    left: calc(50% + 1.5rem) !important;
+    right: calc(-50% + 1.5rem) !important;
+    height: 2px !important;
+    background: #10b981 !important;
+    z-index: -1 !important;
+}
+
+body .registration-success-page .step:last-child .step-connector {
+    display: none !important;
+}
+
+/* Features Section */
+body .registration-success-page .features-section {
+    margin-bottom: 3rem !important;
+}
+
+body .registration-success-page .features-title {
+    text-align: center !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    margin-bottom: 1rem !important;
+}
+
+body .registration-success-page .features-subtitle {
+    text-align: center !important;
+    color: #6b7280 !important;
+    font-size: 1.125rem !important;
+    margin-bottom: 3rem !important;
+    max-width: 600px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+body .registration-success-page .features-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 2rem !important;
+}
+
+body .registration-success-page .feature-card {
+    background: #ffffff !important;
+    border-radius: 0.75rem !important;
+    padding: 2rem !important;
+    text-align: center !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+}
+
+body .registration-success-page .feature-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    border-color: #3b82f6 !important;
+}
+
+body .registration-success-page .feature-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem !important;
+    display: block !important;
+}
+
+body .registration-success-page .feature-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+body .registration-success-page .feature-description {
+    color: #6b7280 !important;
+    line-height: 1.6 !important;
+    margin-bottom: 1.5rem !important;
+}
+
+body .registration-success-page .feature-tags {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+body .registration-success-page .feature-tag {
+    background: #f1f5f9 !important;
+    color: #6b7280 !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 9999px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+}
+
+/* Call to Action Section */
+body .registration-success-page .cta-section {
+    background: #ffffff !important;
+    border-radius: 1.5rem !important;
+    padding: 3rem 2rem !important;
+    text-align: center !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+body .registration-success-page .cta-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1.5rem !important;
+    display: block !important;
+}
+
+body .registration-success-page .cta-title {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    margin-bottom: 1rem !important;
+}
+
+body .registration-success-page .cta-description {
+    color: #6b7280 !important;
+    font-size: 1.125rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 2rem !important;
+    max-width: 500px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body .registration-success-page.success-page {
+        padding: 4rem 0 2rem !important;
+    }
+    
+    body .registration-success-page .content-container {
+        padding: 0 1rem !important;
+    }
+    
+    body .registration-success-page .welcome-header {
+        padding: 2rem 1.5rem 1.5rem !important;
+    }
+    
+    body .registration-success-page .welcome-title {
+        font-size: 2rem !important;
+    }
+    
+    body .registration-success-page .welcome-content {
+        padding: 2rem 1.5rem !important;
+    }
+    
+    body .registration-success-page .action-buttons {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    
+    body .registration-success-page .action-btn {
+        width: 100% !important;
+        max-width: 300px !important;
+    }
+    
+    body .registration-success-page .steps-container {
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+    }
+    
+    body .registration-success-page .step-connector {
+        display: none !important;
+    }
+    
+    body .registration-success-page .features-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    body .registration-success-page .cta-section {
+        padding: 2rem 1.5rem !important;
+    }
+}
+
+/* Force text styles */
+body .registration-success-page p,
+body .registration-success-page h1,
+body .registration-success-page h2,
+body .registration-success-page h3 {
+    margin-top: 0 !important;
+    font-family: inherit !important;
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body .registration-success-page .content-container {
+    animation: fadeInUp 0.6s ease-out !important;
+}
+
+body .registration-success-page .welcome-section {
+    animation: fadeInUp 0.8s ease-out 0.2s both !important;
+}
+
+body .registration-success-page .progress-section {
+    animation: fadeInUp 0.8s ease-out 0.4s both !important;
+}
+
+body .registration-success-page .features-grid {
+    animation: fadeInUp 1s ease-out 0.6s both !important;
+}
+
+body .registration-success-page .cta-section {
+    animation: fadeInUp 1s ease-out 0.8s both !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced button interactions
+    const buttons = document.querySelectorAll('.registration-success-page .action-btn');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Feature card interactions
+    const featureCards = document.querySelectorAll('.registration-success-page .feature-card');
+    featureCards.forEach((card, index) => {
+        // Staggered animation
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 800 + (index * 100));
+        
+        // Click effect
+        card.addEventListener('click', function() {
+            this.style.transform = 'translateY(-4px) scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = 'translateY(-4px) scale(1)';
+            }, 150);
+        });
+        
+        // Keyboard navigation
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

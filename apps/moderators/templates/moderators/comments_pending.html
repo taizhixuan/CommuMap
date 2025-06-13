@@ -1,0 +1,892 @@
+{% extends 'base.html' %}
+{% load static %}
+{% csrf_token %}
+
+{% block title %}Comment Approval Queue - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Enhanced Header */
+    .comments-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .comments-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        animation: shimmer 6s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(180deg); }
+    }
+    
+    /* Enhanced Button Styles */
+    .btn-gradient {
+        background: linear-gradient(135deg, var(--color-1), var(--color-2));
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-transform: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .btn-gradient::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-gradient:hover::before {
+        left: 100%;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .btn-info-gradient {
+        --color-1: #3b82f6;
+        --color-2: #1d4ed8;
+    }
+    
+    .btn-success-gradient {
+        --color-1: #10b981;
+        --color-2: #059669;
+    }
+    
+    .btn-error-gradient {
+        --color-1: #ef4444;
+        --color-2: #dc2626;
+    }
+    
+    .btn-warning-gradient {
+        --color-1: #f59e0b;
+        --color-2: #d97706;
+    }
+    
+    .btn-purple-gradient {
+        --color-1: #8b5cf6;
+        --color-2: #7c3aed;
+    }
+    
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--card-color), transparent);
+        opacity: 0.05;
+        transition: opacity 0.3s ease;
+    }
+    
+    .stat-card:hover::before {
+        opacity: 0.1;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card-pending {
+        --card-color: #3b82f6;
+        border-color: #3b82f6;
+    }
+    
+    .stat-card-selected {
+        --card-color: #10b981;
+        border-color: #10b981;
+    }
+    
+    .stat-card-approved {
+        --card-color: #f59e0b;
+        border-color: #f59e0b;
+    }
+    
+    .stat-card-rejected {
+        --card-color: #ef4444;
+        border-color: #ef4444;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--card-color), #64748b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Comment Cards */
+    .comment-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .comment-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        transition: width 0.3s ease;
+    }
+    
+    .comment-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+    }
+    
+    .comment-card:hover::before {
+        width: 8px;
+    }
+    
+    .comment-card.selected {
+        border-color: #10b981;
+        background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%);
+    }
+    
+    .comment-card.selected::before {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    /* User Avatar */
+    .user-avatar {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        flex-shrink: 0;
+    }
+    
+    /* Comment Content */
+    .comment-content {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .comment-content:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .comment-content::before {
+        content: '"';
+        font-size: 3rem;
+        color: #cbd5e1;
+        position: absolute;
+        top: -0.5rem;
+        left: 1rem;
+        font-family: serif;
+    }
+    
+    /* Service Badge */
+    .service-badge {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+    }
+    
+    .action-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        min-width: 120px;
+        justify-content: center;
+    }
+    
+    /* Bulk Actions Bar */
+    .bulk-actions-bar {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        position: sticky;
+        top: 1rem;
+        z-index: 10;
+    }
+    
+    /* Enhanced Modal */
+    .enhanced-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(8px);
+    }
+    
+    .enhanced-modal.modal-open {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .enhanced-modal.modal-open .modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .empty-state-icon {
+        width: 6rem;
+        height: 6rem;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Checkbox Styling */
+    .custom-checkbox {
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 2px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .custom-checkbox:checked {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-color: #10b981;
+    }
+    
+    .custom-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .bulk-actions-bar {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .comment-card {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-100">
+    <!-- Enhanced Header -->
+    <div class="comments-header text-white p-6 mb-6">
+        <div class="container mx-auto relative">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">💬 Comment Approval Queue</h1>
+                    <p class="text-lg opacity-90">Review and moderate pending user comments</p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="toggleSelectAll()" class="btn btn-gradient btn-warning-gradient gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Select All
+                    </button>
+                    <a href="{% url 'moderators:dashboard' %}" class="btn btn-gradient btn-info-gradient">
+                        <span>🏠</span>
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6">
+        <!-- Enhanced Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-card-pending">
+                <div class="stat-number">{{ comments.count }}</div>
+                <div class="stat-label">Pending Comments</div>
+            </div>
+            <div class="stat-card stat-card-selected">
+                <div class="stat-number" id="selectedCount">0</div>
+                <div class="stat-label">Selected</div>
+            </div>
+            <div class="stat-card stat-card-approved">
+                <div class="stat-number">{{ approved_today_count|default:0 }}</div>
+                <div class="stat-label">Approved Today</div>
+            </div>
+            <div class="stat-card stat-card-rejected">
+                <div class="stat-number">{{ rejected_today_count|default:0 }}</div>
+                <div class="stat-label">Rejected Today</div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+            <div class="flex items-center gap-3">
+                <span class="text-lg font-bold">⚡ Bulk Actions</span>
+                <span id="selectedCountText">0 comments selected</span>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="bulkApprove()" class="btn btn-gradient btn-success-gradient">
+                    <span>✅</span>
+                    Bulk Approve
+                </button>
+                <button onclick="bulkReject()" class="btn btn-gradient btn-error-gradient">
+                    <span>❌</span>
+                    Bulk Reject
+                </button>
+                <button onclick="clearSelection()" class="btn btn-gradient btn-info-gradient">
+                    <span>🔄</span>
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- Comments List -->
+        <div class="space-y-6">
+            {% if comments %}
+                {% for comment in comments %}
+                <div class="comment-card" data-comment-id="{{ comment.id }}">
+                    <div class="flex items-start gap-6">
+                        <!-- Selection Checkbox -->
+                        <input type="checkbox" class="custom-checkbox comment-checkbox" 
+                               value="{{ comment.id }}" onchange="updateSelection()">
+                        
+                        <!-- User Avatar -->
+                        <div class="user-avatar">
+                            {{ comment.user.full_name|default:comment.user.email|first|upper }}
+                        </div>
+                        
+                        <!-- Comment Content -->
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h4 class="text-xl font-bold text-gray-800">{{ comment.user.full_name|default:comment.user.email }}</h4>
+                                    <p class="text-sm text-gray-500">{{ comment.created_at|timesince }} ago</p>
+                                </div>
+                                <div class="service-badge">
+                                    <span>🏢</span>
+                                    {{ comment.service.name }}
+                                </div>
+                            </div>
+                            
+                            <div class="comment-content">
+                                <p class="text-gray-700 leading-relaxed">
+                                    {{ comment.content }}
+                                </p>
+                            </div>
+                            
+                            <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                                {% if comment.rating %}
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Rating: {{ comment.rating }}/5
+                                </span>
+                                <span>•</span>
+                                {% endif %}
+                                <span>📧 {{ comment.user.email }}</span>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <a href="{% url 'moderators:comment_thread' comment.id %}" class="btn btn-gradient btn-info-gradient">
+                                    <span>💬</span>
+                                    View Thread
+                                </a>
+                                <button onclick="approveComment('{{ comment.id }}')" class="btn btn-gradient btn-success-gradient">
+                                    <span>✅</span>
+                                    Approve
+                                </button>
+                                <button onclick="rejectComment('{{ comment.id }}')" class="btn btn-gradient btn-error-gradient">
+                                    <span>❌</span>
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-20">
+                    <div class="text-8xl mb-6">💬</div>
+                    <h3 class="text-3xl font-bold text-gray-700 mb-4">No Pending Comments</h3>
+                    <p class="text-gray-500 text-lg mb-8 max-w-md mx-auto">
+                        All comments have been reviewed! Great job keeping the community discussions healthy.
+                    </p>
+                    <a href="{% url 'moderators:dashboard' %}" class="btn btn-gradient btn-info-gradient btn-lg">
+                        <span>🏠</span>
+                        Back to Dashboard
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Reason Modal -->
+<div id="reasonModal" class="enhanced-modal">
+    <div class="modal-content">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span class="text-3xl">📝</span>
+            Provide Moderation Reason
+        </h3>
+        <div class="py-4">
+            <p class="mb-4 text-gray-600">Please provide a reason for this moderation action:</p>
+            <textarea id="reasonText" class="w-full h-32 border-2 border-gray-300 rounded-xl p-4 focus:border-blue-500 focus:outline-none transition-colors" 
+                      placeholder="Enter reason for approval/rejection..."></textarea>
+        </div>
+        <div class="flex justify-end gap-4 mt-6">
+            <button onclick="confirmAction()" class="btn btn-gradient btn-success-gradient">
+                <span>✅</span>
+                Confirm Action
+            </button>
+            <button onclick="closeReasonModal()" class="btn btn-gradient btn-error-gradient">
+                <span>❌</span>
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAction = null;
+let currentCommentId = null;
+let selectedComments = new Set();
+
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('.comment-checkbox:checked');
+    selectedComments.clear();
+    
+    checkboxes.forEach(cb => {
+        selectedComments.add(cb.value);
+        cb.closest('.comment-card').classList.add('selected');
+    });
+    
+    // Update unselected cards
+    document.querySelectorAll('.comment-checkbox:not(:checked)').forEach(cb => {
+        cb.closest('.comment-card').classList.remove('selected');
+    });
+    
+    // Update UI
+    const selectedCount = selectedComments.size;
+    document.getElementById('selectedCount').textContent = selectedCount;
+    document.getElementById('selectedCountText').textContent = `${selectedCount} comment${selectedCount !== 1 ? 's' : ''} selected`;
+    
+    // Show/hide bulk actions bar
+    const bulkBar = document.getElementById('bulkActionsBar');
+    if (selectedCount > 0) {
+        bulkBar.style.display = 'flex';
+    } else {
+        bulkBar.style.display = 'none';
+    }
+}
+
+function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('.comment-checkbox');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+    });
+    
+    updateSelection();
+    
+    // Update button text
+    const btn = event.target.closest('button');
+    btn.innerHTML = allChecked ? 
+        '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Select All' :
+        '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>Deselect All';
+}
+
+function clearSelection() {
+    document.querySelectorAll('.comment-checkbox').forEach(cb => {
+        cb.checked = false;
+    });
+    updateSelection();
+}
+
+function approveComment(commentId) {
+    currentAction = 'approve';
+    currentCommentId = commentId;
+    document.getElementById('reasonModal').classList.add('modal-open');
+}
+
+function rejectComment(commentId) {
+    currentAction = 'reject';
+    currentCommentId = commentId;
+    document.getElementById('reasonModal').classList.add('modal-open');
+}
+
+function bulkApprove() {
+    if (selectedComments.size === 0) return;
+    
+    currentAction = 'bulk_approve';
+    currentCommentId = null;
+    document.getElementById('reasonModal').classList.add('modal-open');
+}
+
+function bulkReject() {
+    if (selectedComments.size === 0) return;
+    
+    currentAction = 'bulk_reject';
+    currentCommentId = null;
+    document.getElementById('reasonModal').classList.add('modal-open');
+}
+
+function confirmAction() {
+    const reason = document.getElementById('reasonText').value.trim();
+    if (!reason) {
+        alert('Please provide a reason for this action.');
+        return;
+    }
+    
+    if (currentAction === 'approve') {
+        performSingleAction(currentCommentId, 'approve', reason);
+    } else if (currentAction === 'reject') {
+        performSingleAction(currentCommentId, 'reject', reason);
+    } else if (currentAction === 'bulk_approve') {
+        performBulkAction('approve', reason);
+    } else if (currentAction === 'bulk_reject') {
+        performBulkAction('reject', reason);
+    }
+    
+    closeReasonModal();
+}
+
+function performSingleAction(commentId, action, reason) {
+    const url = action === 'approve' ? 
+        `/moderator/api/comments/${commentId}/approve/` : 
+        `/moderator/api/comments/${commentId}/reject/`;
+    
+    // Show loading state
+    const card = document.querySelector(`[data-comment-id="${commentId}"]`);
+    if (card) {
+        card.style.opacity = '0.5';
+        card.style.pointerEvents = 'none';
+    }
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `reason=${encodeURIComponent(reason)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove comment card with animation
+            if (card) {
+                card.style.transform = action === 'approve' ? 'translateX(100%)' : 'translateX(-100%)';
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.remove();
+                    updateStats(action);
+                }, 300);
+            }
+            showNotification(data.message, action === 'approve' ? 'success' : 'error');
+        } else {
+            // Restore card state on error
+            if (card) {
+                card.style.opacity = '1';
+                card.style.pointerEvents = 'auto';
+            }
+            showNotification(`Error: ${data.message}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Restore card state on error
+        if (card) {
+            card.style.opacity = '1';
+            card.style.pointerEvents = 'auto';
+        }
+        showNotification('Network error occurred', 'error');
+    });
+}
+
+function performBulkAction(action, reason) {
+    const commentIds = Array.from(selectedComments);
+    const url = action === 'approve' ? 
+        '/moderator/api/comments/bulk-approve/' : 
+        '/moderator/api/comments/bulk-reject/';
+    
+    // Show loading state for selected cards
+    commentIds.forEach(commentId => {
+        const card = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (card) {
+            card.style.opacity = '0.5';
+            card.style.pointerEvents = 'none';
+        }
+    });
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            comment_ids: commentIds,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove selected comment cards with animation
+            commentIds.forEach(commentId => {
+                const card = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (card) {
+                    card.style.transform = action === 'approve' ? 'translateX(100%)' : 'translateX(-100%)';
+                    card.style.opacity = '0';
+                    setTimeout(() => card.remove(), 300);
+                }
+            });
+            
+            updateStats(action, commentIds.length);
+            selectedComments.clear();
+            updateSelection();
+            showNotification(data.message, action === 'approve' ? 'success' : 'error');
+        } else {
+            // Restore card states on error
+            commentIds.forEach(commentId => {
+                const card = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (card) {
+                    card.style.opacity = '1';
+                    card.style.pointerEvents = 'auto';
+                }
+            });
+            showNotification(`Error: ${data.message}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Restore card states on error
+        commentIds.forEach(commentId => {
+            const card = document.querySelector(`[data-comment-id="${commentId}"]`);
+            if (card) {
+                card.style.opacity = '1';
+                card.style.pointerEvents = 'auto';
+            }
+        });
+        showNotification('Network error occurred', 'error');
+    });
+}
+
+function updateStats(action, count = 1) {
+    const pendingCard = document.querySelector('.stat-card-pending .stat-number');
+    const approvedCard = document.querySelector('.stat-card-approved .stat-number');
+    const rejectedCard = document.querySelector('.stat-card-rejected .stat-number');
+    
+    const currentPending = parseInt(pendingCard.textContent);
+    pendingCard.textContent = Math.max(0, currentPending - count);
+    
+    if (action === 'approve') {
+        const currentApproved = parseInt(approvedCard.textContent);
+        approvedCard.textContent = currentApproved + count;
+    } else if (action === 'reject') {
+        const currentRejected = parseInt(rejectedCard.textContent);
+        rejectedCard.textContent = currentRejected + count;
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+    notification.style.background = type === 'success' ? 
+        'linear-gradient(135deg, #10b981, #059669)' : 
+        'linear-gradient(135deg, #ef4444, #dc2626)';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(full)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+function closeReasonModal() {
+    document.getElementById('reasonModal').classList.remove('modal-open');
+    document.getElementById('reasonText').value = '';
+}
+
+// Close modal on outside click
+document.getElementById('reasonModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeReasonModal();
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelection();
+    
+    // Add staggered animation for comment cards
+    const cards = document.querySelectorAll('.comment-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+});
+</script>
+{% endblock %} 

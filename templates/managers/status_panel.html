@@ -1,0 +1,884 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ service.name }} - Status Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Status Panel Styling */
+    .status-container {
+        min-height: calc(100vh - 200px);
+        padding-top: 3rem;
+        padding-bottom: 4rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .status-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+    
+    .status-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    /* Ensure all icons display in natural colors */
+    .status-title::before,
+    .panel-title::before,
+    .panel-icon,
+    .timeline-item::before,
+    i.fa, i.fas, i.far, i.fab,
+    span[class*="icon"],
+    .icon {
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: unset !important;
+        background-clip: unset !important;
+        color: #64748b !important;
+    }
+    
+    .status-subtitle {
+        color: #64748b;
+        font-size: 1.125rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* Service Overview Card */
+    .service-overview {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .service-overview::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .service-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .service-category {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    
+    /* Status Controls Grid */
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Status Toggle Panel */
+    .status-panel {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .status-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .panel-icon {
+        font-size: 1.5rem;
+    }
+    
+    .status-toggle {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 1rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .status-toggle:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 70px;
+        height: 35px;
+        border-radius: 18px;
+        background: #cbd5e1;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .toggle-switch.active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.1),
+            0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 29px;
+        height: 29px;
+        border-radius: 50%;
+        background: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .toggle-switch.active .toggle-slider {
+        transform: translateX(35px);
+    }
+    
+    .toggle-info {
+        flex: 1;
+    }
+    
+    .toggle-label {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+    
+    .toggle-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    /* Capacity Control Panel */
+    .capacity-control {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .capacity-control::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .capacity-indicator {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 1rem;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .capacity-display {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+    
+    .capacity-percentage {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .capacity-low { 
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    .capacity-medium { 
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    .capacity-high { 
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .capacity-slider-container {
+        margin: 2rem 0;
+    }
+    
+    .capacity-slider {
+        width: 100%;
+        height: 12px;
+        border-radius: 6px;
+        background: #e2e8f0;
+        outline: none;
+        -webkit-appearance: none;
+        margin: 1rem 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .capacity-slider:hover {
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    .capacity-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        cursor: pointer;
+        box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.2),
+            0 2px 4px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .capacity-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: 
+            0 6px 12px rgba(0, 0, 0, 0.25),
+            0 4px 8px rgba(102, 126, 234, 0.4);
+    }
+    
+    .capacity-slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        cursor: pointer;
+        border: none;
+        box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.2),
+            0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Alert Panel */
+    .alert-panel {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .alert-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .alert-textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .alert-textarea:focus {
+        outline: none;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+    
+    /* Quick Action Buttons */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .quick-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border: none;
+        border-radius: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 0.875rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quick-action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        transition: left 0.3s ease;
+        z-index: 0;
+    }
+    
+    .quick-action-btn:hover::before {
+        left: 0;
+    }
+    
+    .quick-action-btn i,
+    .quick-action-btn span {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .quick-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: 2px solid transparent;
+    }
+    
+    .btn-primary::before {
+        background: linear-gradient(135deg, #5a67d8, #6a4190);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border: 2px solid transparent;
+    }
+    
+    .btn-warning::before {
+        background: linear-gradient(135deg, #d97706, #b45309);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: 2px solid transparent;
+    }
+    
+    .btn-danger::before {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+    
+    /* Status History */
+    .status-history {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+        margin-top: 2rem;
+    }
+    
+    .status-history::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    
+    .history-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+    
+    .history-item:last-child {
+        border-bottom: none;
+    }
+    
+    .history-item:hover {
+        background: #f8fafc;
+        margin: 0 -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        border-radius: 0.5rem;
+    }
+    
+    .history-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        flex-shrink: 0;
+    }
+    
+    .history-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .history-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+    
+    .history-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+    
+    .history-time {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    /* Status Classes for History Icons */
+    .history-open {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .history-closed {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .history-capacity {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .history-alert {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .status-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+        
+        .status-title {
+            font-size: 2rem;
+        }
+        
+        .status-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .status-toggle {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .toggle-switch {
+            order: -1;
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .history-item {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .history-icon {
+            margin: 0 auto;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .status-panel,
+        .capacity-control,
+        .alert-panel,
+        .status-history {
+            padding: 2rem 1.5rem;
+        }
+        
+        .service-overview {
+            padding: 2rem 1.5rem;
+        }
+        
+        .capacity-display {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="status-container">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="status-header">
+            <h1 class="status-title">
+                ⚙️ Service Status Panel
+            </h1>
+            <p class="status-subtitle">
+                Manage real-time status and capacity for your service
+            </p>
+        </div>
+
+        <!-- Service Overview -->
+        <div class="service-overview">
+            <h2 class="service-name">{{ service.name }}</h2>
+            <p class="service-category">{{ service.category.name }}</p>
+            <p style="color: #64748b; line-height: 1.6;">{{ service.short_description }}</p>
+        </div>
+
+        <!-- Status Controls Grid -->
+        <div class="status-grid">
+            <!-- Status Toggle Panel -->
+            <div class="status-panel">
+                <h3 class="panel-title">
+                    <span class="panel-icon">🔄</span>
+                    Service Status
+                </h3>
+                
+                <div class="status-toggle">
+                    <div class="toggle-switch {% if service.current_status == 'open' %}active{% endif %}" 
+                         onclick="toggleServiceStatus()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <div class="toggle-info">
+                        <div class="toggle-label">
+                            {% if service.current_status == 'open' %}
+                                Service is Open
+                            {% else %}
+                                Service is Closed
+                            {% endif %}
+                        </div>
+                        <div class="toggle-description">
+                            {% if service.current_status == 'open' %}
+                                Your service is currently accepting new participants
+                            {% else %}
+                                Your service is currently closed to new participants
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-action-btn btn-primary" onclick="setStatus('open')">
+                        <i class="fas fa-play"></i>
+                        <span>Open Service</span>
+                    </button>
+                    <button class="quick-action-btn btn-warning" onclick="setStatus('limited')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Limited Access</span>
+                    </button>
+                    <button class="quick-action-btn btn-danger" onclick="setStatus('closed')">
+                        <i class="fas fa-stop"></i>
+                        <span>Close Service</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Capacity Control Panel -->
+            {% if service.max_capacity %}
+                <div class="capacity-control">
+                    <h3 class="panel-title">
+                        <span class="panel-icon">👥</span>
+                        Capacity Management
+                    </h3>
+                    
+                    <div class="capacity-indicator">
+                        <div class="capacity-display">
+                            {{ service.current_capacity|default:0 }}/{{ service.max_capacity }}
+                        </div>
+                        {% with percentage=service.capacity_percentage %}
+                            <div class="capacity-percentage {% if percentage < 60 %}capacity-low{% elif percentage < 85 %}capacity-medium{% else %}capacity-high{% endif %}">
+                                {{ percentage|floatformat:0 }}% Full
+                            </div>
+                        {% endwith %}
+                    </div>
+                    
+                    <div class="capacity-slider-container">
+                        <label for="capacity-slider" style="display: block; font-weight: 600; color: #374151; margin-bottom: 1rem;">
+                            Current Capacity: <span id="capacity-value">{{ service.current_capacity|default:0 }}</span>
+                        </label>
+                        <input type="range" 
+                               id="capacity-slider" 
+                               class="capacity-slider"
+                               min="0" 
+                               max="{{ service.max_capacity }}" 
+                               value="{{ service.current_capacity|default:0 }}"
+                               oninput="updateCapacity(this.value)">
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <button class="quick-action-btn btn-primary" onclick="updateCapacityAPI()">
+                            <i class="fas fa-save"></i>
+                            <span>Save Changes</span>
+                        </button>
+                        <button class="quick-action-btn btn-warning" onclick="setCapacity({{ service.max_capacity }})">
+                            <i class="fas fa-users"></i>
+                            <span>Mark as Full</span>
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Alert Panel -->
+        <div class="alert-panel">
+            <h3 class="panel-title">
+                <span class="panel-icon">📢</span>
+                Service Alerts & Updates
+            </h3>
+            
+            <form method="post" action="{% url 'manager:api_update_status' service.pk %}">
+                {% csrf_token %}
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="alert-message" style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                        Alert Message (Optional)
+                    </label>
+                    <textarea id="alert-message" 
+                              name="alert_message" 
+                              class="alert-textarea"
+                              placeholder="Enter any important updates or alerts for service users..."></textarea>
+                </div>
+                
+                <div class="quick-actions">
+                    <button type="submit" class="quick-action-btn btn-warning">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <span>Send Alert</span>
+                    </button>
+                    <button type="button" class="quick-action-btn btn-primary" onclick="clearAlert()">
+                        <i class="fas fa-eraser"></i>
+                        <span>Clear Alert</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Status History -->
+        {% if status_history %}
+            <div class="status-history">
+                <h3 class="panel-title">
+                    <span class="panel-icon">📊</span>
+                    Recent Status Changes
+                </h3>
+                
+                {% for history_item in status_history %}
+                    <div class="history-item">
+                        <div class="history-icon history-{{ history_item.action_type }}">
+                            {% if history_item.action_type == 'open' %}🟢
+                            {% elif history_item.action_type == 'closed' %}🔴
+                            {% elif history_item.action_type == 'capacity' %}👥
+                            {% else %}📝{% endif %}
+                        </div>
+                        <div class="history-content">
+                            <div class="history-title">{{ history_item.title }}</div>
+                            <div class="history-description">{{ history_item.description }}</div>
+                            <div class="history-time">{{ history_item.timestamp|timesince }} ago</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    let currentCapacity = {{ service.current_capacity|default:0 }};
+    const maxCapacity = {{ service.max_capacity|default:100 }};
+    const serviceId = '{{ service.pk }}';
+
+    function toggleServiceStatus() {
+        const currentStatus = '{{ service.current_status }}';
+        const newStatus = currentStatus === 'open' ? 'closed' : 'open';
+        setStatus(newStatus);
+    }
+
+    function setStatus(status) {
+        fetch(`/manager/api/services/${serviceId}/status/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update status');
+        });
+    }
+
+    function updateCapacity(value) {
+        currentCapacity = parseInt(value);
+        document.getElementById('capacity-value').textContent = currentCapacity;
+        
+        // Update percentage display
+        const percentage = Math.round((currentCapacity / maxCapacity) * 100);
+        const percentageElement = document.querySelector('.capacity-percentage');
+        if (percentageElement) {
+            percentageElement.textContent = percentage + '% Full';
+            
+            // Update color class
+            percentageElement.className = 'capacity-percentage';
+            if (percentage < 60) {
+                percentageElement.classList.add('capacity-low');
+            } else if (percentage < 85) {
+                percentageElement.classList.add('capacity-medium');
+            } else {
+                percentageElement.classList.add('capacity-high');
+            }
+        }
+        
+        // Update capacity display
+        document.querySelector('.capacity-display').textContent = `${currentCapacity}/${maxCapacity}`;
+    }
+
+    function updateCapacityAPI() {
+        fetch(`/manager/api/services/${serviceId}/capacity/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                capacity: currentCapacity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const btn = event.target.closest('.quick-action-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i><span>Saved!</span>';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            } else {
+                alert('Error updating capacity: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update capacity');
+        });
+    }
+
+    function setCapacity(value) {
+        document.getElementById('capacity-slider').value = value;
+        updateCapacity(value);
+    }
+
+    function clearAlert() {
+        document.getElementById('alert-message').value = '';
+    }
+</script>
+{% endblock %} 

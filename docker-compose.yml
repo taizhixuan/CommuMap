@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with PostGIS extensions
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: commumap_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: commumap
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and channels
+  redis:
+    image: redis:7-alpine
+    container_name: commumap_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django web application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: commumap_web
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - POSTGRES_DB=commumap
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Celery worker for background tasks
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: commumap_celery
+    restart: unless-stopped
+    command: celery -A commumap worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - POSTGRES_DB=commumap
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  # Celery beat for scheduled tasks
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: commumap_celery_beat
+    restart: unless-stopped
+    command: celery -A commumap beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - POSTGRES_DB=commumap
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  # Nginx for serving static files (optional for development)
+  nginx:
+    image: nginx:alpine
+    container_name: commumap_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - web
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+
+networks:
+  default:
+    name: commumap_network 
+ 

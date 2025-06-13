@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Audit Logs - Admin Console{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-audit-logs {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        padding: 2rem 0 4rem 0;
+        margin-top: 3rem;
+    }
+
+    .admin-audit-logs::before {
+        content: '';
+        display: block;
+        height: 1rem;
+    }
+    
+    .audit-logs-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .filter-card {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(8px);
+    }
+    
+    .enhanced-table {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(71, 85, 105, 0.6);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .enhanced-table thead th {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border: none;
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.75rem;
+        border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+    }
+    
+    .enhanced-table tbody tr {
+        border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .enhanced-table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.08);
+        transform: scale(1.01);
+    }
+    
+    .enhanced-table tbody td {
+        padding: 1rem 0.75rem;
+        border: none;
+        color: #1f2937;
+        vertical-align: middle;
+    }
+    
+    .action-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .action-user { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+    .action-service { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .action-announcement { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+    .action-maintenance { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+    .action-system { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .action-emergency { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; animation: pulse 2s infinite; }
+    .action-default { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    .metadata-toggle {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        cursor: pointer;
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+    
+    .metadata-toggle:hover {
+        background: rgba(59, 130, 246, 0.1);
+        transform: scale(1.05);
+    }
+    
+    .metadata-content {
+        background: rgba(15, 23, 42, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .pagination {
+        margin-top: 2rem;
+        justify-content: center;
+    }
+    
+    .pagination .page-link {
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        color: #e2e8f0;
+        margin: 0 0.125rem;
+        border-radius: 8px;
+    }
+    
+    .pagination .page-link:hover {
+        background: rgba(59, 130, 246, 0.2);
+        border-color: rgba(99, 102, 241, 0.5);
+        color: #f1f5f9;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border-color: #3b82f6;
+    }
+
+    /* Responsive spacing */
+    @media (max-width: 768px) {
+        .admin-audit-logs {
+            margin-top: 2rem;
+            padding: 1.5rem 0 3rem 0;
+        }
+
+        .admin-audit-logs::before {
+            height: 0.5rem;
+        }
+        
+        .enhanced-table {
+            font-size: 0.875rem;
+        }
+        
+        .enhanced-table th,
+        .enhanced-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+
+    .admin-audit-logs .container {
+        max-width: 1400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-audit-logs mt-8">
+    <div class="container py-6">
+        <div class="audit-logs-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-history me-2 text-primary"></i>
+                        Audit Logs
+                    </h1>
+                    <p class="text-muted mb-0">Track all administrative actions and system events</p>
+                </div>
+                <div>
+                    <a href="{% url 'console:home' %}" class="btn btn-outline-light me-2">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                    <a href="{% url 'console:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-bar me-1"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            <!-- Filters -->
+            <div class="filter-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-filter me-2"></i>
+                    Filter Logs
+                </h5>
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="action" class="form-label">Action Type</label>
+                        <select class="form-select" name="action" id="action">
+                            <option value="">All Actions</option>
+                            {% for action in available_actions %}
+                            <option value="{{ action }}" {% if action == current_action %}selected{% endif %}>
+                                {{ action|underscore_to_space }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="user" class="form-label">User</label>
+                        <input type="text" class="form-control" name="user" id="user" 
+                               placeholder="Search by user email..." value="{{ current_user }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_from" class="form-label">From Date</label>
+                        <input type="date" class="form-control" name="date_from" id="date_from" 
+                               value="{{ current_date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_to" class="form-label">To Date</label>
+                        <input type="date" class="form-control" name="date_to" id="date_to" 
+                               value="{{ current_date_to }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>Filter
+                        </button>
+                        <a href="{% url 'console:audit_logs' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Results Summary -->
+            {% if logs %}
+            <div class="mb-3">
+                <small class="text-muted">
+                    Showing {{ logs|length }} of {{ page_obj.paginator.count }} logs
+                    {% if current_action or current_user or current_date_from or current_date_to %}
+                    (filtered)
+                    {% endif %}
+                </small>
+            </div>
+            {% endif %}
+            
+            <!-- Audit Logs Table -->
+            {% if logs %}
+            <div class="table-responsive">
+                <table class="table enhanced-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Time</th>
+                            <th style="width: 15%;">Action</th>
+                            <th style="width: 15%;">User</th>
+                            <th style="width: 35%;">Description</th>
+                            <th style="width: 10%;">IP Address</th>
+                            <th style="width: 10%;">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ log.created_at|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ log.created_at|time:"H:i:s" }}</small>
+                            </td>
+                            <td>
+                                <span class="action-badge {% if 'user' in log.action %}action-user{% elif 'service' in log.action %}action-service{% elif 'announcement' in log.action %}action-announcement{% elif 'maintenance' in log.action or 'backup' in log.action or 'cache' in log.action or 'logs' in log.action %}action-maintenance{% elif 'emergency' in log.action %}action-emergency{% elif 'settings' in log.action or 'feature' in log.action %}action-system{% else %}action-default{% endif %}">
+                                    {{ log.get_action_display|default:log.action|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if log.user %}
+                                <div class="fw-semibold">{{ log.user.get_display_name }}</div>
+                                <small class="text-muted">{{ log.user.email }}</small>
+                                {% else %}
+                                <span class="text-muted">System</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="description-content">{{ log.description }}</div>
+                            </td>
+                            <td>
+                                {% if log.ip_address %}
+                                <code class="small">{{ log.ip_address }}</code>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.metadata %}
+                                <button class="metadata-toggle" onclick="toggleMetadata('{{ log.id }}')">
+                                    <i class="fas fa-info-circle me-1"></i>View
+                                </button>
+                                <div id="metadata-{{ log.id }}" class="metadata-content" style="display: none;">
+                                    {{ log.metadata|pprint }}
+                                </div>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Audit logs pagination">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if current_action %}action={{ current_action }}&{% endif %}{% if current_user %}user={{ current_user }}&{% endif %}{% if current_date_from %}date_from={{ current_date_from }}&{% endif %}{% if current_date_to %}date_to={{ current_date_to }}&{% endif %}page=1">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if current_action %}action={{ current_action }}&{% endif %}{% if current_user %}user={{ current_user }}&{% endif %}{% if current_date_from %}date_from={{ current_date_from }}&{% endif %}{% if current_date_to %}date_to={{ current_date_to }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if current_action %}action={{ current_action }}&{% endif %}{% if current_user %}user={{ current_user }}&{% endif %}{% if current_date_from %}date_from={{ current_date_from }}&{% endif %}{% if current_date_to %}date_to={{ current_date_to }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if current_action %}action={{ current_action }}&{% endif %}{% if current_user %}user={{ current_user }}&{% endif %}{% if current_date_from %}date_from={{ current_date_from }}&{% endif %}{% if current_date_to %}date_to={{ current_date_to }}&{% endif %}page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if current_action %}action={{ current_action }}&{% endif %}{% if current_user %}user={{ current_user }}&{% endif %}{% if current_date_from %}date_from={{ current_date_from }}&{% endif %}{% if current_date_to %}date_to={{ current_date_to }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No Audit Logs Found</h4>
+                <p class="text-muted">
+                    {% if current_action or current_user or current_date_from or current_date_to %}
+                    No logs match your current filters. Try adjusting your search criteria.
+                    {% else %}
+                    No audit logs have been recorded yet.
+                    {% endif %}
+                </p>
+                {% if current_action or current_user or current_date_from or current_date_to %}
+                <a href="{% url 'console:audit_logs' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-times me-1"></i>Clear Filters
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleMetadata(logId) {
+    const element = document.getElementById('metadata-' + logId);
+    const button = element.previousElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (element.style.display === 'none') {
+        element.style.display = 'block';
+        icon.className = 'fas fa-eye-slash me-1';
+        button.innerHTML = '<i class="fas fa-eye-slash me-1"></i>Hide';
+    } else {
+        element.style.display = 'none';
+        icon.className = 'fas fa-info-circle me-1';
+        button.innerHTML = '<i class="fas fa-info-circle me-1"></i>View';
+    }
+}
+
+// Auto-submit form on filter changes (optional)
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[method="get"]');
+    const actionSelect = document.getElementById('action');
+    
+    // Auto-submit when action type changes
+    actionSelect.addEventListener('change', function() {
+        form.submit();
+    });
+    
+    // Set focus to user search on page load if no filters are active
+    const userInput = document.getElementById('user');
+    if (!userInput.value && !actionSelect.value) {
+        userInput.focus();
+    }
+});
+</script>
+{% endblock %}

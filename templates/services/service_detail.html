@@ -1,0 +1,1934 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ service.name }} - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Service Details Styling */
+.hero-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>') repeat;
+    opacity: 0.3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.floating-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.floating-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modern-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.modern-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(102, 126, 234, 0.1);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-open {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.status-closed {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.status-limited {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.emergency-badge {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); }
+    50% { box-shadow: 0 6px 25px rgba(220, 38, 38, 0.5); }
+}
+
+.category-badge {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item:hover {
+    background: rgba(102, 126, 234, 0.02);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.modern-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.modern-btn:hover::before {
+    left: 100%;
+}
+
+.modern-btn-outline {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modern-btn-outline:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.breadcrumb-modern {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb-modern a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-modern a:hover {
+    color: #764ba2;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.section-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.review-card-modern {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.review-card-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.review-card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-modern {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.rating-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star-filled {
+    color: #fbbf24;
+    filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
+}
+
+.star-empty {
+    color: #e5e7eb;
+}
+
+.capacity-bar {
+    background: #e5e7eb;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.capacity-fill {
+    background: linear-gradient(90deg, #10b981, #059669);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.verified-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-gradient {
+        padding-top: 100px;
+        padding-bottom: 40px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    
+    .breadcrumb-modern {
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        gap: 6px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    /* Mobile breadcrumb adjustments */
+    .breadcrumb-modern {
+        padding: 8px 12px;
+        font-size: 0.875rem;
+    }
+    
+    .floating-card {
+        margin: 0;
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .modern-card {
+        margin: 0;
+        border-radius: 12px;
+        padding: 20px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .text-4xl {
+        font-size: 2rem !important;
+    }
+    
+    .lg\\:text-5xl {
+        font-size: 2.25rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-gradient {
+        padding-top: 80px;
+        padding-bottom: 30px;
+    }
+    
+    .breadcrumb-modern {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        margin-bottom: 20px;
+    }
+    
+    /* Small mobile breadcrumb adjustments */
+    .breadcrumb-modern {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .floating-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .flex-col.lg\\:flex-row {
+        gap: 20px;
+    }
+    
+    .modern-btn, .modern-btn-outline {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hero-gradient {
+        padding-top: 120px;
+        padding-bottom: 60px;
+    }
+    
+    .breadcrumb-modern {
+        margin-bottom: 40px;
+    }
+    
+    .floating-card {
+        padding: 32px;
+    }
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.fade-in-up-delay-1 { animation-delay: 0.1s; }
+.fade-in-up-delay-2 { animation-delay: 0.2s; }
+.fade-in-up-delay-3 { animation-delay: 0.3s; }
+
+/* Tab System Styles */
+.tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    color: #6b7280;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn:hover {
+    color: #374151;
+    background-color: #f9fafb;
+}
+
+.tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Action Buttons */
+.like-btn, .reply-btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    background: white;
+}
+
+.like-btn:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #ef4444;
+    transform: scale(1.02);
+}
+
+.like-btn.liked {
+    background: #ef4444;
+    color: white;
+    border-color: #dc2626;
+}
+
+.reply-btn:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #3b82f6;
+    transform: translateY(-1px);
+}
+
+/* Reply Form Styles */
+.reply-form {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.reply-form textarea {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.reply-form textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+/* Reply Items */
+.reply-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid #667eea;
+    margin-top: 12px;
+}
+
+.replies {
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+}
+
+/* Loading States */
+.loading::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success feedback */
+.success-flash {
+    animation: successPulse 0.6s ease-in-out;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Role badge styling */
+.role-badge { 
+    font-size: 0.75rem; 
+    padding: 0.3rem 0.8rem; 
+    border-radius: 30px; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    border: 2px solid transparent !important; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    min-width: 90px; 
+    text-align: center; 
+    position: relative; 
+    overflow: hidden; 
+    color: #fff !important; 
+}
+
+.role-user { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%) !important; }
+.role-admin { background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%) !important; }
+.role-community_moderator { background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%) !important; }
+.role-service_manager { background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important; }
+
+/* CUSTOM SPACING OVERRIDES - Force proper spacing */
+.service-detail-spacing {
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+}
+
+.sidebar-card-spacing {
+    margin-top: 2rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.reviews-section-spacing {
+    margin-top: 4rem !important;
+    padding-top: 2rem !important;
+    border-top: 1px solid transparent;
+}
+
+.breadcrumb-spacing {
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+    padding-top: 1rem !important;
+}
+
+.stats-section-spacing {
+    margin-top: 4rem !important;
+    padding-top: 2rem !important;
+}
+
+/* Override base template aggressive resets */
+.modern-card {
+    margin-top: 2rem !important;
+}
+
+.space-y-6 > * + * {
+    margin-top: 1.5rem !important;
+}
+
+/* Force sidebar flex layout */
+.sidebar-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2rem !important;
+}
+
+/* Ensure centered content */
+.centered-content {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.max-width-container {
+    max-width: 72rem !important;
+    width: 100% !important;
+}
+
+/* FORCE PERFECT CENTERING */
+.hero-section-center {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Simplified centering - let Tailwind handle it */
+.floating-card-center {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Container for all content sections */
+.main-content-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+.content-wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-gradient pt-40 pb-16">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col items-center">
+            <!-- Breadcrumb - Centered with top spacing -->
+            <div class="w-full max-w-6xl mx-auto mb-8 mt-12 breadcrumb-spacing flex justify-center">
+                <div class="breadcrumb-modern fade-in-up">
+                    <a href="{% url 'core:home' %}"><i class="fas fa-home"></i> Home</a>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                    <a href="{% url 'services:list' %}">Services</a>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                    <a href="{% url 'services:category' category_slug=service.category.slug %}">{{ service.category.name }}</a>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                    <span class="text-gray-700">{{ service.name }}</span>
+                </div>
+            </div>
+
+            <!-- Main Service Content - Centered -->
+            <div class="w-full max-w-6xl mx-auto">
+                <div class="floating-card p-6 md:p-8 fade-in-up-delay-1">
+                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-3 mb-4">
+                                <span class="category-badge">{{ service.category.name }}</span>
+                            {% if service.is_emergency_service %}
+                                <span class="status-badge emergency-badge">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                Emergency Service
+                            </span>
+                            {% endif %}
+                                {% if service.is_verified %}
+                                <span class="verified-badge">
+                                    <i class="fas fa-check-circle"></i>
+                                    Verified
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                                {{ service.name }}
+                            </h1>
+                            
+                            <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                                {{ service.description }}
+                            </p>
+                            
+                            <div class="flex flex-wrap items-center gap-4">
+                                <span class="status-badge {% if service.current_status == 'open' %}status-open{% elif service.current_status == 'closed' %}status-closed{% else %}status-limited{% endif %}">
+                                    <i class="fas fa-circle"></i>
+                                {{ service.get_current_status_display }}
+                            </span>
+                                
+                                {% if service.quality_score > 0 %}
+                                <div class="flex items-center gap-2">
+                                    <div class="rating-stars">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= service.quality_score %}
+                                                <i class="fas fa-star star-filled"></i>
+                                            {% else %}
+                                                <i class="far fa-star star-empty"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span class="text-gray-700 font-semibold">{{ service.quality_score }}/5</span>
+                                    <span class="text-gray-500">({{ service.total_ratings }} reviews)</span>
+                                </div>
+                                {% endif %}
+                        </div>
+                    </div>
+                    
+                        <div class="flex flex-col gap-3 lg:flex-shrink-0">
+                            {% if service.phone %}
+                            <a href="tel:{{ service.phone }}" class="modern-btn">
+                                <i class="fas fa-phone"></i>
+                                Call Now
+                            </a>
+                            {% endif %}
+                            
+                            <button class="modern-btn-outline" onclick="getDirections()">
+                                <i class="fas fa-directions"></i>
+                                Get Directions
+                            </button>
+                            
+                            <button id="bookmarkBtn" class="modern-btn-outline" onclick="toggleBookmark()" 
+                                    data-service-id="{{ service.id }}" data-bookmarked="{% if is_bookmarked %}true{% else %}false{% endif %}">
+                                <i class="fas fa-bookmark"></i>
+                                <span id="bookmarkText">{% if is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Main Content -->
+<div class="container mx-auto px-4" style="padding-bottom: 2rem; padding-top: 4rem;">
+    <div class="w-full max-w-6xl mx-auto">
+        <!-- Stats Overview -->
+        <div class="stats-grid mb-12 fade-in-up-delay-2 stats-section-spacing">
+            <div class="stat-card">
+                <div class="info-icon mx-auto mb-3">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="stat-number">{{ service.city }}</div>
+                <div class="text-gray-600 font-medium">Location</div>
+            </div>
+            
+            {% if service.max_capacity %}
+            <div class="stat-card">
+                <div class="info-icon mx-auto mb-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number">{{ service.current_capacity }}/{{ service.max_capacity }}</div>
+                <div class="text-gray-600 font-medium">Capacity</div>
+                <div class="capacity-bar">
+                    <div class="capacity-fill" style="width: {{ service.capacity_percentage }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="stat-card">
+                <div class="info-icon mx-auto mb-3">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number">{% if service.is_24_7 %}24/7{% else %}Call{% endif %}</div>
+                <div class="text-gray-600 font-medium">Hours</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="info-icon mx-auto mb-3">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-number">{% if service.is_free %}Free{% else %}Varies{% endif %}</div>
+                <div class="text-gray-600 font-medium">Cost</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Contact & Location -->
+                <div class="modern-card p-8 fade-in-up-delay-3">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-address-card"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Contact & Location</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-4">Contact Information</h3>
+                            <div class="space-y-4">
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">{{ service.address }}</p>
+                                        <p class="text-gray-600">{{ service.city }}, {{ service.state_province }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if service.phone %}
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div>
+                                        <a href="tel:{{ service.phone }}" class="font-medium text-blue-600 hover:text-blue-800">{{ service.phone }}</a>
+                                        <p class="text-gray-600 text-sm">Click to call</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if service.email %}
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <a href="mailto:{{ service.email }}" class="font-medium text-blue-600 hover:text-blue-800">{{ service.email }}</a>
+                                        <p class="text-gray-600 text-sm">Send email</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if service.website %}
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div>
+                                        <a href="{{ service.website }}" target="_blank" class="font-medium text-blue-600 hover:text-blue-800">Visit Website</a>
+                                        <p class="text-gray-600 text-sm">External link</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-4">Service Details</h3>
+                            <div class="space-y-4">
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">
+                                            {% if service.is_24_7 %}Open 24/7{% else %}Contact for hours{% endif %}
+                                        </p>
+                                        <p class="text-gray-600 text-sm">Operating hours</p>
+                    </div>
+                </div>
+
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div>
+                                        <p class="font-medium text-gray-900">
+                                            {% if service.is_free %}Free of charge{% else %}{{ service.cost_info|default:"Contact for pricing" }}{% endif %}
+                                        </p>
+                                        <p class="text-gray-600 text-sm">Service cost</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-{% if service.accepts_walk_ins %}check{% else %}times{% endif %}"></i>
+                                </div>
+                                <div>
+                                        <p class="font-medium text-gray-900">
+                                            Walk-ins {% if service.accepts_walk_ins %}Accepted{% else %}Not Accepted{% endif %}
+                                        </p>
+                                        <p class="text-gray-600 text-sm">Appointment policy</p>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+                        
+                <!-- Service Requirements -->
+                        {% if service.eligibility_criteria or service.required_documents %}
+                <div class="modern-card p-8">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Requirements</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {% if service.eligibility_criteria %}
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-4">Eligibility Criteria</h3>
+                            <div class="bg-blue-50 border border-blue-200 rounded-12 p-4">
+                                <p class="text-gray-700">{{ service.eligibility_criteria }}</p>
+                            </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if service.required_documents %}
+                            <div>
+                            <h3 class="font-semibold text-gray-900 mb-4">Required Documents</h3>
+                            <div class="bg-amber-50 border border-amber-200 rounded-12 p-4">
+                                <p class="text-gray-700">{{ service.required_documents }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Recent Updates -->
+                {% if recent_updates %}
+                <div class="modern-card p-8">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Recent Updates</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% for update in recent_updates %}
+                        <div class="border-l-4 border-blue-400 bg-blue-50 rounded-r-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-blue-900">{{ update.get_change_type_display }}</span>
+                                <span class="text-sm text-blue-600">{{ update.created_at|timesince }} ago</span>
+                            </div>
+                            {% if update.message %}
+                            <p class="text-blue-800">{{ update.message }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar-container" style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Quick Actions -->
+                <div class="modern-card p-6 sidebar-card-spacing" style="margin-top: 2rem;">
+                    <h3 class="text-xl font-semibold mb-6">Quick Actions</h3>
+                    <div class="space-y-4">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'feedback:create_review' service_id=service.id %}" class="w-full modern-btn">
+                            <i class="fas fa-star"></i>
+                            Leave Review
+                        </a>
+                        
+                        <a href="{% url 'feedback:create_comment' service_id=service.id %}" class="w-full modern-btn-outline">
+                            <i class="fas fa-comment"></i>
+                            Add Comment
+                        </a>
+                        {% endif %}
+                        
+                        <button class="w-full modern-btn-outline" onclick="shareService()">
+                            <i class="fas fa-share"></i>
+                            Share Service
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service Information -->
+                <div class="modern-card p-6 sidebar-card-spacing" style="margin-top: 2rem;">
+                    <h3 class="text-xl font-semibold mb-6">Service Information</h3>
+                    <div class="space-y-4">
+                        <div class="text-center">
+                                {% if service.quality_score > 0 %}
+                                <div class="stat-number mb-2">{{ service.quality_score }}/5.0</div>
+                                <div class="rating-stars justify-center mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= service.quality_score %}
+                                            <i class="fas fa-star star-filled"></i>
+                                {% else %}
+                                            <i class="far fa-star star-empty"></i>
+                                {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="text-gray-600">{{ service.total_ratings }} reviews</p>
+                            {% else %}
+                                <div class="text-gray-500">No ratings yet</div>
+                                <p class="text-sm text-gray-400">Be the first to review</p>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="border-gray-200">
+                        
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Last Updated</p>
+                            <p class="font-medium text-gray-900">{{ service.updated_at|timesince }} ago</p>
+                                </div>
+                        
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Service ID</p>
+                            <p class="font-mono text-xs text-gray-700">#{{ service.id|slice:":8" }}</p>
+                        </div>
+                        </div>
+                </div>
+
+                <!-- Related Services -->
+                <div class="modern-card p-6 sidebar-card-spacing" style="margin-top: 2rem;">
+                    <h3 class="text-xl font-semibold mb-4">Related Services</h3>
+                    <a href="{% url 'services:category' category_slug=service.category.slug %}" 
+                       class="w-full modern-btn-outline">
+                        <i class="fas fa-list"></i>
+                        View all {{ service.category.name }}
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reviews and Comments Section -->
+        <div class="reviews-section-spacing" style="margin-top: 4rem; padding-top: 2rem; margin-bottom: 4rem; padding-bottom: 2rem;">
+            <div class="modern-card p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="section-header mb-0">
+                        <div class="section-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Reviews & Comments</h2>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <div class="flex gap-3">
+                        <a href="{% url 'feedback:create_review' service_id=service.id %}" class="modern-btn">
+                            <i class="fas fa-star"></i>
+                            Write Review
+                        </a>
+                        <a href="{% url 'feedback:create_comment' service_id=service.id %}" class="modern-btn-outline">
+                            <i class="fas fa-comment"></i>
+                            Add Comment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Reviews Summary -->
+                <div class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-16 border border-blue-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-6">
+                            <div class="text-center">
+                                <div class="text-4xl font-bold text-gray-900 mb-1">4.2</div>
+                                <div class="rating-stars justify-center mb-2">
+                                    <i class="fas fa-star star-filled"></i>
+                                    <i class="fas fa-star star-filled"></i>
+                                    <i class="fas fa-star star-filled"></i>
+                                    <i class="fas fa-star star-filled"></i>
+                                    <i class="far fa-star star-empty"></i>
+                                    </div>
+                                <p class="text-sm text-gray-600">23 reviews</p>
+                                </div>
+                            <div class="h-16 w-px bg-gray-300"></div>
+                            <div>
+                                <p class="text-2xl font-bold text-green-600 mb-1">85%</p>
+                                <p class="text-gray-600">recommend this service</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                    <!-- Tab Navigation -->
+                <div class="flex border-b border-gray-200 mb-8">
+                        <button class="tab-btn active" data-tab="reviews">
+                            <i class="fas fa-star mr-2"></i>
+                            Reviews ({{ review_stats.total_count }})
+                        </button>
+                        <button class="tab-btn" data-tab="comments">
+                            <i class="fas fa-comment mr-2"></i>
+                            Comments ({{ comments|length }})
+                        </button>
+                    </div>
+
+                    <!-- Reviews Tab Content -->
+                    <div id="reviews-tab" class="tab-content active">
+                        {% if reviews %}
+                            <div class="space-y-6">
+                                {% for review in reviews %}
+                            <div class="review-card-modern">
+                                    <!-- Review Header -->
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-start space-x-4">
+                                        <div class="avatar-modern">
+                                                    {{ review.display_name|first|upper }}
+                                            </div>
+                                            <div class="flex-1">
+                                            <div class="flex items-center space-x-3 mb-2">
+                                                    <h4 class="font-semibold text-gray-900">{{ review.display_name }}</h4>
+                                                <span class="text-gray-400">•</span>
+                                                    <span class="text-sm text-gray-500">{{ review.created_at|timesince }} ago</span>
+                                                    {% if review.visit_date %}
+                                                    <span class="text-gray-400">•</span>
+                                                    <span class="text-sm text-gray-500">Visited {{ review.visit_date|date:"M Y" }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            <div class="flex items-center space-x-3">
+                                                <div class="rating-stars">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= review.rating %}
+                                                            <i class="fas fa-star star-filled"></i>
+                                                            {% else %}
+                                                            <i class="far fa-star star-empty"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                <span class="font-semibold text-gray-700">{{ review.rating }}/5</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if user.is_authenticated and user == review.user %}
+                                        <div class="dropdown dropdown-end">
+                                            <div tabindex="0" role="button" class="text-gray-400 hover:text-gray-600 p-2 rounded hover:bg-gray-100" aria-label="Review options">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </div>
+                                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-48">
+                                                <li>
+                                                    <a href="{% url 'feedback:edit_review' pk=review.pk %}">
+                                                        <i class="fas fa-edit mr-2"></i>Edit Review
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="{% url 'feedback:delete_feedback' review.id %}" class="text-error" onclick="return confirm('Are you sure you want to delete this review?');">
+                                                        <i class="fas fa-trash mr-2"></i>Delete Review
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Review Content -->
+                                    <div class="mb-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2">{{ review.title }}</h5>
+                                        <p class="text-gray-700 leading-relaxed">{{ review.content|linebreaks }}</p>
+                                    </div>
+
+                                    <!-- Review Tags -->
+                                    {% if review.tags %}
+                                    <div class="mb-4">
+                                        <div class="flex flex-wrap gap-2">
+                                            {% for tag in review.tags %}
+                                                <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">{{ tag }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Review Actions -->
+                                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <div class="flex items-center space-x-4">
+                                            <span class="text-sm text-gray-500">Was this helpful?</span>
+                                            <button class="like-btn flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600 transition-colors" 
+                                                    data-type="review" data-id="{{ review.id }}" data-action="helpful">
+                                                <i class="far fa-thumbs-up"></i>
+                                                <span class="helpful-count">{{ review.helpful_count|default:0 }}</span>
+                                            </button>
+                                            <button class="like-btn flex items-center space-x-1 text-sm text-gray-500 hover:text-red-600 transition-colors" 
+                                                    data-type="review" data-id="{{ review.id }}" data-action="unhelpful">
+                                                <i class="far fa-thumbs-down"></i>
+                                                <span class="unhelpful-count">{{ review.unhelpful_count|default:0 }}</span>
+                                            </button>
+                                        </div>
+                                        <button class="reply-btn text-sm text-blue-600 hover:text-blue-800 font-medium" 
+                                                data-review-id="{{ review.id }}" onclick="toggleReplyForm('review', '{{ review.id }}')">
+                                            <i class="fas fa-reply mr-1"></i>Reply
+                                        </button>
+                                    </div>
+
+                                    <!-- Reply Form (Initially Hidden) -->
+                                    <div id="reply-form-review-{{ review.id }}" class="reply-form hidden mt-4 pt-4 border-t border-gray-100">
+                                        <form class="reply-form-content" onsubmit="submitReply(event, 'review', '{{ review.id }}')">
+                                            {% csrf_token %}
+                                            <textarea name="content" placeholder="Write a reply..." class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="3" required></textarea>
+                                            <div class="flex justify-end space-x-2 mt-3">
+                                                <button type="button" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800" onclick="toggleReplyForm('review', '{{ review.id }}')">Cancel</button>
+                                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Post Reply</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-12">
+                                <i class="fas fa-star text-4xl text-gray-300 mb-4"></i>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No reviews yet</h3>
+                                <p class="text-gray-600 mb-4">Be the first to review this service!</p>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'feedback:create_review' service_id=service.id %}" class="btn btn-primary">
+                                    <i class="fas fa-star mr-2"></i>Write First Review
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Comments Tab Content -->
+                    <div id="comments-tab" class="tab-content hidden">
+                        {% if comments %}
+                            <div class="space-y-6">
+                                {% for comment in comments %}
+                                <div class="comment-card bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                                    <!-- Comment Header -->
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-start space-x-4">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                                    {{ comment.user.get_display_name|first|upper }}
+                                                </div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="flex items-center space-x-2 mb-2">
+                                                    <h4 class="font-semibold text-gray-900">{{ comment.user.get_display_name }}</h4>
+                                                    <span class="badge badge-xs role-badge role-{{ comment.user.role }}">
+                                                        {% if comment.user.role == 'admin' %}<i class="fas fa-crown"></i> ADMIN
+                                                        {% elif comment.user.role == 'community_moderator' %}<i class="fas fa-shield-alt"></i> COMMUNITY MODERATOR
+                                                        {% elif comment.user.role == 'service_manager' %}<i class="fas fa-cogs"></i> SERVICE MANAGER
+                                                        {% else %}<i class="fas fa-user"></i> USER
+                                                        {% endif %}
+                                                    </span>
+                                                    <span class="text-sm text-gray-500">•</span>
+                                                    <span class="text-sm text-gray-500">{{ comment.created_at|timesince }} ago</span>
+                                                </div>
+                                                <p class="text-gray-700 leading-relaxed">{{ comment.content|linebreaks }}</p>
+                                            </div>
+                                        </div>
+                                        {% if user.is_authenticated and user == comment.user %}
+                                        <div class="dropdown dropdown-end">
+                                            <div tabindex="0" role="button" class="text-gray-400 hover:text-gray-600 p-2 rounded hover:bg-gray-100" aria-label="Comment options">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </div>
+                                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-48">
+                                                <li>
+                                                    <a href="{% url 'feedback:delete_comment' comment.id %}" class="text-error" onclick="return confirm('Are you sure you want to delete this comment?');">
+                                                        <i class="fas fa-trash mr-2"></i>Delete Comment
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Comment Actions -->
+                                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <div class="flex items-center space-x-4">
+                                            <button class="like-btn flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-600 transition-colors" 
+                                                    data-type="comment" data-id="{{ comment.id }}" data-action="like">
+                                                <i class="far fa-heart"></i>
+                                                <span class="like-count">{{ comment.like_count|default:0 }}</span>
+                                            </button>
+                                        </div>
+                                        <button class="reply-btn text-sm text-blue-600 hover:text-blue-800 font-medium" 
+                                                data-comment-id="{{ comment.id }}" onclick="toggleReplyForm('comment', '{{ comment.id }}')">
+                                            <i class="fas fa-reply mr-1"></i>Reply
+                                        </button>
+                                    </div>
+
+                                    <!-- Reply Form (Initially Hidden) -->
+                                    <div id="reply-form-comment-{{ comment.id }}" class="reply-form hidden mt-4 pt-4 border-t border-gray-100">
+                                        <form class="reply-form-content" onsubmit="submitReply(event, 'comment', '{{ comment.id }}')">
+                                            {% csrf_token %}
+                                            <textarea name="content" placeholder="Write a reply..." class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="3" required></textarea>
+                                            <div class="flex justify-end space-x-2 mt-3">
+                                                <button type="button" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800" onclick="toggleReplyForm('comment', '{{ comment.id }}')">Cancel</button>
+                                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Post Reply</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- Replies -->
+                                    {% if comment.replies.all %}
+                                    <div class="replies mt-4 pt-4 border-t border-gray-100 ml-12">
+                                        {% for reply in comment.replies.all %}
+                                        <div class="reply-item mb-4 last:mb-0">
+                                            <div class="flex items-start space-x-3">
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                                                        {{ reply.user.get_display_name|first|upper }}
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="flex items-center space-x-2 mb-1">
+                                                        <h5 class="font-medium text-gray-900 text-sm">{{ reply.user.get_display_name }}</h5>
+                                                        <span class="badge badge-xs role-badge role-{{ reply.user.role }}">
+                                                            {% if reply.user.role == 'admin' %}<i class="fas fa-crown"></i> ADMIN
+                                                            {% elif reply.user.role == 'community_moderator' %}<i class="fas fa-shield-alt"></i> COMMUNITY MODERATOR
+                                                            {% elif reply.user.role == 'service_manager' %}<i class="fas fa-cogs"></i> SERVICE MANAGER
+                                                            {% else %}<i class="fas fa-user"></i> USER
+                                                            {% endif %}
+                                                        </span>
+                                                        <span class="text-xs text-gray-500">{{ reply.created_at|timesince }} ago</span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-700">{{ reply.content|linebreaks }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-12">
+                                <i class="fas fa-comment text-4xl text-gray-300 mb-4"></i>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No comments yet</h3>
+                                <p class="text-gray-600 mb-4">Start the conversation!</p>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'feedback:create_comment' service_id=service.id %}" class="btn btn-primary">
+                                    <i class="fas fa-comment mr-2"></i>Write First Comment
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF token utility function
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Bookmark functionality
+function toggleBookmark() {
+    const bookmarkBtn = document.getElementById('bookmarkBtn');
+    const serviceId = bookmarkBtn.dataset.serviceId;
+    const isBookmarked = bookmarkBtn.dataset.bookmarked === 'true';
+    
+    // Disable button during request
+    bookmarkBtn.disabled = true;
+    
+    fetch(`/api/services/bookmark/${serviceId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button state
+            bookmarkBtn.dataset.bookmarked = data.bookmarked ? 'true' : 'false';
+            const bookmarkText = document.getElementById('bookmarkText');
+            const icon = bookmarkBtn.querySelector('i');
+            
+            if (data.bookmarked) {
+                bookmarkText.textContent = 'Bookmarked';
+                icon.style.color = '#fbbf24';
+                showNotification('Service bookmarked!', 'success');
+            } else {
+                bookmarkText.textContent = 'Bookmark';
+                icon.style.color = '#667eea';
+                showNotification('Bookmark removed', 'info');
+            }
+        } else {
+            showNotification('Error updating bookmark', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating bookmark', 'error');
+    })
+    .finally(() => {
+        // Re-enable button
+        bookmarkBtn.disabled = false;
+    });
+}
+
+// Directions functionality
+function getDirections() {
+    const serviceAddress = "{{ service.address|escapejs }}";
+    const serviceName = "{{ service.name|escapejs }}";
+    
+    if (!serviceAddress) {
+        showNotification('Address not available for this service', 'error');
+        return;
+    }
+    
+    // Try to get user's current location for better directions
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                const directionsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${encodeURIComponent(serviceAddress)}`;
+                window.open(directionsUrl, '_blank');
+            },
+            function(error) {
+                // Fallback: directions without current location
+                const directionsUrl = `https://www.google.com/maps/search/${encodeURIComponent(serviceAddress)}`;
+                window.open(directionsUrl, '_blank');
+            }
+        );
+    } else {
+        // Fallback: directions without current location
+        const directionsUrl = `https://www.google.com/maps/search/${encodeURIComponent(serviceAddress)}`;
+        window.open(directionsUrl, '_blank');
+    }
+}
+
+// Share functionality
+function shareService() {
+    const serviceUrl = window.location.href;
+    const serviceName = "{{ service.name|escapejs }}";
+    const serviceDescription = "{{ service.description|truncatechars:100|escapejs }}";
+    
+    const shareData = {
+        title: `${serviceName} - CommuMap`,
+        text: serviceDescription,
+        url: serviceUrl
+    };
+    
+    // Try Web Share API first (mobile-friendly)
+    if (navigator.share) {
+        navigator.share(shareData)
+            .then(() => showNotification('Service shared successfully!', 'success'))
+            .catch(error => {
+                console.log('Error sharing:', error);
+                fallbackShare(shareData);
+            });
+    } else {
+        fallbackShare(shareData);
+    }
+}
+
+// Fallback sharing function
+function fallbackShare(shareData) {
+    // Create a modal with sharing options
+    const shareModal = document.createElement('div');
+    shareModal.className = 'modal show';
+    shareModal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Share Service</h3>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px;">Share this service with others:</p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-outline" onclick="copyToClipboard('${shareData.url}')">
+                        <i class="fas fa-link"></i> Copy Link
+                    </button>
+                    <a href="mailto:?subject=${encodeURIComponent(shareData.title)}&body=${encodeURIComponent(shareData.text + ' ' + shareData.url)}" 
+                       class="btn btn-outline" style="text-decoration: none;">
+                        <i class="fas fa-envelope"></i> Email
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}" 
+                       target="_blank" class="btn btn-outline" style="text-decoration: none;">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}" 
+                       target="_blank" class="btn btn-outline" style="text-decoration: none;">
+                        <i class="fab fa-facebook"></i> Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(shareModal);
+    document.body.style.overflow = 'hidden';
+    
+    // Close modal when clicking outside
+    shareModal.addEventListener('click', function(e) {
+        if (e.target === shareModal) {
+            shareModal.remove();
+            document.body.style.overflow = 'auto';
+        }
+    });
+}
+
+// Utility functions
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+            .then(() => showNotification('Link copied to clipboard!', 'success'))
+            .catch(() => fallbackCopyToClipboard(text));
+    } else {
+        fallbackCopyToClipboard(text);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showNotification('Link copied to clipboard!', 'success');
+    } catch (err) {
+        showNotification('Could not copy link', 'error');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 1000;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#2563eb'};
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Tab switching functionality
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const targetContent = document.getElementById(`${tabName}-tab`);
+    if (targetContent) {
+        targetContent.classList.add('active');
+    }
+    
+    // Add active class to clicked tab button
+    const targetBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (targetBtn) {
+        targetBtn.classList.add('active');
+    }
+}
+
+// DaisyUI dropdown functionality (CSS focus method)
+// No JavaScript needed - DaisyUI handles everything automatically!
+// Just ensuring dropdowns close when clicking outside or on links
+
+// Like/Helpful button functionality
+function handleLikeAction(button, type, id, action) {
+    const isLiked = button.classList.contains('liked');
+    
+    // Prevent double-clicking
+    if (button.disabled) return;
+    button.disabled = true;
+    
+    // Add loading state
+    button.classList.add('loading');
+    
+    // Determine the correct API endpoint
+    let apiUrl;
+    if (type === 'review' && action === 'helpful') {
+        apiUrl = `/api/feedback/review/${id}/helpful/`;
+    } else if (type === 'review' && action === 'unhelpful') {
+        apiUrl = `/api/feedback/review/${id}/unhelpful/`;
+    } else if (type === 'comment' && action === 'like') {
+        apiUrl = `/api/feedback/comment/${id}/like/`;
+    } else {
+        showNotification('Invalid action', 'error');
+        button.disabled = false;
+        button.classList.remove('loading');
+        return;
+    }
+    
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update count
+            const countSpan = button.querySelector('.helpful-count, .unhelpful-count, .like-count');
+            if (countSpan) {
+                countSpan.textContent = data.count;
+            }
+            
+            // Toggle liked state
+            if (action === 'like' || action === 'helpful') {
+                if (data.user_action === action) {
+                    button.classList.add('liked');
+                    button.querySelector('i').className = button.querySelector('i').className.replace('far', 'fas');
+                } else {
+                    button.classList.remove('liked');
+                    button.querySelector('i').className = button.querySelector('i').className.replace('fas', 'far');
+                }
+            }
+            
+            // Add success animation
+            button.classList.add('success-flash');
+            setTimeout(() => button.classList.remove('success-flash'), 600);
+            
+            showNotification(data.message || 'Action completed!', 'success');
+        } else {
+            showNotification(data.error || 'Action failed', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error occurred', 'error');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.classList.remove('loading');
+    });
+}
+
+// Reply form functionality
+function toggleReplyForm(type, id) {
+    const formId = `reply-form-${type}-${id}`;
+    const form = document.getElementById(formId);
+    
+    if (!form) return;
+    
+    // Close all other reply forms
+    document.querySelectorAll('.reply-form').forEach(otherForm => {
+        if (otherForm.id !== formId) {
+            otherForm.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current form
+    form.classList.toggle('hidden');
+    
+    // Focus on textarea if form is now visible
+    if (!form.classList.contains('hidden')) {
+        const textarea = form.querySelector('textarea');
+        if (textarea) {
+            textarea.focus();
+        }
+    }
+}
+
+// Submit reply functionality
+function submitReply(event, type, parentId) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const content = form.querySelector('textarea[name="content"]').value.trim();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    if (!content) {
+        showNotification('Please enter a reply', 'error');
+        return;
+    }
+    
+    if (content.length < 10) {
+        showNotification('Reply must be at least 10 characters', 'error');
+        return;
+    }
+    
+    // Disable submit button and add loading state
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Posting...';
+    
+    const replyData = {
+        content: content,
+        parent_type: type,
+        parent_id: parentId
+    };
+    
+    fetch(`/api/feedback/reply/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(replyData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Reply posted successfully!', 'success');
+            
+            // Clear form
+            form.reset();
+            
+            // Hide reply form
+            toggleReplyForm(type, parentId);
+            
+            // Optionally add the new reply to the DOM
+            if (data.reply_html) {
+                const parentCard = form.closest('.review-card, .comment-card');
+                const repliesContainer = parentCard.querySelector('.replies');
+                if (repliesContainer) {
+                    repliesContainer.insertAdjacentHTML('beforeend', data.reply_html);
+                } else {
+                    // Create replies container if it doesn't exist
+                    const newRepliesHtml = `
+                        <div class="replies mt-4 pt-4 border-t border-gray-100 ml-12">
+                            ${data.reply_html}
+                        </div>
+                    `;
+                    form.insertAdjacentHTML('afterend', newRepliesHtml);
+                }
+            }
+        } else {
+            showNotification(data.error || 'Failed to post reply', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error occurred', 'error');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        submitBtn.textContent = originalText;
+    });
+}
+
+// Initialize page functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab button click handlers
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+    
+    // Like/Helpful button click handlers
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const id = this.dataset.id;
+            const action = this.dataset.action;
+            handleLikeAction(this, type, id, action);
+        });
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        // Escape key to close reply forms and blur focused dropdowns
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.reply-form').forEach(form => {
+                form.classList.add('hidden');
+            });
+            // Blur any focused elements (closes DaisyUI dropdowns)
+            if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
+            }
+        }
+        
+        // Tab switching with keyboard (1 for reviews, 2 for comments)
+        if (event.key === '1' && event.ctrlKey) {
+            event.preventDefault();
+            switchTab('reviews');
+        } else if (event.key === '2' && event.ctrlKey) {
+            event.preventDefault();
+            switchTab('comments');
+        }
+    });
+    
+    // Auto-resize textareas
+    document.querySelectorAll('.reply-form textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+    
+    // Show success message if redirected after creating review/comment
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'review') {
+        showNotification('Review posted successfully!', 'success');
+        // Switch to reviews tab
+        switchTab('reviews');
+    } else if (urlParams.get('success') === 'comment') {
+        showNotification('Comment posted successfully!', 'success');
+        // Switch to comments tab
+        switchTab('comments');
+    }
+});
+</script>
+{% endblock %} 

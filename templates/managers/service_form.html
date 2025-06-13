@@ -1,0 +1,1444 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Service{% else %}Add New Service{% endif %} - CommuMap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    /* Modern Service Form Styling */
+    .form-container {
+        min-height: calc(100vh - 200px);
+        padding-top: 3rem;
+        padding-bottom: 4rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+    
+    .form-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .form-subtitle {
+        color: #64748b;
+        font-size: 1.125rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* Enhanced Step Indicator */
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .step-number {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin: 0 0.5rem;
+        font-size: 1.125rem;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .step-number.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .step-number.completed {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+    
+    .step-number.inactive {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .step-line {
+        flex: 1;
+        height: 3px;
+        background: #e2e8f0;
+        margin: 0 0.5rem;
+        border-radius: 2px;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .step-line.completed {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .step-line.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    /* Form Steps */
+    .form-step {
+        display: none;
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    .form-step.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Form Sections */
+    .form-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        margin-bottom: 2rem;
+        border: 1px solid #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-title .icon {
+        font-size: 1.75rem;
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: unset !important;
+        background-clip: unset !important;
+        color: #64748b !important;
+    }
+    
+    /* Force remove purple from all form icons */
+    .section-title::before,
+    .form-title::before,
+    i.fa, i.fas, i.far, i.fab,
+    span[class*="icon"],
+    .icon,
+    .form-container i.fa,
+    .form-container i.fas,
+    .form-container .fa,
+    .form-container .fas {
+        background: transparent !important;
+        background-image: none !important;
+        background-clip: border-box !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: #4b5563 !important;
+        text-fill-color: #4b5563 !important;
+        color: #4b5563 !important;
+    }
+    
+    /* Enhanced Create Service Button */
+    .create-service-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem 2rem;
+        color: white;
+        font-weight: 700;
+        font-size: 1.125rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 
+            0 10px 25px rgba(16, 185, 129, 0.25),
+            0 4px 10px rgba(16, 185, 129, 0.15);
+        position: relative;
+        overflow: hidden;
+        min-width: 200px;
+        min-height: 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .create-service-btn:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 
+            0 15px 35px rgba(16, 185, 129, 0.35),
+            0 6px 15px rgba(16, 185, 129, 0.25);
+    }
+    
+    .create-service-btn:active {
+        transform: translateY(0);
+        box-shadow: 
+            0 8px 20px rgba(16, 185, 129, 0.25),
+            0 3px 8px rgba(16, 185, 129, 0.15);
+    }
+    
+    .create-service-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    
+    .btn-content,
+    .btn-loading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-icon {
+        font-size: 1.25rem;
+    }
+    
+    .btn-text {
+        font-weight: 700;
+    }
+    
+    /* Pulse animation for submit button */
+    @keyframes pulse {
+        0% { box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25), 0 4px 10px rgba(16, 185, 129, 0.15); }
+        50% { box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4), 0 6px 15px rgba(16, 185, 129, 0.3); }
+        100% { box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25), 0 4px 10px rgba(16, 185, 129, 0.15); }
+    }
+    
+    /* Form Controls */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .form-grid-2col {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .form-control {
+        position: relative;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        background: white;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .form-error {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .form-input.error,
+    .form-select.error,
+    .form-textarea.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Map Container */
+    #map {
+        height: 400px;
+        border-radius: 1rem;
+        border: 2px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .location-input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    /* Checkbox Group */
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .checkbox-item:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        accent-color: #667eea;
+    }
+    
+    .checkbox-item.checked {
+        background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
+        border-color: #667eea;
+    }
+    
+    /* Navigation Buttons */
+    .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.75rem;
+        border: none;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .nav-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        transition: left 0.3s ease;
+        z-index: 0;
+    }
+    
+    .nav-btn:hover::before {
+        left: 0;
+    }
+    
+    .nav-btn i,
+    .nav-btn span {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .nav-btn-secondary {
+        background: #f8fafc;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .nav-btn-secondary::before {
+        background: #e2e8f0;
+    }
+    
+    .nav-btn-secondary:hover {
+        color: #475569;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: 2px solid transparent;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+    
+    .nav-btn-primary::before {
+        background: linear-gradient(135deg, #5a67d8, #6a4190);
+    }
+    
+    .nav-btn-primary:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+    }
+    
+    .nav-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Alert Messages */
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .alert-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+    
+    .alert-warning {
+        background: #fffbeb;
+        color: #92400e;
+        border-color: #fed7aa;
+    }
+    
+    .alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+    
+    .alert-icon {
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+    }
+    
+    /* Capacity Input */
+    .capacity-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .capacity-note {
+        grid-column: 1 / -1;
+        font-size: 0.875rem;
+        color: #64748b;
+        font-style: italic;
+        margin-top: 0.5rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .form-grid-2col {
+            grid-template-columns: 1fr;
+        }
+        
+        .location-input-group {
+            grid-template-columns: 1fr;
+        }
+        
+        .capacity-inputs {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+        
+        .form-title {
+            font-size: 2rem;
+        }
+        
+        .form-section {
+            padding: 2rem 1.5rem;
+        }
+        
+        .step-indicator {
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .step-number {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1rem;
+        }
+        
+        .checkbox-group {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-navigation {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .nav-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .form-section {
+            padding: 1.5rem 1rem;
+        }
+        
+        .step-indicator {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="form-header">
+                <h1 class="form-title">
+                    {% if object %}<i class="fas fa-edit" style="color: #6b7280; margin-right: 0.5rem;"></i>Edit Service{% else %}<i class="fas fa-plus" style="color: #6b7280; margin-right: 0.5rem;"></i>Add New Service{% endif %}
+                </h1>
+                <p class="form-subtitle">
+                    {% if object %}Update your service information{% else %}Create a new community service listing{% endif %}
+                </p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-number active" id="step-1-indicator">1</div>
+                <div class="step-line" id="line-1"></div>
+                <div class="step-number inactive" id="step-2-indicator">2</div>
+                <div class="step-line" id="line-2"></div>
+                <div class="step-number inactive" id="step-3-indicator">3</div>
+                <div class="step-line" id="line-3"></div>
+                <div class="step-number inactive" id="step-4-indicator">4</div>
+            </div>
+
+            <form method="post" id="service-form">
+                {% csrf_token %}
+                
+                <!-- Display general form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Form Errors:</h3>
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Step 1: Basic Information -->
+                <div class="form-step active" id="step-1">
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="icon">📋</span>
+                            Basic Information
+                        </h2>
+                        
+                        <div class="form-grid">
+                            <div class="form-control">
+                                <label class="form-label" for="id_name">
+                                    Service Name *
+                                </label>
+                                <input type="text" 
+                                       name="name" 
+                                       class="form-input {% if form.name.errors %}error{% endif %}" 
+                                       id="id_name"
+                                       value="{{ form.name.value|default:'' }}"
+                                       placeholder="Enter your service name"
+                                       required>
+                                {% if form.name.errors %}
+                                    <div class="form-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="form-label" for="id_category">
+                                    Category *
+                                </label>
+                                <select name="category" 
+                                        class="form-select {% if form.category.errors %}error{% endif %}" 
+                                        id="id_category"
+                                        required>
+                                    <option value="">Select a category</option>
+                                    {% for choice in form.category.field.queryset %}
+                                        <option value="{{ choice.pk }}" 
+                                                {% if form.category.value == choice.pk %}selected{% endif %}>
+                                            {{ choice.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.category.errors %}
+                                    <div class="form-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.category.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="form-label" for="id_short_description">
+                                    Short Description *
+                                </label>
+                                <textarea name="short_description" 
+                                          class="form-textarea {% if form.short_description.errors %}error{% endif %}" 
+                                          id="id_short_description"
+                                          placeholder="Brief description of your service (max 200 characters)"
+                                          rows="3"
+                                          maxlength="200"
+                                          required>{{ form.short_description.value|default:'' }}</textarea>
+                                {% if form.short_description.errors %}
+                                    <div class="form-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.short_description.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-note" style="margin-top: 0.5rem; font-size: 0.875rem; color: #64748b;">
+                                    <span id="short-desc-count">0</span>/200 characters
+                                </div>
+                            </div>
+
+                            <div class="form-control">
+                                <label class="form-label" for="id_description">
+                                    Detailed Description *
+                                </label>
+                                <textarea name="description" 
+                                          class="form-textarea {% if form.description.errors %}error{% endif %}" 
+                                          id="id_description"
+                                          placeholder="Provide detailed information about your service, including what you offer, how to access it, and any important details"
+                                          rows="6"
+                                          required>{{ form.description.value|default:'' }}</textarea>
+                                {% if form.description.errors %}
+                                    <div class="form-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.description.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Location & Contact -->
+                <div class="form-step" id="step-2">
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="icon">📍</span>
+                            Location & Contact
+                        </h2>
+                        
+                        <div class="form-control">
+                            <label class="form-label" for="id_address">
+                                Address *
+                            </label>
+                            <input type="text" 
+                                   name="address" 
+                                   class="form-input {% if form.address.errors %}error{% endif %}" 
+                                   id="id_address"
+                                   value="{{ form.address.value|default:'' }}"
+                                   placeholder="Enter the full address"
+                                   required>
+                            {% if form.address.errors %}
+                                <div class="form-error">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ form.address.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-grid form-grid-2col">
+                            <div class="form-control">
+                                <label class="form-label" for="id_city">
+                                    City *
+                                </label>
+                                <input type="text" 
+                                       name="city" 
+                                       class="form-input {% if form.city.errors %}error{% endif %}" 
+                                       id="id_city"
+                                       value="{{ form.city.value|default:'Cyberjaya' }}"
+                                       placeholder="City name"
+                                       required>
+                                {% if form.city.errors %}
+                                    <div class="form-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.city.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="form-label" for="id_state_province">
+                                    State/Province *
+                                </label>
+                                <input type="text" 
+                                       name="state_province" 
+                                       class="form-input {% if form.state_province.errors %}error{% endif %}" 
+                                       id="id_state_province"
+                                       value="{{ form.state_province.value|default:'Selangor' }}"
+                                       placeholder="State or Province"
+                                       required>
+                                {% if form.state_province.errors %}
+                                    <div class="form-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        {{ form.state_province.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div id="map"></div>
+                        
+                        <div class="location-input-group">
+                            <div class="form-control">
+                                <label class="form-label" for="id_latitude">
+                                    Latitude
+                                </label>
+                                <input type="number" 
+                                       name="latitude" 
+                                       class="form-input" 
+                                       id="id_latitude"
+                                       value="{{ form.latitude.value|default:'' }}"
+                                       step="any"
+                                       placeholder="Click on map to set location">
+                                <div class="form-note" style="margin-top: 0.25rem; font-size: 0.875rem; color: #64748b;">
+                                    Will be set to default location if not specified
+                                </div>
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="form-label" for="id_longitude">
+                                    Longitude
+                                </label>
+                                <input type="number" 
+                                       name="longitude" 
+                                       class="form-input" 
+                                       id="id_longitude"
+                                       value="{{ form.longitude.value|default:'' }}"
+                                       step="any"
+                                       placeholder="Click on map to set location">
+                                <div class="form-note" style="margin-top: 0.25rem; font-size: 0.875rem; color: #64748b;">
+                                    Will be set to default location if not specified
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid form-grid-2col">
+                            <div class="form-control">
+                                <label class="form-label" for="id_phone">
+                                    Phone Number
+                                </label>
+                                <input type="tel" 
+                                       name="phone" 
+                                       class="form-input" 
+                                       id="id_phone"
+                                       value="{{ form.phone.value|default:'' }}"
+                                       placeholder="(555) 123-4567">
+                            </div>
+
+                            <div class="form-control">
+                                <label class="form-label" for="id_email">
+                                    Email Address
+                                </label>
+                                <input type="email" 
+                                       name="email" 
+                                       class="form-input" 
+                                       id="id_email"
+                                       value="{{ form.email.value|default:'' }}"
+                                       placeholder="contact@yourservice.com">
+                            </div>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="form-label" for="id_website">
+                                Website URL
+                            </label>
+                            <input type="url" 
+                                   name="website" 
+                                   class="form-input" 
+                                   id="id_website"
+                                   value="{{ form.website.value|default:'' }}"
+                                   placeholder="https://yourservice.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Service Details -->
+                <div class="form-step" id="step-3">
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="icon">🏥</span>
+                            Service Details
+                        </h2>
+                        
+                        <!-- No capacity fields here since they're not in the form -->
+                        <!-- Remove all the invalid field references -->
+                        
+                        <div class="form-control">
+                            <p class="section-description">
+                                Please navigate to the next step to complete your service information including service characteristics and eligibility criteria.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Service Options & Final Details -->
+                <div class="form-step" id="step-4">
+                    <div class="form-section">
+                        <h2 class="section-title">
+                            <span class="icon">⚙️</span>
+                            Service Options & Final Details
+                        </h2>
+                        
+                        <!-- Service Characteristics -->
+                        <div class="form-control">
+                            <label class="form-label">Service Characteristics</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" 
+                                           name="is_emergency_service" 
+                                           id="id_is_emergency_service"
+                                           value="1"
+                                           {% if form.is_emergency_service.value %}checked{% endif %}>
+                                    <label for="id_is_emergency_service">Emergency Service Available</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" 
+                                           name="requires_appointment" 
+                                           id="id_requires_appointment"
+                                           value="1"
+                                           {% if form.requires_appointment.value %}checked{% endif %}>
+                                    <label for="id_requires_appointment">Requires Appointment</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" 
+                                           name="accepts_walk_ins" 
+                                           id="id_accepts_walk_ins"
+                                           value="1"
+                                           {% if form.accepts_walk_ins.value %}checked{% endif %}>
+                                    <label for="id_accepts_walk_ins">Accepts Walk-ins</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" 
+                                           name="is_free" 
+                                           id="id_is_free"
+                                           value="1"
+                                           {% if form.is_free.value %}checked{% endif %}>
+                                    <label for="id_is_free">Free Service</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Capacity Information -->
+                        <div class="form-grid form-grid-2col">
+                            <div class="form-control">
+                                <label class="form-label" for="id_max_capacity">
+                                    Maximum Capacity
+                                </label>
+                                <input type="number" 
+                                       name="max_capacity" 
+                                       class="form-input" 
+                                       id="id_max_capacity"
+                                       value="{{ form.max_capacity.value|default:'' }}"
+                                       min="1"
+                                       placeholder="e.g., 50">
+                                <div class="form-note">Leave empty if not applicable</div>
+                            </div>
+                        </div>
+
+                        <!-- Cost Information (conditional) -->
+                        <div class="form-control" id="cost-info-section">
+                            <label class="form-label" for="id_cost_info">
+                                Cost Information
+                            </label>
+                            <textarea name="cost_info" 
+                                      class="form-textarea" 
+                                      id="id_cost_info"
+                                      placeholder="Describe pricing, payment methods, insurance acceptance, etc."
+                                      rows="3">{{ form.cost_info.value|default:'' }}</textarea>
+                            <div class="form-note">Required if service is not free</div>
+                        </div>
+
+                        <!-- Eligibility Criteria -->
+                        <div class="form-control">
+                            <label class="form-label" for="id_eligibility_criteria">
+                                Eligibility Criteria
+                            </label>
+                            <textarea name="eligibility_criteria" 
+                                      class="form-textarea" 
+                                      id="id_eligibility_criteria"
+                                      placeholder="Describe who is eligible for this service and any requirements"
+                                      rows="4">{{ form.eligibility_criteria.value|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="form-navigation">
+                    <button type="button" class="nav-btn nav-btn-secondary" id="prev-btn" style="display: none;">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Previous</span>
+                    </button>
+                    
+                    <div class="step-info" style="flex: 1; text-align: center; color: #64748b; font-weight: 500;">
+                        Step <span id="current-step">1</span> of 4
+                    </div>
+                    
+                    <button type="button" class="nav-btn nav-btn-primary" id="next-btn">
+                        <span>Next</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    
+                    <button type="button" class="create-service-btn" id="submit-btn" style="display: none;">
+                        <div class="btn-content">
+                            <i class="fas fa-save btn-icon"></i>
+                            <span class="btn-text">{% if object %}Update Service{% else %}Create Service{% endif %}</span>
+                        </div>
+                        <div class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Creating...</span>
+                        </div>
+                    </button>
+                    
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    let map, marker;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        initializeMap();
+        
+        // Initialize form navigation
+        updateStepDisplay();
+        
+        // Character counter for short description
+        const shortDescInput = document.getElementById('id_short_description');
+        const charCounter = document.getElementById('short-desc-count');
+        
+        function updateCharCount() {
+            const count = shortDescInput.value.length;
+            charCounter.textContent = count;
+            charCounter.style.color = count > 180 ? '#ef4444' : '#64748b';
+        }
+        
+        shortDescInput.addEventListener('input', updateCharCount);
+        updateCharCount();
+        
+        // Navigation buttons
+        document.getElementById('prev-btn').addEventListener('click', previousStep);
+        document.getElementById('next-btn').addEventListener('click', nextStep);
+        
+        // Enhanced submit button handler with better error handling
+        document.getElementById('submit-btn').addEventListener('click', function(e) {
+            console.log('🔥 Submit button clicked!');
+            e.preventDefault(); // Prevent any default behavior
+            
+            const btn = this;
+            const btnContent = btn.querySelector('.btn-content');
+            const btnLoading = btn.querySelector('.btn-loading');
+            
+            // Ensure we're on the last step
+            if (currentStep !== totalSteps) {
+                console.log('❌ Not on final step, moving to final step');
+                currentStep = totalSteps;
+                updateStepDisplay();
+                return;
+            }
+            
+            console.log('✅ On final step, proceeding with submission...');
+            
+            // Show loading state
+            btnContent.style.display = 'none';
+            btnLoading.style.display = 'flex';
+            btn.disabled = true;
+            
+            // Manual form validation and submission
+            const form = document.getElementById('service-form');
+            
+            // Validate all required fields across all steps
+            const allRequiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+            let firstErrorField = null;
+            
+            console.log(`🔍 Validating ${allRequiredFields.length} required fields...`);
+            
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(error => error.remove());
+            document.querySelectorAll('.error').forEach(field => field.classList.remove('error'));
+            
+            allRequiredFields.forEach(field => {
+                // Skip validation for latitude/longitude fields as they have defaults
+                if (field.id === 'id_latitude' || field.id === 'id_longitude') {
+                    return;
+                }
+                
+                if (!field.value || !field.value.trim()) {
+                    console.log(`❌ Field ${field.id} is empty`);
+                    field.classList.add('error');
+                    isValid = false;
+                    
+                    if (!firstErrorField) {
+                        firstErrorField = field;
+                    }
+                    
+                    // Show error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'form-error';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> This field is required';
+                    field.parentNode.appendChild(errorDiv);
+                } else {
+                    console.log(`✅ Field ${field.id} is valid: ${field.value.substring(0, 20)}...`);
+                }
+            });
+            
+            if (!isValid) {
+                console.log('❌ Form validation failed');
+                
+                // Reset button state
+                btnContent.style.display = 'flex';
+                btnLoading.style.display = 'none';
+                btn.disabled = false;
+                
+                // Find which step the first error is on and navigate to it
+                if (firstErrorField) {
+                    for (let step = 1; step <= totalSteps; step++) {
+                        const stepElement = document.getElementById(`step-${step}`);
+                        if (stepElement.contains(firstErrorField)) {
+                            currentStep = step;
+                            updateStepDisplay();
+                            firstErrorField.focus();
+                            break;
+                        }
+                    }
+                }
+                
+                alert('Please fill in all required fields before submitting.');
+                return;
+            }
+            
+            console.log('✅ Form validation passed! Submitting form...');
+            
+            // Add default values for latitude/longitude if missing
+            const latField = document.getElementById('id_latitude');
+            const lngField = document.getElementById('id_longitude');
+            
+            if (!latField.value) {
+                latField.value = '2.9152';
+                console.log('🌍 Set default latitude');
+            }
+            if (!lngField.value) {
+                lngField.value = '101.6515';
+                console.log('🌍 Set default longitude');
+            }
+            
+            // Submit the form directly
+            console.log('🚀 Submitting form now...');
+            form.submit();
+        });
+        
+        // Checkbox styling and conditional logic
+        document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const item = this.closest('.checkbox-item');
+                if (this.checked) {
+                    item.classList.add('checked');
+                } else {
+                    item.classList.remove('checked');
+                }
+                
+                // Handle cost info visibility
+                if (this.id === 'id_is_free') {
+                    const costInfoSection = document.getElementById('cost-info-section');
+                    const costInfoTextarea = document.getElementById('id_cost_info');
+                    if (costInfoSection && costInfoTextarea) {
+                        if (this.checked) {
+                            // Service is free, hide cost info
+                            costInfoSection.style.display = 'none';
+                            costInfoTextarea.required = false;
+                        } else {
+                            // Service is not free, show cost info
+                            costInfoSection.style.display = 'block';
+                            costInfoTextarea.required = true;
+                        }
+                    }
+                }
+            });
+            
+            // Initialize checked state
+            if (checkbox.checked) {
+                checkbox.closest('.checkbox-item').classList.add('checked');
+                
+                // Initialize cost info visibility
+                if (checkbox.id === 'id_is_free') {
+                    const costInfoSection = document.getElementById('cost-info-section');
+                    const costInfoTextarea = document.getElementById('id_cost_info');
+                    if (costInfoSection && costInfoTextarea) {
+                        if (checkbox.checked) {
+                            costInfoSection.style.display = 'none';
+                            costInfoTextarea.required = false;
+                        } else {
+                            costInfoSection.style.display = 'block';
+                            costInfoTextarea.required = true;
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Simple form submit handler (no longer needed as we handle everything in button click)
+        document.getElementById('service-form').addEventListener('submit', function(e) {
+            console.log('📝 Form submit event triggered - allowing submission');
+            // Just let the form submit naturally
+        });
+    });
+
+    function initializeMap() {
+        // Initialize map centered on Cyberjaya, Malaysia
+        map = L.map('map').setView([2.9152, 101.6515], 12);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Add marker if coordinates exist
+        const lat = document.getElementById('id_latitude').value;
+        const lng = document.getElementById('id_longitude').value;
+        
+        if (lat && lng) {
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 15);
+        }
+        
+        // Click handler for map
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Update form fields
+            document.getElementById('id_latitude').value = lat.toFixed(6);
+            document.getElementById('id_longitude').value = lng.toFixed(6);
+            
+            // Update marker
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker([lat, lng]).addTo(map);
+            
+            // Reverse geocoding (optional - would need API key)
+            reverseGeocode(lat, lng);
+        });
+        
+        // Address input geocoding
+        const addressInput = document.getElementById('id_address');
+        let geocodeTimeout;
+        
+        addressInput.addEventListener('input', function() {
+            clearTimeout(geocodeTimeout);
+            geocodeTimeout = setTimeout(() => {
+                geocodeAddress(this.value);
+            }, 1000);
+        });
+    }
+    
+    function reverseGeocode(lat, lng) {
+        // Simple reverse geocoding using Nominatim
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.display_name) {
+                    document.getElementById('id_address').value = data.display_name;
+                }
+            })
+            .catch(error => console.log('Reverse geocoding failed:', error));
+    }
+    
+    function geocodeAddress(address) {
+        if (!address.trim()) return;
+        
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const result = data[0];
+                    const lat = parseFloat(result.lat);
+                    const lng = parseFloat(result.lon);
+                    
+                    // Update form fields
+                    document.getElementById('id_latitude').value = lat.toFixed(6);
+                    document.getElementById('id_longitude').value = lng.toFixed(6);
+                    
+                    // Update map
+                    map.setView([lat, lng], 15);
+                    
+                    // Update marker
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+                    marker = L.marker([lat, lng]).addTo(map);
+                }
+            })
+            .catch(error => console.log('Geocoding failed:', error));
+    }
+
+    function nextStep() {
+        if (validateCurrentStep() && currentStep < totalSteps) {
+            currentStep++;
+            updateStepDisplay();
+        }
+    }
+
+    function previousStep() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateStepDisplay();
+        }
+    }
+
+    function updateStepDisplay() {
+        console.log('updateStepDisplay called, currentStep:', currentStep, 'totalSteps:', totalSteps);
+        
+        // Hide all steps
+        document.querySelectorAll('.form-step').forEach(step => {
+            step.classList.remove('active');
+        });
+        
+        // Show current step
+        const currentStepElement = document.getElementById(`step-${currentStep}`);
+        if (currentStepElement) {
+            currentStepElement.classList.add('active');
+            console.log('Activated step:', currentStep);
+        } else {
+            console.error('Step element not found:', `step-${currentStep}`);
+        }
+        
+        // Update step indicators
+        for (let i = 1; i <= totalSteps; i++) {
+            const indicator = document.getElementById(`step-${i}-indicator`);
+            const line = document.getElementById(`line-${i}`);
+            
+            if (indicator) {
+                indicator.classList.remove('active', 'completed', 'inactive');
+                
+                if (i < currentStep) {
+                    indicator.classList.add('completed');
+                    if (line) line.classList.add('completed');
+                } else if (i === currentStep) {
+                    indicator.classList.add('active');
+                    if (line) line.classList.remove('completed');
+                } else {
+                    indicator.classList.add('inactive');
+                    if (line) line.classList.remove('completed');
+                }
+            }
+        }
+        
+        // Update navigation buttons
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        console.log('Button elements found:', {
+            prevBtn: !!prevBtn,
+            nextBtn: !!nextBtn,
+            submitBtn: !!submitBtn
+        });
+        
+        if (prevBtn) {
+            prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-flex';
+            console.log('Previous button display:', prevBtn.style.display);
+        }
+        
+        if (nextBtn) {
+            nextBtn.style.display = currentStep === totalSteps ? 'none' : 'inline-flex';
+            console.log('Next button display:', nextBtn.style.display);
+        }
+        
+        if (submitBtn) {
+            submitBtn.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
+            console.log('🔘 Submit button display:', submitBtn.style.display, 'currentStep === totalSteps:', currentStep === totalSteps);
+            
+            // Make sure button is enabled and visible
+            if (currentStep === totalSteps) {
+                submitBtn.disabled = false;
+                submitBtn.style.pointerEvents = 'auto';
+                submitBtn.style.opacity = '1';
+                submitBtn.style.visibility = 'visible';
+                submitBtn.style.zIndex = '999';
+                
+                // Reset button content
+                const btnContent = submitBtn.querySelector('.btn-content');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                if (btnContent && btnLoading) {
+                    btnContent.style.display = 'flex';
+                    btnLoading.style.display = 'none';
+                }
+                
+                console.log('🎯 Submit button fully enabled and visible!');
+                
+                // Add pulsing effect to make it obvious
+                submitBtn.style.animation = 'pulse 2s infinite';
+            }
+        }
+        
+
+        
+        // Update step counter
+        const stepCounter = document.getElementById('current-step');
+        if (stepCounter) {
+            stepCounter.textContent = currentStep;
+        }
+        
+        // Refresh map if on location step
+        if (currentStep === 2 && map) {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+        }
+        
+        console.log('updateStepDisplay completed');
+    }
+
+    function validateCurrentStep() {
+        // For step navigation, only validate basic required fields in current step
+        // Don't be too strict to allow users to navigate between steps
+        const currentStepElement = document.getElementById(`step-${currentStep}`);
+        const requiredFields = currentStepElement.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        
+        // Clear previous errors in current step
+        currentStepElement.querySelectorAll('.form-error').forEach(error => error.remove());
+        currentStepElement.querySelectorAll('.error').forEach(field => field.classList.remove('error'));
+        
+        // Only validate visible required fields for step navigation
+        requiredFields.forEach(field => {
+            // Skip validation for latitude/longitude fields as they have defaults
+            if (field.id === 'id_latitude' || field.id === 'id_longitude') {
+                return;
+            }
+            
+            if (!field.value || !field.value.trim()) {
+                field.classList.add('error');
+                isValid = false;
+                
+                // Show error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'form-error';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> This field is required';
+                field.parentNode.appendChild(errorDiv);
+            }
+        });
+        
+        return isValid;
+    }
+    
+
+</script>
+{% endblock %} 

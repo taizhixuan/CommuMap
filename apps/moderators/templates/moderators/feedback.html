@@ -1,0 +1,825 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Feedback Moderation - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Enhanced Header */
+    .feedback-header {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feedback-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 0.1; }
+        50% { opacity: 0.3; }
+    }
+    
+    /* Enhanced Button Styles */
+    .btn-gradient {
+        background: linear-gradient(135deg, var(--color-1), var(--color-2));
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-transform: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .btn-gradient::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-gradient:hover::before {
+        left: 100%;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .btn-info-gradient {
+        --color-1: #3b82f6;
+        --color-2: #1d4ed8;
+    }
+    
+    .btn-success-gradient {
+        --color-1: #10b981;
+        --color-2: #059669;
+    }
+    
+    .btn-error-gradient {
+        --color-1: #ef4444;
+        --color-2: #dc2626;
+    }
+    
+    .btn-warning-gradient {
+        --color-1: #f59e0b;
+        --color-2: #d97706;
+    }
+    
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--card-color), transparent);
+        opacity: 0.05;
+        transition: opacity 0.3s ease;
+    }
+    
+    .stat-card:hover::before {
+        opacity: 0.1;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card-flagged {
+        --card-color: #ef4444;
+        border-color: #ef4444;
+    }
+    
+    .stat-card-pending {
+        --card-color: #f59e0b;
+        border-color: #f59e0b;
+    }
+    
+    .stat-card-resolved {
+        --card-color: #10b981;
+        border-color: #10b981;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--card-color), #64748b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Review Cards */
+    .review-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .review-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        transition: width 0.3s ease;
+    }
+    
+    .review-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: #ef4444;
+    }
+    
+    .review-card:hover::before {
+        width: 8px;
+    }
+    
+    /* User Avatar */
+    .user-avatar {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        flex-shrink: 0;
+    }
+    
+    /* Service Badge */
+    .service-badge {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+    
+    /* Rating Stars */
+    .rating-stars {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+    }
+    
+    .star {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #d1d5db;
+        transition: color 0.2s ease;
+    }
+    
+    .star.filled {
+        color: #fbbf24;
+    }
+    
+    /* Flag Badge */
+    .flag-badge {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        animation: flagPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes flagPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* Review Content */
+    .review-content {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        border: 2px solid #fecaca;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .review-content:hover {
+        border-color: #fca5a5;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .review-content::before {
+        content: '"';
+        font-size: 3rem;
+        color: #fca5a5;
+        position: absolute;
+        top: -0.5rem;
+        left: 1rem;
+        font-family: serif;
+    }
+    
+    /* Flag Reason */
+    .flag-reason {
+        background: linear-gradient(135deg, #fef3c7, #fed7aa);
+        border: 2px solid #fcd34d;
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-left: 4px solid #f59e0b;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    /* Enhanced Modal */
+    .enhanced-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(8px);
+    }
+    
+    .enhanced-modal.modal-open {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .enhanced-modal.modal-open .modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .empty-state-icon {
+        width: 6rem;
+        height: 6rem;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .review-card {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-100">
+    <!-- Enhanced Header -->
+    <div class="feedback-header text-white p-6 mb-6">
+        <div class="container mx-auto relative">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">🚨 Feedback Moderation</h1>
+                    <p class="text-lg opacity-90">Review and moderate flagged content and user feedback</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="{% url 'moderators:dashboard' %}" class="btn btn-gradient btn-info-gradient">
+                        <span>🏠</span>
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6">
+        <!-- Enhanced Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-card-flagged">
+                <div class="stat-number">{{ flagged_reviews.count }}</div>
+                <div class="stat-label">Flagged Reviews</div>
+            </div>
+            <div class="stat-card stat-card-pending">
+                <div class="stat-number">{{ pending_actions_count|default:0 }}</div>
+                <div class="stat-label">Pending Actions</div>
+            </div>
+            <div class="stat-card stat-card-resolved">
+                <div class="stat-number">{{ resolved_today_count|default:0 }}</div>
+                <div class="stat-label">Resolved Today</div>
+            </div>
+        </div>
+
+        <!-- Sample Flagged Reviews -->
+        <div class="space-y-6">
+            <!-- Sample Review 1 -->
+            <div class="review-card" data-review-id="review-1">
+                <div class="flex items-start gap-6">
+                    <!-- User Avatar -->
+                    <div class="user-avatar">
+                        J
+                    </div>
+                    
+                    <!-- Review Content -->
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-800">John Smith</h4>
+                                <p class="text-sm text-gray-500">3 hours ago</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flag-badge">
+                                    <span>🚩</span>
+                                    Flagged
+                                </div>
+                                <div class="rating-stars">
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="ml-2 text-sm font-medium text-gray-600">1/5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Information -->
+                        <div class="service-badge mb-4">
+                            <span>🏢</span>
+                            Downtown Food Bank
+                        </div>
+
+                        <!-- Review Content -->
+                        <div class="review-content">
+                            <p class="text-gray-700 leading-relaxed">
+                                This place is terrible! The staff was incredibly rude and unhelpful. 
+                                I waited for hours and they treated me like garbage. Complete waste of time. 
+                                The food they gave was expired and disgusting. Never going back here again!
+                            </p>
+                        </div>
+
+                        <!-- Flag Reason -->
+                        <div class="flag-reason">
+                            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Flag Reason:</h5>
+                            <p class="text-amber-700 text-sm">
+                                This review contains inappropriate language and may violate community guidelines 
+                                regarding respectful communication. Flagged for review by community members.
+                            </p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button onclick="showReplyModal('review-1', 'John Smith', 'Downtown Food Bank')" 
+                                    class="btn btn-gradient btn-info-gradient">
+                                <span>💬</span>
+                                Reply
+                            </button>
+                            <button onclick="approveReview('review-1')" 
+                                    class="btn btn-gradient btn-success-gradient">
+                                <span>✅</span>
+                                Approve
+                            </button>
+                            <button onclick="removeReview('review-1')" 
+                                    class="btn btn-gradient btn-error-gradient">
+                                <span>❌</span>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Review 2 -->
+            <div class="review-card" data-review-id="review-2">
+                <div class="flex items-start gap-6">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        L
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-800">Lisa Wong</h4>
+                                <p class="text-sm text-gray-500">1 day ago</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flag-badge">
+                                    <span>🚩</span>
+                                    Flagged
+                                </div>
+                                <div class="rating-stars">
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="ml-2 text-sm font-medium text-gray-600">3/5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="service-badge mb-4" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <span>🏥</span>
+                            Community Health Clinic
+                        </div>
+
+                        <div class="review-content">
+                            <p class="text-gray-700 leading-relaxed">
+                                The clinic is okay but I think Dr. Martinez doesn't know what he's doing. 
+                                He seemed confused about my symptoms and kept asking the same questions. 
+                                Maybe he should go back to medical school? The nurses were nice though.
+                            </p>
+                        </div>
+
+                        <div class="flag-reason">
+                            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Flag Reason:</h5>
+                            <p class="text-amber-700 text-sm">
+                                Contains potentially defamatory statements about a specific healthcare provider. 
+                                May require professional review to ensure accuracy and appropriateness.
+                            </p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button onclick="showReplyModal('review-2', 'Lisa Wong', 'Community Health Clinic')" 
+                                    class="btn btn-gradient btn-info-gradient">
+                                <span>💬</span>
+                                Reply
+                            </button>
+                            <button onclick="approveReview('review-2')" 
+                                    class="btn btn-gradient btn-success-gradient">
+                                <span>✅</span>
+                                Approve
+                            </button>
+                            <button onclick="removeReview('review-2')" 
+                                    class="btn btn-gradient btn-error-gradient">
+                                <span>❌</span>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Review 3 -->
+            <div class="review-card" data-review-id="review-3">
+                <div class="flex items-start gap-6">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        M
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-800">Mike Thompson</h4>
+                                <p class="text-sm text-gray-500">2 days ago</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flag-badge">
+                                    <span>🚩</span>
+                                    Flagged
+                                </div>
+                                <div class="rating-stars">
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <svg class="star filled" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="ml-2 text-sm font-medium text-gray-600">5/5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="service-badge mb-4" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            <span>🏠</span>
+                            Emergency Housing Services
+                        </div>
+
+                        <div class="review-content">
+                            <p class="text-gray-700 leading-relaxed">
+                                This place saved my life! Great service and caring staff. 
+                                If you need help, call them at (555) 123-4567 or email help@emergency.com. 
+                                They're open 24/7 and located at 123 Main Street. Ask for Jennifer, she's amazing!
+                            </p>
+                        </div>
+
+                        <div class="flag-reason">
+                            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Flag Reason:</h5>
+                            <p class="text-amber-700 text-sm">
+                                Contains specific contact information and personal details that may violate 
+                                privacy guidelines. Needs review for appropriate information sharing.
+                            </p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button onclick="showReplyModal('review-3', 'Mike Thompson', 'Emergency Housing Services')" 
+                                    class="btn btn-gradient btn-info-gradient">
+                                <span>💬</span>
+                                Reply
+                            </button>
+                            <button onclick="approveReview('review-3')" 
+                                    class="btn btn-gradient btn-success-gradient">
+                                <span>✅</span>
+                                Approve
+                            </button>
+                            <button onclick="removeReview('review-3')" 
+                                    class="btn btn-gradient btn-error-gradient">
+                                <span>❌</span>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Reply Modal -->
+<div id="replyModal" class="enhanced-modal">
+    <div class="modal-content">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span class="text-3xl">💬</span>
+            Reply to Review
+        </h3>
+        <div class="py-4">
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Replying to:</label>
+                <div class="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-4">
+                    <p id="reviewUser" class="font-bold text-lg text-gray-800"></p>
+                    <p class="text-sm text-gray-600">Review about: <span id="reviewService" class="font-semibold"></span></p>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2" for="replyText">
+                    Your Professional Response:
+                </label>
+                <textarea id="replyText" 
+                          class="w-full h-32 border-2 border-gray-300 rounded-xl p-4 focus:border-red-500 focus:outline-none transition-colors resize-none" 
+                          placeholder="Write your professional response to address the reviewer's concerns..."></textarea>
+            </div>
+        </div>
+        <div class="flex justify-end gap-4 mt-6">
+            <button onclick="sendReply()" class="btn btn-gradient btn-success-gradient">
+                <span>📤</span>
+                Send Reply
+            </button>
+            <button onclick="closeReplyModal()" class="btn btn-gradient btn-error-gradient">
+                <span>❌</span>
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentReviewId = null;
+
+function showReplyModal(reviewId, userName, serviceName) {
+    currentReviewId = reviewId;
+    document.getElementById('reviewUser').textContent = userName;
+    document.getElementById('reviewService').textContent = serviceName;
+    document.getElementById('replyText').value = '';
+    document.getElementById('replyModal').classList.add('modal-open');
+}
+
+function closeReplyModal() {
+    document.getElementById('replyModal').classList.remove('modal-open');
+}
+
+function sendReply() {
+    const replyText = document.getElementById('replyText').value.trim();
+    if (!replyText) {
+        alert('Please enter a reply message.');
+        return;
+    }
+
+    console.log('Sending reply to review:', currentReviewId, 'Message:', replyText);
+    
+    closeReplyModal();
+    showNotification('Reply sent successfully!', 'success');
+}
+
+function approveReview(reviewId) {
+    if (confirm('Are you sure you want to approve this review? It will be unmarked as flagged.')) {
+        console.log('Approving review:', reviewId);
+        
+        // Remove the review card with animation
+        const card = event.target.closest('.review-card');
+        card.style.transform = 'translateX(100%)';
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.remove();
+            updateStats('approve');
+        }, 300);
+        
+        showNotification('Review approved successfully!', 'success');
+    }
+}
+
+function removeReview(reviewId) {
+    if (confirm('Are you sure you want to remove this review? This action cannot be undone.')) {
+        console.log('Removing review:', reviewId);
+        
+        // Remove the review card with animation
+        const card = event.target.closest('.review-card');
+        card.style.transform = 'translateX(-100%)';
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.remove();
+            updateStats('remove');
+        }, 300);
+        
+        showNotification('Review removed successfully!', 'success');
+    }
+}
+
+function updateStats(action) {
+    const flaggedCard = document.querySelector('.stat-card-flagged .stat-number');
+    const resolvedCard = document.querySelector('.stat-card-resolved .stat-number');
+    
+    const currentFlagged = parseInt(flaggedCard.textContent);
+    const currentResolved = parseInt(resolvedCard.textContent);
+    
+    flaggedCard.textContent = Math.max(0, currentFlagged - 1);
+    resolvedCard.textContent = currentResolved + 1;
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+    notification.style.background = type === 'success' ? 
+        'linear-gradient(135deg, #10b981, #059669)' : 
+        'linear-gradient(135deg, #ef4444, #dc2626)';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(full)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Close modal on outside click
+document.getElementById('replyModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeReplyModal();
+    }
+});
+
+// Initialize with staggered animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.review-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+});
+</script>
+{% endblock %} 

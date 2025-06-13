@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Announcements - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-announcements {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        padding: 2rem 0 4rem 0;
+        margin-top: 3rem;
+    }
+
+    .admin-announcements::before {
+        content: '';
+        display: block;
+        height: 1rem;
+    }
+    
+    .announcements-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .announcement-item {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .announcement-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .announcement-urgent {
+        border-left: 4px solid #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .announcement-normal {
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .announcement-info {
+        border-left: 4px solid #10b981;
+    }
+    
+    .badge-urgent {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
+    /* Fix grey text visibility */
+    .text-muted {
+        color: #cbd5e1 !important; /* Changed from default grey to lighter shade */
+    }
+    
+    .announcement-item .text-muted {
+        color: #e2e8f0 !important; /* Even lighter for announcement content */
+    }
+    
+    /* Improve overall text contrast */
+    .announcement-item h5 {
+        color: #f8fafc !important;
+    }
+    
+    .announcement-item p {
+        color: #f1f5f9 !important;
+    }
+    
+    .announcement-item small {
+        color: #cbd5e1 !important;
+    }
+
+    /* Add spacing between filters and announcements */
+    .filters-section {
+        margin-bottom: 3rem; /* Increased spacing */
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+    }
+
+    /* Responsive spacing */
+    @media (max-width: 768px) {
+        .admin-announcements {
+            margin-top: 2rem;
+            padding: 1.5rem 0 3rem 0;
+        }
+
+        .admin-announcements::before {
+            height: 0.5rem;
+        }
+        
+        .filters-section {
+            margin-bottom: 2rem;
+        }
+    }
+
+    .announcements-spacing {
+        margin-bottom: 2rem;
+    }
+
+    .admin-announcements .container {
+        max-width: 1200px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-announcements mt-8">
+    <div class="container py-6">
+        <div class="announcements-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-megaphone me-2 text-primary"></i>
+                        System Announcements
+                    </h1>
+                    <p class="text-muted mb-0">Manage system-wide announcements and communications</p>
+                </div>
+                <div>
+                    <a href="{% url 'console:home' %}" class="btn btn-outline-light me-2">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                    <a href="{% url 'console:announcement_add' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>New Announcement
+                    </a>
+                </div>
+            </div>
+            
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="row">
+                    <div class="col-md-3">
+                        <select class="form-select" id="typeFilter">
+                            <option value="">All Types</option>
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="searchFilter" placeholder="Search announcements...">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Announcements List -->
+            {% if announcements %}
+            <div class="announcements-list">
+                {% for announcement in announcements %}
+                <div class="announcement-item announcement-{{ announcement.announcement_type }}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">
+                                {{ announcement.title }}
+                                {% if announcement.is_urgent %}
+                                <span class="badge badge-urgent ms-2">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>URGENT
+                                </span>
+                                {% endif %}
+                                {% if not announcement.is_active %}
+                                <span class="badge bg-secondary ms-2">Inactive</span>
+                                {% endif %}
+                            </h5>
+                            <p class="mb-2">{{ announcement.content|truncatewords:20 }}</p>
+                            
+                            <div class="d-flex align-items-center gap-3">
+                                <small>
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ announcement.show_from|date:"M d, Y H:i" }}
+                                </small>
+                                {% if announcement.show_until %}
+                                <small>
+                                    <i class="fas fa-calendar-times me-1"></i>
+                                    Until: {{ announcement.show_until|date:"M d, Y H:i" }}
+                                </small>
+                                {% endif %}
+                                <small>
+                                    <i class="fas fa-tag me-1"></i>
+                                    {{ announcement.get_announcement_type_display }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" 
+                                    data-bs-toggle="dropdown">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'console:announcement_edit' announcement.id %}">
+                                        <i class="fas fa-edit me-2"></i>Edit
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'console:announcement_delete' announcement.id %}"
+                                       onclick="return confirm('Delete this announcement?')">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="toggleAnnouncement({{ announcement.id }})">
+                                        {% if announcement.is_active %}
+                                        <i class="fas fa-pause me-2"></i>Deactivate
+                                        {% else %}
+                                        <i class="fas fa-play me-2"></i>Activate
+                                        {% endif %}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Announcements pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-megaphone fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted mb-2">No Announcements Yet</h4>
+                <p class="text-muted mb-3">Create your first system announcement to communicate with users.</p>
+                <a href="{% url 'console:announcement_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Create First Announcement
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter functionality
+    document.getElementById('typeFilter').addEventListener('change', filterAnnouncements);
+    document.getElementById('statusFilter').addEventListener('change', filterAnnouncements);
+    document.getElementById('searchFilter').addEventListener('input', filterAnnouncements);
+    
+    function filterAnnouncements() {
+        const typeFilter = document.getElementById('typeFilter').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+        const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+        
+        const announcements = document.querySelectorAll('.announcement-item');
+        
+        announcements.forEach(announcement => {
+            const type = announcement.className.includes('announcement-urgent') ? 'urgent' :
+                        announcement.className.includes('announcement-info') ? 'info' : 'normal';
+            const isActive = !announcement.querySelector('.badge-secondary');
+            const status = isActive ? 'active' : 'inactive';
+            const text = announcement.textContent.toLowerCase();
+            
+            const matchesType = !typeFilter || type === typeFilter;
+            const matchesStatus = !statusFilter || status === statusFilter;
+            const matchesSearch = !searchFilter || text.includes(searchFilter);
+            
+            if (matchesType && matchesStatus && matchesSearch) {
+                announcement.style.display = 'block';
+            } else {
+                announcement.style.display = 'none';
+            }
+        });
+    }
+    
+    // Toggle announcement status
+    function toggleAnnouncement(announcementId) {
+        if (confirm('Toggle announcement status?')) {
+            // Implement AJAX toggle functionality
+            fetch(`/admin/announcements/${announcementId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error toggling announcement status.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error toggling announcement status.');
+            });
+        }
+    }
+</script>
+{% endblock %} 

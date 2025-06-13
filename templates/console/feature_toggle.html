@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Feature Toggle - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feature-toggle-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        margin-top: 3rem;
+        padding: 2rem 0 4rem 0;
+        position: relative;
+    }
+
+    .feature-toggle-container::before {
+        content: '';
+        display: block;
+        height: 1rem;
+    }
+    
+    .feature-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-item {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border-color: #3b82f6;
+    }
+    
+    .feature-toggle {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    
+    .feature-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #475569;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: #3b82f6;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    
+    .feature-info {
+        flex: 1;
+    }
+    
+    .feature-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-description {
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .feature-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .status-enabled {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-disabled {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        color: white;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .no-features {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+
+    .no-features i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.7;
+        color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+        .feature-toggle-container {
+            margin-top: 2rem;
+            padding: 1.5rem 0 3rem 0;
+        }
+
+        .feature-toggle-container::before {
+            height: 0.5rem;
+        }
+
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 1.5rem;
+            padding-bottom: 2rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-item {
+            padding: 1.25rem;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .feature-toggle {
+            width: 50px;
+            height: 28px;
+        }
+
+        .slider:before {
+            height: 22px;
+            width: 22px;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+    }
+
+    .feature-spacing {
+        margin-bottom: 2rem;
+    }
+
+    .feature-toggle-container .container {
+        max-width: 1200px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feature-toggle-container mt-8">
+    <div class="container py-6">
+        <!-- Header -->
+        <div class="feature-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-toggle-on me-2 text-primary"></i>
+                        Feature Toggle Management
+                    </h1>
+                    <p class="text-muted mb-0">Enable or disable system features without redeployment</p>
+                </div>
+                <a href="{% url 'console:maintenance' %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Maintenance
+                </a>
+            </div>
+            
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- Feature Toggles -->
+        <div class="feature-card feature-spacing">
+            <h4 class="mb-3">
+                <i class="fas fa-cogs me-2"></i>
+                System Features
+            </h4>
+            
+            {% if features %}
+                {% for feature_name, is_enabled in features.items %}
+                <div class="feature-item">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="feature-icon">
+                                {% if feature_name == 'emergency_mode' %}
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                {% elif feature_name == 'maintenance_mode' %}
+                                    <i class="fas fa-tools"></i>
+                                {% elif feature_name == 'user_registration' %}
+                                    <i class="fas fa-user-plus"></i>
+                                {% elif feature_name == 'email_notifications' %}
+                                    <i class="fas fa-envelope"></i>
+                                {% elif feature_name == 'sms_notifications' %}
+                                    <i class="fas fa-sms"></i>
+                                {% elif feature_name == 'advanced_search' %}
+                                    <i class="fas fa-search-plus"></i>
+                                {% elif feature_name == 'geolocation' %}
+                                    <i class="fas fa-map-marker-alt"></i>
+                                {% elif feature_name == 'analytics' %}
+                                    <i class="fas fa-chart-bar"></i>
+                                {% else %}
+                                    <i class="fas fa-cog"></i>
+                                {% endif %}
+                            </div>
+                            <div class="feature-info">
+                                <div class="feature-name">
+                                    {{ feature_name|title }}
+                                </div>
+                                <div class="feature-description">
+                                    {% if feature_name == 'emergency_mode' %}
+                                        Enable emergency mode to restrict system access and display urgent notices
+                                    {% elif feature_name == 'maintenance_mode' %}
+                                        Put the system in maintenance mode for updates and repairs
+                                    {% elif feature_name == 'user_registration' %}
+                                        Allow new users to register for accounts on the platform
+                                    {% elif feature_name == 'email_notifications' %}
+                                        Send email notifications for system events and updates
+                                    {% elif feature_name == 'sms_notifications' %}
+                                        Send SMS notifications for urgent alerts and updates
+                                    {% elif feature_name == 'advanced_search' %}
+                                        Enable advanced search features with filters and suggestions
+                                    {% elif feature_name == 'geolocation' %}
+                                        Use GPS location for enhanced service discovery and directions
+                                    {% elif feature_name == 'analytics' %}
+                                        Collect usage analytics and generate performance reports
+                                    {% else %}
+                                        Control {{ feature_name }} functionality
+                                    {% endif %}
+                                </div>
+                                <span class="feature-status {% if is_enabled %}status-enabled{% else %}status-disabled{% endif %}">
+                                    {% if is_enabled %}Enabled{% else %}Disabled{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="feature-toggle">
+                            <form method="post" class="feature-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="feature_name" value="{{ feature_name }}">
+                                <input type="hidden" name="enabled" value="{% if is_enabled %}false{% else %}true{% endif %}">
+                                <label class="feature-toggle">
+                                    <input type="checkbox" {% if is_enabled %}checked{% endif %} 
+                                           onchange="submitFeatureToggle(this, '{{ feature_name|title }}')"
+                                           data-feature="{{ feature_name }}"
+                                           data-current-state="{% if is_enabled %}true{% else %}false{% endif %}">
+                                    <span class="slider"></span>
+                                </label>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-features">
+                    <i class="fas fa-toggle-off"></i>
+                    <h4 class="text-muted mb-2">No Feature Flags Configured</h4>
+                    <p class="text-muted">No feature flags are currently available for configuration.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Help Information -->
+        <div class="feature-card">
+            <h5 class="mb-3">
+                <i class="fas fa-info-circle me-2 text-info"></i>
+                Feature Toggle Information
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 style="color: #7dd3fc;">How it works</h6>
+                    <ul style="color: #cbd5e1;">
+                        <li>Toggle features on/off without system restart</li>
+                        <li>Changes take effect immediately</li>
+                        <li>All toggles are logged for audit purposes</li>
+                        <li>Emergency features require admin confirmation</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 style="color: #fbbf24;">Important Notes</h6>
+                    <ul style="color: #cbd5e1;">
+                        <li>Some features may affect user experience</li>
+                        <li>Test in development before production changes</li>
+                        <li>Emergency mode restricts user access</li>
+                        <li>Maintenance mode may cause service interruption</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.feature-form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            const toggle = this.querySelector('input[type="checkbox"]');
+            const slider = this.querySelector('.slider');
+            
+            slider.style.opacity = '0.6';
+            toggle.disabled = true;
+            
+            const loadingSpinner = document.createElement('div');
+            loadingSpinner.className = 'spinner-border spinner-border-sm';
+            loadingSpinner.style.position = 'absolute';
+            loadingSpinner.style.top = '50%';
+            loadingSpinner.style.left = '50%';
+            loadingSpinner.style.transform = 'translate(-50%, -50%)';
+            loadingSpinner.style.width = '20px';
+            loadingSpinner.style.height = '20px';
+            
+            this.style.position = 'relative';
+            this.appendChild(loadingSpinner);
+        });
+    });
+});
+
+function submitFeatureToggle(checkbox, featureName) {
+    const currentState = checkbox.dataset.currentState === 'true';
+    const newState = !currentState;
+    const action = newState ? 'enable' : 'disable';
+    
+    // Show confirmation dialog
+    if (confirm(`Are you sure you want to ${action} ${featureName}?`)) {
+        // Update the hidden input value
+        const form = checkbox.closest('form');
+        const hiddenInput = form.querySelector('input[name="enabled"]');
+        hiddenInput.value = newState ? 'true' : 'false';
+        
+        // Submit the form
+        form.submit();
+    } else {
+        // Revert the checkbox state
+        checkbox.checked = currentState;
+    }
+}
+</script>
+{% endblock %} 

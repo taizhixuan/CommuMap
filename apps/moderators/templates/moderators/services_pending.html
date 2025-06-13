@@ -1,0 +1,1112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Service Approval Queue - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --primary-color: #4f46e5;
+        --primary-hover: #3730a3;
+        --success-color: #10b981;
+        --success-hover: #059669;
+        --danger-color: #ef4444;
+        --danger-hover: #dc2626;
+        --warning-color: #f59e0b;
+        --warning-hover: #d97706;
+        --info-color: #3b82f6;
+        --info-hover: #1d4ed8;
+        --neutral-color: #6b7280;
+        --neutral-hover: #4b5563;
+        --surface-color: #ffffff;
+        --surface-secondary: #f8fafc;
+        --surface-accent: #f1f5f9;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+    }
+
+    /* Page Layout */
+    .page-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--surface-secondary) 0%, var(--surface-accent) 100%);
+    }
+
+    /* Header Section */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+        color: white;
+        padding: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="20" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.1;
+    }
+
+    .header-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    .stats-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 1.5rem;
+        border-radius: var(--radius-xl);
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .stats-label {
+        font-size: 0.875rem;
+        opacity: 0.8;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Content Container */
+    .content-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: between;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-count {
+        background: var(--info-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-input, .form-select {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--surface-color);
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        color: var(--text-primary);
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: var(--text-secondary);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-hover), var(--info-hover));
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, var(--success-hover), #047857);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, var(--danger-hover), #b91c1c);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+        background: var(--surface-accent);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+    }
+
+    /* Service Cards */
+    .services-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .service-card {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.02) 0%, rgba(59, 130, 246, 0.02) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .service-card:hover::before {
+        opacity: 1;
+    }
+
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-color);
+    }
+
+    .service-card-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .service-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .service-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .service-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .service-meta {
+        background: var(--surface-accent);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+    }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .meta-value {
+        color: var(--text-secondary);
+    }
+
+    .service-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .action-btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .action-btn-approve {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+    }
+
+    .action-btn-approve:hover {
+        background: linear-gradient(135deg, var(--success-hover), #047857);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .action-btn-reject {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        color: white;
+    }
+
+    .action-btn-reject:hover {
+        background: linear-gradient(135deg, var(--danger-hover), #b91c1c);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .action-btn-edit {
+        background: linear-gradient(135deg, var(--info-color), #1d4ed8);
+        color: white;
+    }
+
+    .action-btn-edit:hover {
+        background: linear-gradient(135deg, var(--info-hover), #1e40af);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .action-btn-preview {
+        background: var(--surface-color);
+        border: 2px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .action-btn-preview:hover {
+        background: var(--surface-accent);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-1px);
+    }
+
+    /* Bulk Actions */
+    .bulk-actions {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-md);
+    }
+
+    .bulk-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 600;
+    }
+
+    .bulk-actions-buttons {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .bulk-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .bulk-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+    }
+
+    /* Checkboxes */
+    .custom-checkbox {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: var(--surface-color);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .custom-checkbox:checked {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .custom-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.modal-open {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-description {
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .header-title {
+            font-size: 2.5rem;
+        }
+        
+        .filter-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        
+        .service-actions {
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 0;
+        }
+        
+        .header-title {
+            font-size: 2rem;
+        }
+        
+        .header-subtitle {
+            font-size: 1rem;
+        }
+        
+        .filter-section {
+            padding: 1.5rem;
+        }
+        
+        .service-card {
+            padding: 1.5rem;
+        }
+        
+        .bulk-actions {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .filter-actions {
+            flex-direction: column;
+        }
+        
+        .service-actions {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            min-width: auto;
+            flex: 1;
+        }
+    }
+
+    /* Loading Animation */
+    .loading {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Modern Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="content-container">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="header-title">📋 Service Approval Queue</h1>
+                        <p class="header-subtitle">Review and approve service submissions from the community</p>
+                    </div>
+                    <div class="stats-badge">
+                        <span class="stats-number">{{ services|length }}</span>
+                        <span class="stats-label">Pending Services</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <!-- Enhanced Filters and Search -->
+        <div class="filter-section">
+            <div class="filter-header">
+                <h2 class="filter-title">
+                    🔍 Filters & Search
+                </h2>
+                <div class="filter-count">
+                    {{ services|length }} services awaiting review
+                </div>
+            </div>
+            
+            <form method="get">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            🔍 Search Services
+                        </label>
+                        <input type="text" name="search" value="{{ request.GET.search }}" 
+                               class="form-input" placeholder="Search by name, description...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            📂 Category
+                        </label>
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.pk }}" 
+                                    {% if request.GET.category == category.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            📅 Date From
+                        </label>
+                        <input type="date" name="date_from" value="{{ request.GET.date_from }}" 
+                               class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            📅 Date To
+                        </label>
+                        <input type="date" name="date_to" value="{{ request.GET.date_to }}" 
+                               class="form-input">
+                    </div>
+                </div>
+                
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        🔍 Apply Filters
+                    </button>
+                    <a href="{% url 'moderators:services_pending' %}" class="btn btn-outline">
+                        🗑️ Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bulk Actions Bar (Hidden by default) -->
+        <div id="bulkActionsBar" class="bulk-actions hidden">
+            <div class="bulk-info">
+                <span>⚡</span>
+                <span><span id="selectedCount">0</span> services selected</span>
+            </div>
+            <div class="bulk-actions-buttons">
+                <button id="bulkApprove" class="bulk-btn">
+                    ✅ Approve All
+                </button>
+                <button id="bulkReject" class="bulk-btn">
+                    ❌ Reject All
+                </button>
+                <button id="selectAll" class="bulk-btn">
+                    📋 Select All
+                </button>
+                <button id="clearSelection" class="bulk-btn">
+                    🗑️ Clear Selection
+                </button>
+            </div>
+        </div>
+
+        <!-- Services Grid -->
+        {% if services %}
+            <div class="services-grid">
+                {% for service in services %}
+                <div class="service-card">
+                    <div class="service-card-content">
+                        <!-- Checkbox for bulk actions -->
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex-1">
+                                <div class="service-header">
+                                    <h3 class="service-title">
+                                        {{ service.name }}
+                                    </h3>
+                                    <p class="service-description">
+                                        {{ service.description|truncatewords:35 }}
+                                    </p>
+                                </div>
+                                
+                                <!-- Service Meta Information -->
+                                <div class="service-meta">
+                                    <div class="meta-grid">
+                                        <div class="meta-item">
+                                            <span class="meta-label">👤 Manager:</span> 
+                                            <span class="meta-value">{{ service.manager.get_display_name }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">📂 Category:</span> 
+                                            <span class="meta-value">{{ service.category.name }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">📅 Submitted:</span> 
+                                            <span class="meta-value">{{ service.created_at|date:"M d, Y H:i" }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">📞 Contact:</span> 
+                                            <span class="meta-value">{{ service.contact_phone|default:"Not provided" }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">📧 Email:</span> 
+                                            <span class="meta-value">{{ service.contact_email|default:"Not provided" }}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <span class="meta-label">📍 Address:</span> 
+                                            <span class="meta-value">{{ service.address|default:"Not provided" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ml-4">
+                                <input type="checkbox" class="custom-checkbox service-checkbox" 
+                                       data-service-id="{{ service.pk }}">
+                            </div>
+                        </div>
+                        
+                        <!-- Action buttons -->
+                        <div class="service-actions">
+                            <button onclick="approveService('{{ service.pk }}')" 
+                                    class="action-btn action-btn-approve">
+                                <span>✅</span>
+                                Approve
+                            </button>
+                            <button onclick="rejectService('{{ service.pk }}')" 
+                                    class="action-btn action-btn-reject">
+                                <span>❌</span>
+                                Reject
+                            </button>
+                            <a href="{% url 'moderators:service_edit' service.pk %}" 
+                               class="action-btn action-btn-edit">
+                                <span>✏️</span>
+                                Edit
+                            </a>
+                            <a href="#" onclick="previewService('{{ service.pk }}')" 
+                               class="action-btn action-btn-preview">
+                                <span>👁️</span>
+                                Preview
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <h3 class="empty-title">All caught up!</h3>
+                <p class="empty-description">No pending services to review at the moment.</p>
+            </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="flex justify-center mt-8">
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+                       class="btn btn-outline">Previous</a>
+                {% endif %}
+                
+                <span class="flex items-center px-4 py-2 text-sm text-gray-600">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+                       class="btn btn-outline">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Enhanced Reason Modal -->
+<div id="reasonModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-title">📝 Provide Reason</h3>
+        <div class="py-4">
+            <textarea id="reasonText" class="form-input w-full h-32" 
+                      placeholder="Enter reason for this action..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button id="confirmAction" class="btn btn-success">
+                <span>✅</span>
+                Confirm
+            </button>
+            <button onclick="closeReasonModal()" class="btn btn-outline">
+                ❌ Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Bulk Action Modal -->
+<div id="bulkModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-title">⚡ Bulk Action Confirmation</h3>
+        <p class="py-4 text-gray-700">
+            Are you sure you want to <span id="bulkActionType" class="font-bold"></span> 
+            <span id="bulkItemCount" class="font-bold text-blue-600"></span> services?
+        </p>
+        <div class="py-4">
+            <textarea id="bulkReasonText" class="form-input w-full h-32" 
+                      placeholder="Enter reason for bulk action..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button id="confirmBulkAction" class="btn btn-primary">
+                <span>⚡</span>
+                Confirm Bulk Action
+            </button>
+            <button onclick="closeBulkModal()" class="btn btn-outline">
+                ❌ Cancel
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentAction = null;
+    let currentItemId = null;
+    let selectedServices = new Set();
+
+    // Individual service actions
+    function approveService(serviceId) {
+        performAction('approve_service', serviceId);
+    }
+
+    function rejectService(serviceId) {
+        currentAction = 'reject_service';
+        currentItemId = serviceId;
+        document.getElementById('reasonModal').classList.add('modal-open');
+    }
+
+    function performAction(action, itemId) {
+        const reason = document.getElementById('reasonText').value || '';
+        let url;
+        
+        if (action === 'approve_service') {
+            url = `{% url 'moderators:api_approve_service' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId);
+        } else if (action === 'reject_service') {
+            url = `{% url 'moderators:api_reject_service' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId);
+        }
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `reason=${encodeURIComponent(reason)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+            closeReasonModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+            closeReasonModal();
+        });
+    }
+
+    function previewService(serviceId) {
+        // You can implement a preview modal or redirect to a preview page
+        alert('Preview functionality can be implemented here');
+    }
+
+    // Bulk selection handling
+    document.addEventListener('DOMContentLoaded', function() {
+        updateBulkActionsDisplay();
+        
+        // Individual checkbox changes
+        document.querySelectorAll('.service-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const serviceId = this.dataset.serviceId;
+                if (this.checked) {
+                    selectedServices.add(serviceId);
+                } else {
+                    selectedServices.delete(serviceId);
+                }
+                updateBulkActionsDisplay();
+            });
+        });
+        
+        // Select all button
+        document.getElementById('selectAll').addEventListener('click', function() {
+            document.querySelectorAll('.service-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+                selectedServices.add(checkbox.dataset.serviceId);
+            });
+            updateBulkActionsDisplay();
+        });
+        
+        // Clear selection button
+        document.getElementById('clearSelection').addEventListener('click', function() {
+            document.querySelectorAll('.service-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedServices.clear();
+            updateBulkActionsDisplay();
+        });
+        
+        // Bulk action buttons
+        document.getElementById('bulkApprove').addEventListener('click', function() {
+            if (selectedServices.size > 0) {
+                showBulkModal('approve', selectedServices.size);
+            }
+        });
+        
+        document.getElementById('bulkReject').addEventListener('click', function() {
+            if (selectedServices.size > 0) {
+                showBulkModal('reject', selectedServices.size);
+            }
+        });
+    });
+
+    function updateBulkActionsDisplay() {
+        const count = selectedServices.size;
+        const bulkBar = document.getElementById('bulkActionsBar');
+        const countSpan = document.getElementById('selectedCount');
+        
+        if (count > 0) {
+            bulkBar.classList.remove('hidden');
+            countSpan.textContent = count;
+        } else {
+            bulkBar.classList.add('hidden');
+        }
+    }
+
+    function showBulkModal(action, count) {
+        document.getElementById('bulkActionType').textContent = action;
+        document.getElementById('bulkItemCount').textContent = count;
+        document.getElementById('bulkModal').classList.add('modal-open');
+        
+        document.getElementById('confirmBulkAction').onclick = function() {
+            performBulkAction(action);
+        };
+    }
+
+    function performBulkAction(action) {
+        const reason = document.getElementById('bulkReasonText').value || '';
+        const serviceIds = Array.from(selectedServices);
+        
+        // Note: You'll need to implement these bulk API endpoints in your Django views
+        let url = action === 'approve' ? 
+            '/moderator/api/bulk-approve-services/' : 
+            '/moderator/api/bulk-reject-services/';
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                service_ids: serviceIds,
+                reason: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+            closeBulkModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+            closeBulkModal();
+        });
+    }
+
+    function closeReasonModal() {
+        document.getElementById('reasonModal').classList.remove('modal-open');
+        document.getElementById('reasonText').value = '';
+        currentAction = null;
+        currentItemId = null;
+    }
+
+    function closeBulkModal() {
+        document.getElementById('bulkModal').classList.remove('modal-open');
+        document.getElementById('bulkReasonText').value = '';
+    }
+
+    // Confirm action from reason modal
+    document.getElementById('confirmAction').addEventListener('click', function() {
+        if (currentAction && currentItemId) {
+            performAction(currentAction, currentItemId);
+        }
+    });
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('modal-open');
+            }
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}
+{% if object %}Edit Announcement{% else %}New Announcement{% endif %} - CommuMap
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        color: #f1f5f9;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .announcement-form-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        padding: 3rem 0 4rem 0;
+        margin-top: 3rem;
+    }
+
+    .announcement-form-container::before {
+        content: '';
+        display: block;
+        height: 1rem;
+    }
+
+    .form-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .form-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-header p {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .form-section {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(71, 85, 105, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .form-section h3 {
+        color: #f1f5f9;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-section .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .form-control {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        color: #f1f5f9;
+        font-size: 1rem;
+        padding: 0.875rem 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+        color: #f1f5f9;
+    }
+
+    .form-control::placeholder {
+        color: #94a3b8;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-select {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        color: #f1f5f9;
+        padding: 0.875rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+        color: #f1f5f9;
+    }
+
+    .form-check {
+        margin-bottom: 1rem;
+    }
+
+    .form-check-input {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        margin-right: 0.75rem;
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .form-check-label {
+        color: #cbd5e1;
+        font-weight: 500;
+    }
+
+    .help-text {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkbox-group {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(71, 85, 105, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .checkbox-group .form-check {
+        margin-bottom: 0.75rem;
+    }
+
+    .datetime-input {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        color: #f1f5f9;
+        padding: 0.875rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .datetime-input:focus {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        padding: 1rem 2rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-outline-light {
+        border: 2px solid rgba(241, 245, 249, 0.3);
+        color: #f1f5f9;
+        background: transparent;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-light:hover {
+        background: rgba(241, 245, 249, 0.1);
+        border-color: rgba(241, 245, 249, 0.5);
+        transform: translateY(-1px);
+        color: #f1f5f9;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(71, 85, 105, 0.2);
+    }
+
+    .alert {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        font-weight: 500;
+    }
+
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #fca5a5;
+        border-left: 4px solid #ef4444;
+    }
+
+    .back-button {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        color: #f1f5f9;
+        padding: 0.75rem 1.5rem;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-button:hover {
+        background: rgba(30, 41, 59, 1);
+        transform: translateY(-1px);
+        color: #f1f5f9;
+        text-decoration: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .announcement-form-container {
+            padding: 2rem 0 3rem 0;
+            margin-top: 2rem;
+        }
+
+        .form-card {
+            padding: 2rem 1.5rem;
+            margin: 0 1rem;
+        }
+
+        .form-header h1 {
+            font-size: 2rem;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .back-button {
+            position: static;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="announcement-form-container mt-8">
+    <div class="container py-8">
+        <div class="form-card">
+            <a href="{% url 'console:announcements' %}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Back to Announcements
+            </a>
+
+            <div class="form-header">
+                <h1>
+                    <i class="fas fa-megaphone me-2"></i>
+                    {% if object %}Edit Announcement{% else %}New Announcement{% endif %}
+                </h1>
+                <p>
+                    {% if object %}
+                        Update system announcement details and settings
+                    {% else %}
+                        Create a new system-wide announcement for users
+                    {% endif %}
+                </p>
+            </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Please correct the errors below and try again.
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3>
+                        <div class="section-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        Basic Information
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">
+                                    {{ form.title.label }}
+                                    {% if form.title.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ form.title|add_class:"form-control" }}
+                                {% if form.title.help_text %}
+                                    <div class="help-text">{{ form.title.help_text }}</div>
+                                {% endif %}
+                                {% if form.title.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.title.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.announcement_type.id_for_label }}" class="form-label">
+                                    {{ form.announcement_type.label }}
+                                    {% if form.announcement_type.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ form.announcement_type|add_class:"form-select" }}
+                                {% if form.announcement_type.help_text %}
+                                    <div class="help-text">{{ form.announcement_type.help_text }}</div>
+                                {% endif %}
+                                {% if form.announcement_type.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.announcement_type.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check" style="margin-top: 2.5rem;">
+                                    {{ form.is_urgent|add_class:"form-check-input" }}
+                                    <label class="form-check-label" for="{{ form.is_urgent.id_for_label }}">
+                                        {{ form.is_urgent.label }}
+                                    </label>
+                                    {% if form.is_urgent.help_text %}
+                                        <div class="help-text">{{ form.is_urgent.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">
+                            {{ form.content.label }}
+                            {% if form.content.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ form.content|add_class:"form-control" }}
+                        {% if form.content.help_text %}
+                            <div class="help-text">{{ form.content.help_text }}</div>
+                        {% endif %}
+                        {% if form.content.errors %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.content.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Targeting & Visibility -->
+                <div class="form-section">
+                    <h3>
+                        <div class="section-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        Targeting & Visibility
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.target_roles.label }}</label>
+                        <div class="checkbox-group">
+                            {% for choice in form.target_roles %}
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.target_roles.help_text %}
+                            <div class="help-text">{{ form.target_roles.help_text }}</div>
+                        {% endif %}
+                        {% if form.target_roles.errors %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.target_roles.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form.is_active|add_class:"form-check-input" }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                {{ form.is_active.label }}
+                            </label>
+                            {% if form.is_active.help_text %}
+                                <div class="help-text">{{ form.is_active.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule -->
+                <div class="form-section">
+                    <h3>
+                        <div class="section-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        Schedule
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.show_from.id_for_label }}" class="form-label">
+                                    {{ form.show_from.label }}
+                                    {% if form.show_from.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ form.show_from|add_class:"datetime-input" }}
+                                {% if form.show_from.help_text %}
+                                    <div class="help-text">{{ form.show_from.help_text }}</div>
+                                {% endif %}
+                                {% if form.show_from.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.show_from.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.show_until.id_for_label }}" class="form-label">
+                                    {{ form.show_until.label }}
+                                </label>
+                                {{ form.show_until|add_class:"datetime-input" }}
+                                {% if form.show_until.help_text %}
+                                    <div class="help-text">{{ form.show_until.help_text }}</div>
+                                {% endif %}
+                                {% if form.show_until.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.show_until.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if object %}Update Announcement{% else %}Create Announcement{% endif %}
+                    </button>
+                    <a href="{% url 'console:announcements' %}" class="btn btn-outline-light">
+                        <i class="fas fa-times me-2"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default datetime values if creating new announcement
+    {% if not object %}
+    const showFromInput = document.querySelector('input[name="show_from"]');
+    if (showFromInput && !showFromInput.value) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        showFromInput.value = now.toISOString().slice(0, 16);
+    }
+    {% endif %}
+
+    // Form validation feedback
+    const form = document.querySelector('form');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+    });
+
+    // Auto-resize textarea
+    const textarea = document.querySelector('textarea[name="content"]');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // Initial resize
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
+});
+</script>
+{% endblock %} 

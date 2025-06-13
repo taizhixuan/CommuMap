@@ -1,0 +1,670 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ service.name }} - Analytics - CommuMap{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* Modern Analytics Page Styling */
+    .analytics-container {
+        min-height: calc(100vh - 200px);
+        padding-top: 3rem;
+        padding-bottom: 4rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .analytics-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+    
+    .analytics-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .analytics-subtitle {
+        color: #64748b;
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .analytics-address {
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+    
+    .main-content-spacing {
+        margin-top: 2rem !important;
+        margin-bottom: 4rem !important;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        margin-bottom: 2rem;
+        border: 1px solid #f1f5f9;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+    
+    .metric-card.visits::before { 
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    .metric-card.ratings::before { 
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    .metric-card.feedback::before { 
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    .metric-card.capacity::before { 
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .filter-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        margin-bottom: 3rem;
+        border: 1px solid #f1f5f9;
+    }
+    
+    .date-filter {
+        display: flex;
+        gap: 1.5rem;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    
+    .chart-wrapper {
+        position: relative;
+        height: 400px;
+        margin-top: 1.5rem;
+    }
+    
+    .data-table {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        border: 1px solid #f1f5f9;
+    }
+    
+    .export-section {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+    
+    .export-btn:hover {
+        background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+        color: white;
+    }
+    
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        margin-top: 0.75rem;
+    }
+    
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+    .trend-stable { color: #6b7280; }
+    
+    /* Force remove purple from all analytics icons */
+    .analytics-container i.fa,
+    .analytics-container i.fas,
+    .analytics-container .fa,
+    .analytics-container .fas {
+        background: transparent !important;
+        background-image: none !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: #6b7280 !important;
+        color: #6b7280 !important;
+    }
+    
+    @media (max-width: 768px) {
+        .analytics-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+        
+        .analytics-title {
+            font-size: 2rem;
+        }
+        
+        .date-filter {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .export-section {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .metric-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <div class="container mx-auto px-4 py-8 main-content-spacing">
+        <!-- Header -->
+        <div class="analytics-header">
+            <h1 class="analytics-title">
+                <i class="fas fa-chart-line" style="color: #6b7280; margin-right: 0.5rem;"></i>
+                Service Analytics
+            </h1>
+            <p class="analytics-subtitle">{{ service.name }}</p>
+            <p class="analytics-address">{{ service.address }}</p>
+            
+            <div class="export-section">
+                <a href="{% url 'manager:generate_report' service.id %}" 
+                   class="export-btn" 
+                   onclick="generateReport('csv')">
+                    <i class="fas fa-file-csv"></i>
+                    Export CSV
+                </a>
+                <a href="{% url 'manager:generate_report' service.id %}" 
+                   class="export-btn" 
+                   onclick="generateReport('pdf')">
+                    <i class="fas fa-file-pdf"></i>
+                    Export PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="filter-section">
+        <form method="get" class="date-filter">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">From Date</span>
+                </label>
+                <input type="date" name="from_date" 
+                       value="{{ request.GET.from_date|default:'' }}" 
+                       class="input input-bordered">
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">To Date</span>
+                </label>
+                <input type="date" name="to_date" 
+                       value="{{ request.GET.to_date|default:'' }}" 
+                       class="input input-bordered">
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Period</span>
+                </label>
+                <select name="period" class="select select-bordered">
+                    <option value="7" {% if request.GET.period == '7' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="30" {% if request.GET.period == '30' %}selected{% endif %}>Last 30 Days</option>
+                    <option value="90" {% if request.GET.period == '90' %}selected{% endif %}>Last 3 Months</option>
+                    <option value="365" {% if request.GET.period == '365' %}selected{% endif %}>Last Year</option>
+                    <option value="custom" {% if request.GET.period == 'custom' %}selected{% endif %}>Custom Range</option>
+                </select>
+            </div>
+            
+            <div class="form-control">
+                <button type="submit" class="btn btn-primary">
+                    🔍 Apply Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
+        <div class="metric-card visits">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-gray-800">Total Visits</h3>
+                <div class="text-2xl text-blue-500">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-1">1,247</div>
+            <div class="trend-indicator trend-up">
+                <i class="fas fa-arrow-up"></i>
+                <span>+12.5% from last period</span>
+            </div>
+        </div>
+
+        <div class="metric-card ratings">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-gray-800">Avg Rating</h3>
+                <div class="text-2xl text-yellow-500">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-1">4.8</div>
+            <div class="trend-indicator trend-up">
+                <i class="fas fa-arrow-up"></i>
+                <span>+0.3 from last period</span>
+            </div>
+        </div>
+
+        <div class="metric-card feedback">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-gray-800">Feedback</h3>
+                <div class="text-2xl text-green-500">
+                    <i class="fas fa-comments"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-1">42</div>
+            <div class="trend-indicator trend-up">
+                <i class="fas fa-arrow-up"></i>
+                <span>+7 new reviews</span>
+            </div>
+        </div>
+
+        <div class="metric-card capacity">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-gray-800">Avg Capacity</h3>
+                <div class="text-2xl text-red-500">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 mb-1">68%</div>
+            <div class="trend-indicator trend-stable">
+                <i class="fas fa-minus"></i>
+                <span>Stable usage</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Visits Chart -->
+        <div class="chart-container">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">📊 Daily Visits</h3>
+            <div class="chart-wrapper">
+                <canvas id="visitsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Ratings Chart -->
+        <div class="chart-container">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">⭐ Rating Distribution</h3>
+            <div class="chart-wrapper">
+                <canvas id="ratingsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Capacity Chart -->
+        <div class="chart-container">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">📈 Capacity Utilization</h3>
+            <div class="chart-wrapper">
+                <canvas id="capacityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Peak Hours Chart -->
+        <div class="chart-container">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">🕐 Peak Hours</h3>
+            <div class="chart-wrapper">
+                <canvas id="hoursChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Data Table -->
+    <div class="data-table">
+        <div class="p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">📋 Detailed Analytics</h3>
+            
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Visits</th>
+                            <th>New Reviews</th>
+                            <th>Avg Rating</th>
+                            <th>Peak Capacity</th>
+                            <th>Status Changes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in analytics_data %}
+                            <tr>
+                                <td>{{ day.date|date:"M j, Y" }}</td>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ day.visits|default:0 }}</span>
+                                        {% if day.visits_trend == 'up' %}
+                                            <span class="text-green-500 text-xs">↗️</span>
+                                        {% elif day.visits_trend == 'down' %}
+                                            <span class="text-red-500 text-xs">↘️</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>{{ day.new_reviews|default:0 }}</td>
+                                <td>
+                                    {% if day.avg_rating %}
+                                        <div class="flex items-center gap-1">
+                                            <span>{{ day.avg_rating|floatformat:1 }}</span>
+                                            <span class="text-yellow-500">⭐</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if day.peak_capacity %}
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-16 bg-gray-200 rounded-full h-2">
+                                                <div class="bg-blue-500 h-2 rounded-full" 
+                                                     style="width: {{ day.peak_capacity }}%"></div>
+                                            </div>
+                                            <span class="text-sm">{{ day.peak_capacity }}%</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-outline badge-sm">
+                                        {{ day.status_changes|default:0 }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-gray-500 py-8">
+                                    No data available for the selected period
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights and Recommendations -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-20">
+        <h3 class="text-lg font-semibold text-blue-800 mb-4">💡 Insights & Recommendations</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-lg">
+                <h4 class="font-medium text-blue-800 mb-2">🔥 Peak Performance</h4>
+                <p class="text-blue-700 text-sm">
+                    Your service receives the most visits on Tuesday afternoons between 2-4 PM. 
+                    Consider increasing capacity during these hours.
+                </p>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg">
+                <h4 class="font-medium text-blue-800 mb-2">⭐ Rating Trends</h4>
+                <p class="text-blue-700 text-sm">
+                    Your rating has improved by 0.3 points this month. 
+                    Recent positive feedback mentions improved wait times.
+                </p>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg">
+                <h4 class="font-medium text-blue-800 mb-2">📊 Capacity Management</h4>
+                <p class="text-blue-700 text-sm">
+                    You're operating at 68% average capacity. 
+                    Consider adjusting your maximum capacity settings.
+                </p>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg">
+                <h4 class="font-medium text-blue-800 mb-2">💬 Engagement</h4>
+                <p class="text-blue-700 text-sm">
+                    Review response rate is 85%. Responding to all feedback can boost your rating.
+                </p>
+            </div>
+        </div>
+    </div>
+
+        <!-- Navigation -->
+        <div class="text-center mt-16">
+            <div class="flex gap-4 justify-center">
+                <a href="{% url 'manager:service_status' service.id %}" class="export-btn">
+                    <i class="fas fa-chart-bar"></i>
+                    Manage Status
+                </a>
+                <a href="{% url 'manager:service_feedback' service.id %}" class="export-btn">
+                    <i class="fas fa-comments"></i>
+                    View Feedback
+                </a>
+                <a href="{% url 'manager:services' %}" class="export-btn" style="background: linear-gradient(135deg, #6b7280, #4b5563);">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to My Services
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sample data - in real implementation, this would come from Django context
+const visitsData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+        label: 'Daily Visits',
+        data: [65, 89, 43, 67, 55, 78, 92],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.1
+    }]
+};
+
+const ratingsData = {
+    labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+    datasets: [{
+        data: [25, 12, 3, 1, 1],
+        backgroundColor: [
+            '#10b981',
+            '#84cc16',
+            '#f59e0b',
+            '#f97316',
+            '#ef4444'
+        ]
+    }]
+};
+
+const capacityData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+        label: 'Capacity %',
+        data: [45, 78, 52, 69, 48, 85, 67],
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        tension: 0.1
+    }]
+};
+
+const hoursData = {
+    labels: ['6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM'],
+    datasets: [{
+        label: 'Visits by Hour',
+        data: [5, 15, 25, 35, 45, 38, 28, 12],
+        backgroundColor: 'rgba(168, 85, 247, 0.8)'
+    }]
+};
+
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Visits Chart
+    new Chart(document.getElementById('visitsChart'), {
+        type: 'line',
+        data: visitsData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Ratings Chart
+    new Chart(document.getElementById('ratingsChart'), {
+        type: 'doughnut',
+        data: ratingsData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Capacity Chart
+    new Chart(document.getElementById('capacityChart'), {
+        type: 'line',
+        data: capacityData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Hours Chart
+    new Chart(document.getElementById('hoursChart'), {
+        type: 'bar',
+        data: hoursData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+
+function generateReport(format) {
+    // Prevent default link behavior
+    event.preventDefault();
+    
+    // Get current filter parameters
+    const fromDate = document.querySelector('[name="from_date"]').value;
+    const toDate = document.querySelector('[name="to_date"]').value;
+    const period = document.querySelector('[name="period"]').value;
+    
+    // Build URL with parameters
+    let url = `{% url 'manager:generate_report' service.id %}?format=${format}`;
+    if (fromDate) url += `&from_date=${fromDate}`;
+    if (toDate) url += `&to_date=${toDate}`;
+    if (period) url += `&period=${period}`;
+    
+    // Open download in new tab
+    window.open(url, '_blank');
+}
+
+// Auto-refresh data every 5 minutes
+setInterval(function() {
+    console.log('Auto-refresh analytics data');
+    // In real implementation, this would fetch fresh data via AJAX
+}, 300000);
+</script>
+{% endblock %} 

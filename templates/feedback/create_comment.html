@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Comment for {{ service.name }} - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5a67d8;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+/* Main Content Container Spacing */
+.main-content-container {
+    min-height: calc(100vh - 160px); /* Account for navbar (~80px) and footer (~80px) */
+    padding-top: 3rem;
+    padding-bottom: 6rem;
+}
+
+@media (min-width: 768px) {
+    .main-content-container {
+        padding-top: 4rem;
+        padding-bottom: 8rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-content-container {
+        padding-top: 5rem;
+        padding-bottom: 10rem;
+    }
+}
+
+/* Prevent content overflow */
+.content-wrapper {
+    overflow-x: hidden;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Header spacing improvements */
+.page-header-section {
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+}
+
+@media (min-width: 768px) {
+    .page-header-section {
+        margin-bottom: 2.5rem;
+        padding-top: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .page-header-section {
+        margin-bottom: 3rem;
+        padding-top: 2rem;
+    }
+}
+
+/* Additional breathing room for main form */
+.main-form-content {
+    margin-top: 1rem;
+    margin-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+    .main-form-content {
+        margin-top: 1.5rem;
+        margin-bottom: 6rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-form-content {
+        margin-bottom: 8rem;
+    }
+}
+
+/* Responsive container adjustments */
+@media (max-width: 640px) {
+    .main-content-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 pt-12 pb-24 md:pt-16 md:pb-32 lg:pt-20 lg:pb-40 main-content-container content-wrapper">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 page-header-section">Add Comment for {{ service.name }}</h1>
+        
+        <div class="bg-white rounded-lg shadow-sm border p-6 main-form-content">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_content" class="form-label">Your Comment *</label>
+                    <textarea name="content" id="id_content" class="form-input" rows="5"
+                              placeholder="Share your thoughts, questions, or experiences (minimum 20 characters)"
+                              minlength="20" required></textarea>
+                    <div class="text-sm text-gray-500 mt-1">
+                        Minimum 20 characters required
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                    <a href="{% url 'services:detail' pk=service.pk %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+    // Add success parameter to the action URL
+    const baseUrl = "{% url 'services:detail' pk=service.pk %}";
+    setTimeout(() => {
+        if (window.location.href === baseUrl) {
+            window.location.href = baseUrl + '?success=comment';
+        }
+    }, 100);
+});
+</script>
+{% endblock %} 

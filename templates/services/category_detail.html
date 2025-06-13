@@ -1,0 +1,804 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} Services - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Category Details Styling - Matching Service Details */
+.hero-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>') repeat;
+    opacity: 0.3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.floating-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.floating-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modern-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.modern-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.service-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-open {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.status-closed {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.status-limited {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.emergency-badge {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); }
+    50% { box-shadow: 0 6px 25px rgba(220, 38, 38, 0.5); }
+}
+
+.category-badge {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.breadcrumb-modern {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb-modern a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-modern a:hover {
+    color: #764ba2;
+}
+
+.modern-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.modern-btn:hover::before {
+    left: 100%;
+}
+
+.modern-btn-outline {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modern-btn-outline:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.filter-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.rating-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star-filled {
+    color: #fbbf24;
+    filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
+}
+
+.star-empty {
+    color: #e5e7eb;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.breadcrumb-spacing {
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+    padding-top: 1rem !important;
+}
+
+.category-icon-large {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.main-card-spacing {
+    margin-bottom: 6rem !important;
+}
+
+/* Animation utilities */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.fade-in-up-delay-1 { animation-delay: 0.1s; }
+.fade-in-up-delay-2 { animation-delay: 0.2s; }
+.fade-in-up-delay-3 { animation-delay: 0.3s; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-gradient {
+        padding-top: 100px;
+        padding-bottom: 40px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    
+    .breadcrumb-modern {
+        padding: 8px 12px;
+        font-size: 0.875rem;
+        gap: 6px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .floating-card {
+        margin: 0;
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .modern-card {
+        margin: 0;
+        border-radius: 12px;
+        padding: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-gradient pt-40 pb-16">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col items-center">
+            <!-- Breadcrumb - Centered with top spacing -->
+            <div class="w-full max-w-6xl mx-auto mb-8 mt-12 breadcrumb-spacing flex justify-center">
+                <div class="breadcrumb-modern fade-in-up">
+                    <a href="{% url 'core:home' %}"><i class="fas fa-home"></i> Home</a>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                    <a href="{% url 'services:list' %}">Services</a>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                    <span class="text-gray-700">{{ category.name }}</span>
+                </div>
+            </div>
+
+            <!-- Category Header - Redesigned -->
+            <div class="w-full max-w-6xl mx-auto">
+                <div class="floating-card p-8 md:p-12 fade-in-up-delay-1 mb-16">
+                    <!-- Header Section -->
+                    <div class="text-center mb-8">
+                        <div class="flex items-center justify-center gap-4 mb-6">
+                            <div class="category-icon-large">
+                                <span class="text-7xl">{{ category.get_icon_display|default:"📋" }}</span>
+                            </div>
+                        </div>
+                        
+                        <span class="category-badge mb-4 inline-block">{{ category.name }}</span>
+                        
+                        <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                            {{ category.name }} Services
+                        </h1>
+                        
+                        {% if category.description %}
+                        <p class="text-xl text-gray-600 leading-relaxed mb-8 max-w-3xl mx-auto">
+                            {{ category.description }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Stats Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="text-center">
+                            <div class="info-icon mx-auto mb-3">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ services.count }}</div>
+                            <div class="text-sm text-gray-600 font-medium">Total Services</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="info-icon mx-auto mb-3" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ open_services }}</div>
+                            <div class="text-sm text-gray-600 font-medium">Currently Open</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="info-icon mx-auto mb-3" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ emergency_services }}</div>
+                            <div class="text-sm text-gray-600 font-medium">Emergency Services</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="info-icon mx-auto mb-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ free_services }}</div>
+                            <div class="text-sm text-gray-600 font-medium">Free Services</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Badges -->
+                    <div class="flex flex-wrap items-center justify-center gap-4">
+                        <span class="status-badge status-open">
+                            <i class="fas fa-list"></i>
+                            {{ services.count }} Service{{ services.count|pluralize }} Available
+                        </span>
+                        
+                        <span class="status-badge status-limited">
+                            <i class="fas fa-clock"></i>
+                            {{ open_services }} Currently Open
+                        </span>
+                        
+                        {% if emergency_services > 0 %}
+                        <span class="emergency-badge">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Emergency Services Available
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="container mx-auto px-4" style="padding-top: 8rem;">
+        <div class="w-full max-w-6xl mx-auto">
+            <div class="filter-card p-6 mb-8 fade-in-up-delay-2">
+                <form method="get" class="flex flex-wrap gap-4 items-end">
+                    <div class="flex-1 min-w-60">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search within category</label>
+                        <input type="text" name="q" value="{{ request.GET.q }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Search {{ category.name|lower }} services...">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status" class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All</option>
+                            <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Open</option>
+                            <option value="emergency" {% if request.GET.status == 'emergency' %}selected{% endif %}>Emergency Only</option>
+                            <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Has Capacity</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
+                        <select name="sort" class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name</option>
+                            <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Rating</option>
+                            <option value="recent" {% if request.GET.sort == 'recent' %}selected{% endif %}>Recently Added</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="modern-btn">
+                        <i class="fas fa-search"></i>
+                        Filter
+                    </button>
+                    
+                    {% if request.GET.q or request.GET.status or request.GET.sort %}
+                        <a href="{% url 'services:category' category_slug=category.slug %}" 
+                           class="modern-btn-outline">
+                            <i class="fas fa-times"></i>
+                            Clear
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Services Grid -->
+            {% if services %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                    {% for service in services %}
+                        <div class="service-card p-6 fade-in-up-delay-{{ forloop.counter|add:2 }}">
+                            <!-- Service Header -->
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">
+                                        <a href="{% url 'services:detail' service.pk %}" class="hover:text-blue-600 transition-colors">
+                                            {{ service.name }}
+                                        </a>
+                                    </h3>
+                                    {% if service.is_emergency_service %}
+                                        <span class="emergency-badge">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Emergency
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="mb-4">
+                                <span class="status-badge {% if service.current_status == 'open' %}status-open{% elif service.current_status == 'closed' %}status-closed{% else %}status-limited{% endif %}">
+                                    <i class="fas fa-circle"></i>
+                                    {{ service.get_current_status_display }}
+                                </span>
+                            </div>
+                            
+                            <!-- Service Info -->
+                            <div class="space-y-3 mb-4">
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <div class="info-icon mr-3" style="width: 32px; height: 32px; font-size: 14px;">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <span>{{ service.address|truncatechars:40 }}</span>
+                                </div>
+                                
+                                {% if service.phone %}
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <div class="info-icon mr-3" style="width: 32px; height: 32px; font-size: 14px;">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <span>{{ service.phone }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if service.is_free %}
+                                <div class="flex items-center text-sm text-green-600">
+                                    <div class="info-icon mr-3" style="width: 32px; height: 32px; font-size: 14px; background: linear-gradient(135deg, #10b981, #059669);">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <span class="font-semibold">Free Service</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Description -->
+                            <p class="text-gray-600 text-sm mb-4 leading-relaxed">
+                                {{ service.description|truncatechars:120 }}
+                            </p>
+                            
+                            <!-- Rating and Capacity -->
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center">
+                                    {% if service.quality_score > 0 %}
+                                        <div class="flex items-center">
+                                            <div class="rating-stars">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= service.quality_score %}
+                                                        <i class="fas fa-star star-filled"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star star-empty"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            <span class="text-sm text-gray-500 ml-2">({{ service.total_ratings }})</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-sm text-gray-500">No ratings yet</span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if service.max_capacity > 0 %}
+                                <div class="text-sm text-gray-500">
+                                    {{ service.current_capacity }}/{{ service.max_capacity }} capacity
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex gap-3">
+                                <a href="{% url 'services:detail' service.pk %}" 
+                                   class="flex-1 modern-btn">
+                                    <i class="fas fa-eye"></i>
+                                    View Details
+                                </a>
+                                
+                                {% if user.is_authenticated %}
+                                <button class="modern-btn-outline bookmark-btn"
+                                        data-service-id="{{ service.id }}" onclick="toggleBookmark(this)">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                                {% endif %}
+                                
+                                {% if service.phone %}
+                                <a href="tel:{{ service.phone }}" 
+                                   class="modern-btn-outline">
+                                    <i class="fas fa-phone"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <div class="flex justify-center mb-12">
+                        <div class="modern-card p-4">
+                            <div class="flex space-x-2 items-center">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                                       class="modern-btn-outline">First</a>
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                                       class="modern-btn-outline">Previous</a>
+                                {% endif %}
+                                
+                                <span class="modern-btn">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </span>
+                                
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                                       class="modern-btn-outline">Next</a>
+                                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                                       class="modern-btn-outline">Last</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+            {% else %}
+                <!-- No Results -->
+                <div class="modern-card p-12 text-center mb-12">
+                    <div class="text-6xl mb-4">{{ category.get_icon_display|default:"📋" }}</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">No services found</h3>
+                    <p class="text-gray-600 mb-6 text-lg">
+                        {% if request.GET.q or request.GET.status %}
+                            No services match your current filters in this category.
+                        {% else %}
+                            There are currently no services available in this category.
+                        {% endif %}
+                    </p>
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        {% if request.GET.q or request.GET.status or request.GET.sort %}
+                            <a href="{% url 'services:category' category_slug=category.slug %}" 
+                               class="modern-btn">
+                                <i class="fas fa-times"></i>
+                                Clear Filters
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'services:list' %}" 
+                           class="modern-btn-outline">
+                            <i class="fas fa-arrow-left"></i>
+                            Browse All Services
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+
+
+
+            <!-- Related Categories -->
+            {% if related_categories %}
+            <div class="modern-card p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Related Categories</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {% for related_category in related_categories %}
+                        <a href="{% url 'services:category' category_slug=related_category.slug %}" 
+                           class="modern-card p-4 hover:scale-105 transition-transform text-center">
+                            <span class="text-3xl mb-3 block">{{ related_category.get_icon_display|default:"📋" }}</span>
+                            <div class="text-sm font-semibold text-gray-900 mb-1">{{ related_category.name }}</div>
+                            <div class="text-xs text-gray-500">{{ related_category.services.count }} services</div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF token utility function
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleBookmark(button) {
+    const serviceId = button.dataset.serviceId;
+    
+    // Disable button during request
+    button.disabled = true;
+    
+    fetch(`/api/services/bookmark/${serviceId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button state
+            const icon = button.querySelector('i');
+            
+            if (data.bookmarked) {
+                icon.style.color = '#fbbf24';
+                showNotification('Service bookmarked!', 'success');
+            } else {
+                icon.style.color = '#667eea';
+                showNotification('Bookmark removed', 'info');
+            }
+        } else {
+            showNotification('Error updating bookmark', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating bookmark', 'error');
+    })
+    .finally(() => {
+        // Re-enable button
+        button.disabled = false;
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 120px;
+        right: 20px;
+        z-index: 1000;
+        padding: 16px 24px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 
+                      type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 
+                      'linear-gradient(135deg, #3b82f6, #1d4ed8)'};
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Initialize page functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Bookmark button click handlers
+    document.querySelectorAll('.bookmark-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            toggleBookmark(this);
+        });
+    });
+});
+</script>
+{% endblock %} 

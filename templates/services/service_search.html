@@ -1,0 +1,900 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advanced Search - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .search-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+        border-radius: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .search-form {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .search-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 15px;
+        align-items: end;
+        margin-bottom: 20px;
+    }
+    
+    .filter-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .location-section {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+    
+    .search-input:focus {
+        border-color: #667eea;
+    }
+    
+    .search-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .search-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .clear-btn {
+        background: #6b7280;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    
+    .service-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .service-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+    }
+    
+    .service-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 5px;
+    }
+    
+    .service-category {
+        background: #667eea;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    
+    .service-meta {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #6b7280;
+    }
+    
+    .service-description {
+        color: #4b5563;
+        margin-bottom: 15px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .service-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-view {
+        background: #667eea;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
+    
+    .btn-view:hover {
+        background: #5a6fd8;
+    }
+    
+    .btn-bookmark {
+        background: transparent;
+        border: 2px solid #d1d5db;
+        color: #6b7280;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-bookmark.bookmarked {
+        border-color: #fbbf24;
+        color: #fbbf24;
+        background: #fef3c7;
+    }
+    
+    .emergency-badge {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+    
+    /* Enhanced Status and Capacity Styling */
+    .service-status-section {
+        margin-bottom: 15px;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border-left: 4px solid #e2e8f0;
+    }
+    
+    .status-capacity-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .status-indicator {
+        flex-shrink: 0;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-badge.status-open {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border-left-color: #10b981;
+    }
+    
+    .status-badge.status-limited {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border-left-color: #f59e0b;
+        animation: pulse-limited 3s infinite;
+    }
+    
+    .status-badge.status-closed {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border-left-color: #ef4444;
+    }
+    
+    .capacity-indicator {
+        flex: 1;
+        min-width: 120px;
+        max-width: 180px;
+    }
+    
+    .capacity-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .capacity-numbers {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .capacity-label {
+        font-size: 11px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .capacity-bar {
+        width: 100%;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .capacity-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.3s ease;
+        position: relative;
+    }
+    
+    .capacity-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    .capacity-low {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .capacity-medium {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    
+    .capacity-high {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    /* Status-specific border colors for service section */
+    .service-status-section:has(.status-open) {
+        border-left-color: #10b981;
+        background: linear-gradient(135deg, #f0fdf4, #f8fafc);
+    }
+    
+    .service-status-section:has(.status-limited) {
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, #fffbeb, #f8fafc);
+    }
+    
+    .service-status-section:has(.status-closed) {
+        border-left-color: #ef4444;
+        background: linear-gradient(135deg, #fef2f2, #f8fafc);
+    }
+    
+    /* Animations */
+    @keyframes pulse-limited {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
+    
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #6b7280;
+    }
+    
+    /* Modern Pagination Styles */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin: 5rem 0 3rem 0;
+        padding-top: 2rem;
+    }
+    
+    .pagination {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 8px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    
+    .page-btn {
+        padding: 12px 18px;
+        border-radius: 14px;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-width: 44px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+        transition: left 0.5s;
+    }
+    
+    .page-btn:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .page-btn:hover::before {
+        left: 100%;
+    }
+    
+    .page-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .page-btn.active:hover {
+        background: linear-gradient(135deg, #5a6fd8, #6a4190);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    }
+    
+    .page-info {
+        padding: 12px 20px;
+        color: #374151;
+        font-weight: 600;
+        font-size: 14px;
+        border-radius: 14px;
+        background: rgba(102, 126, 234, 0.05);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        margin: 0 8px;
+    }
+    
+    .page-btn-icon {
+        width: 16px;
+        height: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+        .search-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .results-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .results-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .status-capacity-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        
+        .capacity-indicator {
+            max-width: none;
+            min-width: 0;
+        }
+        
+        .service-status-section {
+            padding: 10px;
+        }
+        
+        .status-badge {
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .pagination {
+            padding: 6px;
+            border-radius: 16px;
+            margin: 0 16px;
+        }
+        
+        .page-btn {
+            padding: 10px 14px;
+            font-size: 12px;
+            min-width: 36px;
+        }
+        
+        .page-info {
+            padding: 10px 16px;
+            font-size: 12px;
+            margin: 0 4px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .service-card {
+            padding: 15px;
+        }
+        
+        .capacity-info {
+            font-size: 12px;
+        }
+        
+        .status-badge {
+            font-size: 11px;
+            padding: 5px 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-header">
+        <h1 style="margin: 0 0 10px 0; font-size: 2.5rem;">🔍 Advanced Search</h1>
+        <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">Find the exact services you need with powerful search filters</p>
+    </div>
+    
+    <form class="search-form" method="get" action="{% url 'services:search' %}">
+        <!-- Main Search -->
+        <div class="search-row">
+            <div class="form-group">
+                <label class="form-label">Search Services</label>
+                <input type="text" name="q" class="search-input" 
+                       placeholder="Enter service name, description, or keywords..."
+                       value="{{ search_form_data.q }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select name="category" class="search-input">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" 
+                                {% if category.slug == search_form_data.category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Radius (km)</label>
+                <select name="radius" class="search-input">
+                    <option value="5" {% if search_form_data.radius == '5' %}selected{% endif %}>5 km</option>
+                    <option value="10" {% if search_form_data.radius == '10' %}selected{% endif %}>10 km</option>
+                    <option value="25" {% if search_form_data.radius == '25' %}selected{% endif %}>25 km</option>
+                    <option value="50" {% if search_form_data.radius == '50' %}selected{% endif %}>50 km</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+        
+        <!-- Location Search -->
+        <div class="location-section">
+            <h3 style="margin-bottom: 15px; color: #374151;">📍 Location-Based Search</h3>
+            <div class="filter-section">
+                <div class="form-group">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" name="lat" class="search-input" step="any"
+                           placeholder="e.g. 3.1390" value="{{ search_form_data.lat }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" name="lng" class="search-input" step="any"
+                           placeholder="e.g. 101.6869" value="{{ search_form_data.lng }}">
+                </div>
+                <div class="form-group">
+                    <button type="button" class="search-btn" onclick="getUserLocation()">
+                        <i class="fas fa-location-arrow"></i> Use My Location
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div class="filter-section">
+            <div class="checkbox-group">
+                <input type="checkbox" name="emergency" value="true" id="emergency" 
+                       {% if search_form_data.emergency == 'true' %}checked{% endif %}>
+                <label for="emergency">🚨 Emergency Services Only</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" name="available" value="true" id="available">
+                <label for="available">✅ Available Now</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" name="has_capacity" value="true" id="has_capacity">
+                <label for="has_capacity">📊 Has Capacity</label>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button type="button" class="clear-btn" onclick="clearForm()">
+                <i class="fas fa-times"></i> Clear All
+            </button>
+        </div>
+    </form>
+    
+    <!-- Search Results -->
+    {% if services %}
+        <div class="results-header">
+            <div>
+                <h2 style="margin: 0; color: #1f2937;">Search Results</h2>
+                <p style="margin: 5px 0 0 0; color: #6b7280;">Found {{ page_obj.paginator.count }} service(s)</p>
+            </div>
+            <div>
+                {% if search_form_data.q %}
+                    <span style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 12px; font-size: 14px;">
+                        "{{ search_form_data.q }}"
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="results-grid">
+            {% for service in services %}
+                <div class="service-card">
+                    <div class="service-header">
+                        <div>
+                            <div class="service-name">{{ service.name }}</div>
+                            <span class="service-category">{{ service.category.name }}</span>
+                            {% if service.is_emergency_service %}
+                                <span class="emergency-badge">EMERGENCY</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="service-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> {{ service.address|truncatechars:30 }}</span>
+                        {% if service.phone %}
+                            <span><i class="fas fa-phone"></i> {{ service.phone }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="service-description">
+                        {{ service.description|truncatechars:120 }}
+                    </div>
+                    
+                    <div class="service-status-section">
+                        <div class="status-capacity-row">
+                            <div class="status-indicator">
+                                {% if service.current_status == 'open' %}
+                                    <span class="status-badge status-open">
+                                        🟢 OPEN
+                                    </span>
+                                {% elif service.current_status == 'limited' %}
+                                    <span class="status-badge status-limited">
+                                        🟡 LIMITED
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-closed">
+                                        🔴 CLOSED
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if service.max_capacity > 0 %}
+                                <div class="capacity-indicator">
+                                    <div class="capacity-info">
+                                        <span class="capacity-numbers">{{ service.current_capacity }}/{{ service.max_capacity }}</span>
+                                        <span class="capacity-label">capacity</span>
+                                    </div>
+                                    <div class="capacity-bar">
+                                        {% widthratio service.current_capacity service.max_capacity 100 as capacity_percent %}
+                                        <div class="capacity-fill 
+                                            {% if capacity_percent <= 60 %}capacity-low
+                                            {% elif capacity_percent <= 85 %}capacity-medium
+                                            {% else %}capacity-high{% endif %}" 
+                                            style="width: {{ capacity_percent }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="service-actions">
+                        <a href="{% url 'services:detail' service.pk %}" class="btn-view">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        {% if user.is_authenticated %}
+                            <button class="btn-bookmark" data-service-id="{{ service.id }}" onclick="toggleBookmark(this)">
+                                <i class="fas fa-bookmark"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Modern Pagination -->
+        {% if is_paginated %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?{{ request.GET.urlencode }}&page=1" class="page-btn" title="First Page">
+                            <span class="page-btn-icon">⟨⟨</span>
+                            <span class="hidden sm:inline">First</span>
+                        </a>
+                        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="page-btn" title="Previous Page">
+                            <span class="page-btn-icon">‹</span>
+                            <span class="hidden sm:inline">Previous</span>
+                        </a>
+                    {% endif %}
+                    
+                    <!-- Page Numbers -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <span class="page-btn active">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?{{ request.GET.urlencode }}&page={{ num }}" class="page-btn">{{ num }}</a>
+                        {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                            <a href="?{{ request.GET.urlencode }}&page={{ num }}" class="page-btn">{{ num }}</a>
+                        {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
+                            <span class="page-btn" style="cursor: default;">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Page Info for Mobile -->
+                    <div class="page-info sm:hidden">
+                        {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </div>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="page-btn" title="Next Page">
+                            <span class="hidden sm:inline">Next</span>
+                            <span class="page-btn-icon">›</span>
+                        </a>
+                        <a href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}" class="page-btn" title="Last Page">
+                            <span class="hidden sm:inline">Last</span>
+                            <span class="page-btn-icon">⟩⟩</span>
+                        </a>
+                    {% endif %}
+                    
+                    <!-- Page Info for Desktop -->
+                    <div class="page-info hidden sm:block">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="no-results">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🔍</div>
+            <h3 style="margin-bottom: 10px;">No services found</h3>
+            <p>Try adjusting your search criteria or browse all services</p>
+            <a href="{% url 'services:list' %}" class="btn-view" style="margin-top: 15px;">
+                <i class="fas fa-list"></i> Browse All Services
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.querySelector('input[name="lat"]').value = position.coords.latitude.toFixed(6);
+            document.querySelector('input[name="lng"]').value = position.coords.longitude.toFixed(6);
+            
+            // Show success message
+            showNotification('Location detected successfully!', 'success');
+        }, function(error) {
+            showNotification('Unable to get your location. Please enter coordinates manually.', 'error');
+        });
+    } else {
+        showNotification('Geolocation is not supported by this browser.', 'error');
+    }
+}
+
+function clearForm() {
+    const form = document.querySelector('.search-form');
+    form.reset();
+    
+    // Clear URL parameters
+    window.location.href = '{% url "services:search" %}';
+}
+
+function toggleBookmark(button) {
+    const serviceId = button.dataset.serviceId;
+    
+    fetch(`/api/services/bookmark/${serviceId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.classList.toggle('bookmarked');
+            const icon = button.querySelector('i');
+            if (data.bookmarked) {
+                icon.style.color = '#fbbf24';
+                showNotification('Service bookmarked!', 'success');
+            } else {
+                icon.style.color = '#6b7280';
+                showNotification('Bookmark removed', 'info');
+            }
+        }
+    })
+    .catch(error => {
+        showNotification('Error updating bookmark', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 1000;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#2563eb'};
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %} 

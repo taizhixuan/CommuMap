@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Verification Update - {{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #dc3545;
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .content h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .content p {
+            margin-bottom: 15px;
+        }
+        .alert {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>{{ site_name }}</h1>
+            <p>Account Verification Update</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello{% if user.get_display_name %} {{ user.get_display_name }}{% endif %},</h2>
+            
+            <div class="alert">
+                <strong>Verification Status Update</strong><br>
+                Your account verification request has been reviewed.
+            </div>
+            
+            <p>We regret to inform you that your account verification request for <strong>{{ user.get_role_display }}</strong> privileges has not been approved at this time.</p>
+            
+            <p><strong>What this means:</strong></p>
+            <ul>
+                <li>Your account remains active with basic user privileges</li>
+                <li>You can continue to use all standard features of {{ site_name }}</li>
+                <li>You may reapply for verification after addressing any feedback provided</li>
+            </ul>
+            
+            <p><strong>Next steps:</strong></p>
+            <ul>
+                <li>Review the feedback provided by our verification team</li>
+                <li>Make any necessary improvements to your application</li>
+                <li>Contact our support team if you have questions</li>
+                <li>Reapply when you're ready with updated information</li>
+            </ul>
+            
+            <p>If you have any questions about this decision or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <a href="#" class="btn">Contact Support</a>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated email from {{ site_name }}.</p>
+            <p>Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

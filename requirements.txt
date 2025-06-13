@@ -1,0 +1,40 @@
+# Core Django - start with minimal working set
+Django==5.0.0
+django-environ==0.11.2
+djangorestframework==3.14.0
+django-cors-headers==4.4.0
+
+# Database - avoiding psycopg2-binary compilation issues for now
+# psycopg2-binary==2.9.9  # Commented out due to compilation issues
+
+# Real-time features - simplified for now
+celery==5.3.4
+redis==5.0.1
+# channels==4.0.0  # Commented out due to msgpack dependency compilation issues
+# channels-redis==4.2.0
+
+# Frontend/UI
+django-widget-tweaks==1.5.0
+django-crispy-forms==2.1
+# crispy-tailwind==0.5.0  # May have dependencies that cause issues
+
+# Authentication & Security - simplified
+django-otp==1.2.3
+django-guardian==2.4.0
+
+# Utilities - avoiding Pillow compilation issues
+# Pillow==10.1.0  # Commented out due to compilation issues
+python-slugify==8.0.1
+django-extensions==3.2.3
+# psutil==5.9.6  # For system monitoring in admin console
+
+# Testing & Development - simplified
+pytest-django==4.7.0
+factory-boy==3.3.0
+# coverage==7.3.4  # Working but not essential for now
+django-debug-toolbar==4.2.0
+model-bakery==1.17.0
+
+# Production
+gunicorn==21.2.0
+whitenoise==6.6.0 

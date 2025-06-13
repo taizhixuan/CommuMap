@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .warning-theme {
+        --primary-color: #f59e0b;
+        --primary-hover: #d97706;
+        --accent-color: #fbbf24;
+    }
+    
+    .post-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .banner-image {
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    .metrics-card {
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-100">
+    <!-- Header -->
+    <div class="bg-warning text-warning-content p-6 mb-6">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">Outreach Post</h1>
+                    <p class="text-lg opacity-90">View and manage outreach content</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{% url 'moderators:outreach' %}" class="btn btn-outline btn-warning">
+                        ← Back to Outreach
+                    </a>
+                    <a href="{% url 'moderators:dashboard' %}" class="btn btn-outline btn-warning">
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6">
+        <!-- Main Post Card -->
+        <div class="post-card p-8 mb-8">
+            <!-- Post Header -->
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex-1">
+                    <h2 class="text-4xl font-bold mb-4">{{ post.title }}</h2>
+                    <div class="flex items-center gap-4 text-gray-600">
+                        <span>By {{ post.created_by.get_display_name }}</span>
+                        <span>•</span>
+                        <span>{{ post.created_at|date:"F j, Y \a\t g:i A" }}</span>
+                        <span>•</span>
+                        <span>{{ post.view_count }} views</span>
+                    </div>
+                </div>
+                
+                <!-- Status & Actions -->
+                <div class="flex flex-col gap-3 items-end">
+                    <!-- Status Badge -->
+                    {% if post.is_visible %}
+                        <div class="status-badge bg-success text-success-content">
+                            ✅ Active
+                        </div>
+                    {% elif post.is_expired %}
+                        <div class="status-badge bg-warning text-warning-content">
+                            ⏰ Expired
+                        </div>
+                    {% else %}
+                        <div class="status-badge bg-error text-error-content">
+                            ❌ Inactive
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex gap-2">
+                        <a href="{% url 'moderators:outreach_edit' post.pk %}" class="btn btn-outline btn-warning btn-sm">
+                            ✏️ Edit
+                        </a>
+                        <a href="{% url 'moderators:outreach_delete' post.pk %}" class="btn btn-outline btn-error btn-sm">
+                            🗑️ Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner Image -->
+            {% if post.banner_image_url %}
+            <div class="mb-6">
+                <img src="{{ post.banner_image_url }}" alt="Banner for {{ post.title }}" 
+                     class="banner-image w-full">
+            </div>
+            {% endif %}
+
+            <!-- Post Content -->
+            <div class="prose prose-lg max-w-none">
+                {{ post.content|linebreaks }}
+            </div>
+
+            <!-- Target Categories -->
+            {% if post.target_categories.exists %}
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold mb-3">Target Categories</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for category in post.target_categories.all %}
+                    <span class="badge badge-outline badge-lg">{{ category.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Expiry Information -->
+            {% if post.expires_at %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="alert {% if post.is_expired %}alert-error{% else %}alert-info{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    <span>
+                        {% if post.is_expired %}
+                            This post expired on {{ post.expires_at|date:"F j, Y \a\t g:i A" }}
+                        {% else %}
+                            This post will expire on {{ post.expires_at|date:"F j, Y \a\t g:i A" }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Post Metrics & Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- View Count -->
+            <div class="metrics-card">
+                <div class="text-3xl font-bold text-info mb-2">{{ post.view_count }}</div>
+                <div class="text-sm text-gray-600">Total Views</div>
+            </div>
+            
+            <!-- Days Active -->
+            <div class="metrics-card">
+                <div class="text-3xl font-bold text-success mb-2">
+                    {{ post.created_at|timesince|first_word }}
+                </div>
+                <div class="text-sm text-gray-600">Days Active</div>
+            </div>
+            
+            <!-- Status -->
+            <div class="metrics-card">
+                <div class="text-3xl font-bold {% if post.is_visible %}text-success{% else %}text-error{% endif %} mb-2">
+                    {% if post.is_visible %}✅{% else %}❌{% endif %}
+                </div>
+                <div class="text-sm text-gray-600">
+                    {% if post.is_visible %}Active{% else %}Inactive{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Post Management -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Post Management</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Post Information -->
+                    <div>
+                        <h4 class="font-semibold mb-3">Post Information</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Created:</span>
+                                <span>{{ post.created_at|date:"F j, Y \a\t g:i A" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Updated:</span>
+                                <span>{{ post.updated_at|date:"F j, Y \a\t g:i A" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Author:</span>
+                                <span>{{ post.created_by.get_display_name }}</span>
+                            </div>
+                            {% if post.expires_at %}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Expires:</span>
+                                <span>{{ post.expires_at|date:"F j, Y \a\t g:i A" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div>
+                        <h4 class="font-semibold mb-3">Quick Actions</h4>
+                        <div class="space-y-3">
+                            <a href="{% url 'moderators:outreach_edit' post.pk %}" 
+                               class="btn btn-outline btn-warning btn-sm w-full justify-start">
+                                ✏️ Edit Post
+                            </a>
+                            
+                            {% if post.is_active %}
+                            <button class="btn btn-outline btn-error btn-sm w-full justify-start"
+                                    onclick="togglePostStatus('{{ post.pk }}', false)">
+                                ⏸️ Deactivate Post
+                            </button>
+                            {% else %}
+                            <button class="btn btn-outline btn-success btn-sm w-full justify-start"
+                                    onclick="togglePostStatus('{{ post.pk }}', true)">
+                                ▶️ Activate Post
+                            </button>
+                            {% endif %}
+                            
+                            <a href="{% url 'moderators:outreach_delete' post.pk %}" 
+                               class="btn btn-outline btn-error btn-sm w-full justify-start">
+                                🗑️ Delete Post
+                            </a>
+                            
+                            <button class="btn btn-outline btn-info btn-sm w-full justify-start"
+                                    onclick="copyPostLink()">
+                                🔗 Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Post Statistics -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="font-semibold mb-3">Engagement Statistics</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-primary">{{ post.view_count }}</div>
+                            <div class="text-xs text-gray-500">Total Views</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-success">{{ post.target_categories.count }}</div>
+                            <div class="text-xs text-gray-500">Categories</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-info">
+                                {% if post.expires_at %}
+                                    {% if post.is_expired %}0{% else %}{{ post.expires_at|timeuntil|first_word }}{% endif %}
+                                {% else %}∞{% endif %}
+                            </div>
+                            <div class="text-xs text-gray-500">Days Left</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-warning">
+                                {% if post.is_visible %}✅{% else %}❌{% endif %}
+                            </div>
+                            <div class="text-xs text-gray-500">Status</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePostStatus(postId, activate) {
+    // This would be implemented with AJAX to toggle post active status
+    const action = activate ? 'activate' : 'deactivate';
+    const confirmMessage = `Are you sure you want to ${action} this post?`;
+    
+    if (confirm(confirmMessage)) {
+        // Implement AJAX call here
+        console.log(`${action} post ${postId}`);
+        // For now, just reload the page
+        location.reload();
+    }
+}
+
+function copyPostLink() {
+    const postUrl = window.location.href;
+    navigator.clipboard.writeText(postUrl).then(function() {
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success fixed top-4 right-4 z-50 w-auto';
+        alert.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Post link copied to clipboard!</span>
+        `;
+        document.body.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    });
+}
+
+// Add template literal filter for getting first word
+String.prototype.first_word = function() {
+    return this.split(' ')[0];
+};
+</script>
+{% endblock %} 

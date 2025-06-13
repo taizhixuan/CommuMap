@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Health - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .system-health-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        margin-top: 3rem;
+        padding: 2rem 0 4rem 0;
+        position: relative;
+    }
+
+    .system-health-container::before {
+        content: '';
+        display: block;
+        height: 1rem;
+    }
+    
+    .health-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+    }
+    
+    .metric-card {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border-color: #3b82f6;
+    }
+    
+    .metric-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: white;
+    }
+    
+    .icon-database { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .icon-cache { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .icon-disk { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .icon-memory { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    .icon-cpu { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .icon-network { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+    
+    .health-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .status-healthy {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-warning {
+        background-color: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .status-critical {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .progress-bar {
+        background-color: rgba(71, 85, 105, 0.3);
+        border-radius: 10px;
+        height: 10px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-healthy { background: linear-gradient(90deg, #10b981 0%, #34d399 100%); }
+    .progress-warning { background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); }
+    .progress-critical { background: linear-gradient(90deg, #ef4444 0%, #f87171 100%); }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin: 0.5rem 0;
+    }
+
+    .metric-label {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-detail {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .overall-score {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        position: relative;
+    }
+
+    .score-healthy { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .score-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .score-critical { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+
+    @media (max-width: 768px) {
+        .system-health-container {
+            margin-top: 2rem;
+            padding: 1.5rem 0 3rem 0;
+        }
+
+        .system-health-container::before {
+            height: 0.5rem;
+        }
+
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 1.5rem;
+            padding-bottom: 2rem;
+        }
+
+        .health-card {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-card {
+            padding: 1.25rem;
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            font-size: 1.5rem;
+        }
+    }
+
+    .health-spacing {
+        margin-bottom: 2rem;
+    }
+
+    .system-health-container .container {
+        max-width: 1200px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="system-health-container mt-8">
+    <div class="container py-6">
+        <!-- Header -->
+        <div class="health-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-heartbeat me-2 text-primary"></i>
+                        System Health Monitor
+                    </h1>
+                    <p class="text-muted mb-0">Real-time system performance and health monitoring</p>
+                </div>
+                <a href="{% url 'console:maintenance' %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Maintenance
+                </a>
+            </div>
+            
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- Overall Health Score -->
+        {% if system_health %}
+        <div class="health-card health-spacing">
+            <div class="overall-score">
+                <div class="score-circle 
+                    {% if system_health.overall_score >= 80 %}score-healthy
+                    {% elif system_health.overall_score >= 60 %}score-warning
+                    {% else %}score-critical{% endif %}">
+                    {{ system_health.overall_score|default:"--" }}%
+                </div>
+                <h4 class="mb-2">Overall System Health</h4>
+                <p class="text-muted">
+                    {% if system_health.overall_score >= 80 %}
+                        System is operating normally
+                    {% elif system_health.overall_score >= 60 %}
+                        System has minor issues that need attention
+                    {% else %}
+                        System has critical issues requiring immediate attention
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- System Metrics -->
+        <div class="health-card health-spacing">
+            <h4 class="mb-3">
+                <i class="fas fa-chart-line me-2"></i>
+                System Metrics
+            </h4>
+            
+            <div class="row">
+                <!-- Database Health -->
+                {% if detailed_metrics.database %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="metric-card">
+                        <div class="metric-icon icon-database">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="metric-label">Database</div>
+                        <div class="metric-value">{{ detailed_metrics.database.query_response_time_ms|default:"--" }}ms</div>
+                        <div class="metric-detail">Response Time</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill 
+                                {% if detailed_metrics.database.health_score >= 80 %}progress-healthy
+                                {% elif detailed_metrics.database.health_score >= 60 %}progress-warning
+                                {% else %}progress-critical{% endif %}"
+                                style="width: {{ detailed_metrics.database.health_score|default:0 }}%"></div>
+                        </div>
+                        <span class="health-status 
+                            {% if detailed_metrics.database.status == 'healthy' %}status-healthy
+                            {% elif detailed_metrics.database.status == 'warning' %}status-warning
+                            {% else %}status-critical{% endif %}">
+                            {{ detailed_metrics.database.status|default:"Unknown"|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Cache Health -->
+                {% if detailed_metrics.cache %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="metric-card">
+                        <div class="metric-icon icon-cache">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <div class="metric-label">Cache</div>
+                        <div class="metric-value">{{ detailed_metrics.cache.response_time_ms|default:"--" }}ms</div>
+                        <div class="metric-detail">Response Time</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill 
+                                {% if detailed_metrics.cache.health_score >= 80 %}progress-healthy
+                                {% elif detailed_metrics.cache.health_score >= 60 %}progress-warning
+                                {% else %}progress-critical{% endif %}"
+                                style="width: {{ detailed_metrics.cache.health_score|default:0 }}%"></div>
+                        </div>
+                        <span class="health-status 
+                            {% if detailed_metrics.cache.status == 'healthy' %}status-healthy
+                            {% elif detailed_metrics.cache.status == 'warning' %}status-warning
+                            {% else %}status-critical{% endif %}">
+                            {{ detailed_metrics.cache.status|default:"Unknown"|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Disk Usage -->
+                {% if detailed_metrics.disk %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="metric-card">
+                        <div class="metric-icon icon-disk">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <div class="metric-label">Disk Usage</div>
+                        <div class="metric-value">{{ detailed_metrics.disk.usage_percent|default:"--" }}%</div>
+                        <div class="metric-detail">{{ detailed_metrics.disk.free_gb|default:"--" }}GB Free</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill 
+                                {% if detailed_metrics.disk.usage_percent < 70 %}progress-healthy
+                                {% elif detailed_metrics.disk.usage_percent < 85 %}progress-warning
+                                {% else %}progress-critical{% endif %}"
+                                style="width: {{ detailed_metrics.disk.usage_percent|default:0 }}%"></div>
+                        </div>
+                        <span class="health-status 
+                            {% if detailed_metrics.disk.status == 'healthy' %}status-healthy
+                            {% elif detailed_metrics.disk.status == 'warning' %}status-warning
+                            {% else %}status-critical{% endif %}">
+                            {{ detailed_metrics.disk.status|default:"Unknown"|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Memory Usage -->
+                {% if detailed_metrics.memory %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="metric-card">
+                        <div class="metric-icon icon-memory">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="metric-label">Memory Usage</div>
+                        <div class="metric-value">{{ detailed_metrics.memory.usage_percent|default:"--" }}%</div>
+                        <div class="metric-detail">{{ detailed_metrics.memory.available_gb|default:"--" }}GB Available</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill 
+                                {% if detailed_metrics.memory.usage_percent < 70 %}progress-healthy
+                                {% elif detailed_metrics.memory.usage_percent < 85 %}progress-warning
+                                {% else %}progress-critical{% endif %}"
+                                style="width: {{ detailed_metrics.memory.usage_percent|default:0 }}%"></div>
+                        </div>
+                        <span class="health-status 
+                            {% if detailed_metrics.memory.status == 'healthy' %}status-healthy
+                            {% elif detailed_metrics.memory.status == 'warning' %}status-warning
+                            {% else %}status-critical{% endif %}">
+                            {{ detailed_metrics.memory.status|default:"Unknown"|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Application Metrics -->
+                {% if detailed_metrics.application %}
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <div class="metric-card">
+                        <div class="metric-icon icon-cpu">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="metric-label">Application</div>
+                        <div class="metric-value">{{ detailed_metrics.application.active_users|default:"--" }}</div>
+                        <div class="metric-detail">Active Users</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill 
+                                {% if detailed_metrics.application.health_score >= 80 %}progress-healthy
+                                {% elif detailed_metrics.application.health_score >= 60 %}progress-warning
+                                {% else %}progress-critical{% endif %}"
+                                style="width: {{ detailed_metrics.application.health_score|default:0 }}%"></div>
+                        </div>
+                        <span class="health-status 
+                            {% if detailed_metrics.application.status == 'healthy' %}status-healthy
+                            {% elif detailed_metrics.application.status == 'warning' %}status-warning
+                            {% else %}status-critical{% endif %}">
+                            {{ detailed_metrics.application.status|default:"Unknown"|title }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Metrics -->
+        {% if recent_metrics %}
+        <div class="health-card">
+            <h5 class="mb-3">
+                <i class="fas fa-history me-2"></i>
+                Recent System Events
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for metric in recent_metrics %}
+                        <tr>
+                            <td>{{ metric.recorded_at|date:"M d, H:i" }}</td>
+                            <td>{{ metric.metric_name|title }}</td>
+                            <td>{{ metric.value }} {{ metric.unit }}</td>
+                            <td>
+                                <span class="health-status 
+                                    {% if metric.category == 'performance' %}status-healthy
+                                    {% elif metric.category == 'warning' %}status-warning
+                                    {% else %}status-critical{% endif %}">
+                                    {{ metric.category|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- System Information -->
+        <div class="health-card">
+            <h5 class="mb-3">
+                <i class="fas fa-info-circle me-2 text-info"></i>
+                System Information
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Performance Monitoring</h6>
+                    <ul class="text-muted">
+                        <li>Real-time health metrics tracking</li>
+                        <li>Automated alerts for critical issues</li>
+                        <li>Historical performance data</li>
+                        <li>Resource usage optimization</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-warning">Health Indicators</h6>
+                    <ul class="text-muted">
+                        <li><span class="status-healthy">Healthy</span> - System operating normally</li>
+                        <li><span class="status-warning">Warning</span> - Minor issues detected</li>
+                        <li><span class="status-critical">Critical</span> - Immediate attention required</li>
+                        <li>Metrics updated every 5 minutes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh page every 5 minutes
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+    
+    // Add real-time clock
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.title = `System Health - ${timeString} - CommuMap`;
+    }
+    
+    updateClock();
+    setInterval(updateClock, 1000);
+});
+</script>
+{% endblock %} 

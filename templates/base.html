@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}CommuMap - Your community resource mapping platform{% endblock %}">
+    <title>{% block title %}CommuMap{% endblock %}</title>
+    
+    <!-- Tailwind CSS with DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" onerror="console.log('DaisyUI failed to load')" />
+    <script src="https://cdn.tailwindcss.com" onerror="console.log('Tailwind failed to load')"></script>
+    
+    <!-- Bootstrap as fallback -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" onerror="console.log('Bootstrap failed to load')" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" onerror="console.log('Bootstrap JS failed to load')"></script>
+    
+    <!-- Alpine.js for interactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet for mapping -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Fallback CSS for core styling -->
+    <style>
+        /* CSS Variables for consistent spacing */
+        :root {
+            --navbar-height: 80px;  /* Match actual navbar min-height */
+            --navbar-spacing: 1rem; /* Reduced for better proportions */
+        }
+        
+        /* Fallback CSS in case external stylesheets don't load */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8fafc;
+            color: #1f2937;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* Prevents anchor links from sitting under the navbar */
+            scroll-padding-top: calc(var(--navbar-height) + var(--navbar-spacing));
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Navigation - High specificity to override framework styles */
+        .navbar {
+            background: #667eea !important;
+            color: white !important;
+            padding: 1rem 0 !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important; /* Higher z-index to ensure it stays above all content */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            width: 100% !important;
+            margin: 0 !important;
+            min-height: 80px !important;
+        }
+        
+        .navbar .navbar-content {
+            display: flex !important;
+            align-items: center !important;
+            max-width: 1200px !important;
+            margin: 0 auto !important;
+            padding: 0 1rem !important;
+            justify-content: flex-start !important;
+            width: 100% !important;
+        }
+        
+        .navbar .logo {
+            font-size: 1.5rem !important;
+            font-weight: bold !important;
+            text-decoration: none !important;
+            color: white !important;
+            margin-right: auto !important;
+            flex-shrink: 0 !important;
+            order: 1 !important;
+        }
+        
+        .navbar .nav-links {
+            display: flex !important;
+            gap: 2rem !important;
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            justify-content: center !important;
+            flex: 1 !important;
+            order: 2 !important;
+        }
+        
+        .navbar .nav-links li {
+            list-style: none !important;
+        }
+        
+        .navbar .nav-links a, 
+        .navbar .nav-user .nav-link {
+            color: white !important;
+            text-decoration: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.25rem !important;
+            transition: background-color 0.2s !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 40px !important;
+            text-align: center !important;
+        }
+        
+        .navbar .nav-links a:hover, 
+        .navbar .nav-user .nav-link:hover {
+            background-color: rgba(255,255,255,0.1) !important;
+            color: white !important;
+            transform: none !important;
+        }
+        
+        /* Button/form styling for logout */
+        .navbar .nav-user button.nav-link {
+            background: none !important;
+            border: none !important;
+            color: white !important;
+            text-decoration: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.25rem !important;
+            transition: background-color 0.2s !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 40px !important;
+            cursor: pointer !important;
+            font-family: inherit !important;
+            font-size: inherit !important;
+        }
+        
+        .navbar .nav-user button.nav-link:hover {
+            background-color: rgba(255,255,255,0.1) !important;
+            color: white !important;
+        }
+        
+        .navbar .nav-user {
+            display: flex !important;
+            gap: 1rem !important;
+            align-items: center !important;
+            flex-shrink: 0 !important;
+            order: 3 !important;
+        }
+        
+        /* Main content spacing to prevent header collision */
+        main {
+            padding-top: calc(var(--navbar-height) + var(--navbar-spacing)) !important;
+        }
+        
+        /* Additional spacing for content sections */
+        .search-header, .map-header, .header-section, .services-header {
+            margin-top: 1rem !important;
+        }
+        
+        /* Strong override to fix FontAwesome icons appearing purple */
+        i.fa, i.fas, i.far, i.fab, i.fal, i.fad,
+        .fa, .fas, .far, .fab, .fal, .fad,
+        [class*="fa-"]:before,
+        [class*="fa-"]:after,
+        .kpi-icon, .kpi-icon *,
+        .section-title i, .section-title .fa, .section-title .fas,
+        .quick-action-btn i, .quick-action-btn .fa, .quick-action-btn .fas,
+        .panel-icon, .panel-icon *,
+        .action-icon, .action-icon *,
+        .filter-btn i, .filter-btn .fa, .filter-btn .fas,
+        .add-service-btn i, .add-service-btn .fa, .add-service-btn .fas {
+            background: none !important;
+            background-image: none !important;
+            background-clip: border-box !important;
+            -webkit-background-clip: border-box !important;
+            -webkit-text-fill-color: currentColor !important;
+            color: #4b5563 !important;
+            text-fill-color: currentColor !important;
+        }
+        
+        /* Specifically target dashboard icons */
+        .dashboard-container i, .dashboard-container .fa, .dashboard-container .fas,
+        .services-container i, .services-container .fa, .services-container .fas,
+        .form-container i, .form-container .fa, .form-container .fas,
+        .status-container i, .status-container .fa, .status-container .fas {
+            background: transparent !important;
+            background-image: none !important;
+            background-clip: border-box !important;
+            -webkit-background-clip: border-box !important;
+            -webkit-text-fill-color: #4b5563 !important;
+            color: #4b5563 !important;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* NUCLEAR OPTION: Force all FontAwesome icons to be gray, no purple! */
+        * i[class*="fa-"],
+        * i.fa,
+        * i.fas,
+        * i.far,
+        * i.fab,
+        * .fa,
+        * .fas,
+        * .far,
+        * .fab,
+        * [class*="fa-"] {
+            background: transparent !important;
+            background-image: none !important;
+            background-clip: border-box !important;
+            -webkit-background-clip: border-box !important;
+            -webkit-text-fill-color: #6b7280 !important;
+            color: #6b7280 !important;
+            text-fill-color: #6b7280 !important;
+        }
+        
+        /* Extra specific for manager pages */
+        body [class*="manager"] i,
+        body [class*="manager"] .fa,
+        body [class*="manager"] .fas,
+        body [class*="dashboard"] i,
+        body [class*="dashboard"] .fa,
+        body [class*="dashboard"] .fas,
+        body [class*="services"] i,
+        body [class*="services"] .fa,
+        body [class*="services"] .fas {
+            background: transparent !important;
+            background-image: none !important;
+            -webkit-background-clip: border-box !important;
+            -webkit-text-fill-color: #6b7280 !important;
+            color: #6b7280 !important;
+        }
+        
+        /* Forms */
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        
+        /* Map */
+        #map {
+            height: 400px;
+            width: 100%;
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+        }
+        
+        /* Responsive - Override framework responsive styles */
+        @media (max-width: 768px) {
+            .navbar .navbar-content {
+                flex-wrap: wrap !important;
+                gap: 1rem !important;
+            }
+            
+            .navbar .logo {
+                order: 1 !important;
+                margin-right: 0 !important;
+                width: auto !important;
+            }
+            
+            .navbar .nav-links {
+                order: 3 !important;
+                width: 100% !important;
+                justify-content: space-around !important;
+                flex: none !important;
+                gap: 0.5rem !important;
+            }
+            
+            .navbar .nav-user {
+                order: 2 !important;
+                margin-left: auto !important;
+            }
+            
+            .container {
+                padding: 0 0.5rem !important;
+            }
+        }
+        
+        /* Loading states */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .text-center { text-align: center; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .font-bold { font-weight: 700; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .max-w-4xl { max-width: 56rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .min-h-screen { min-height: 100vh; }
+        
+        /* Force styles for major components */
+        .hero {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: #1f2937;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            color: #6b7280;
+        }
+        
+        .btn-lg {
+            font-size: 1.125rem;
+            padding: 1rem 2rem;
+        }
+        
+        /* Map container styling */
+        .map-container {
+            height: calc(100vh - 80px);
+            position: relative;
+        }
+        
+        /* Ensure all links are styled */
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Global spacing for main content areas */
+        .main-content-spacing {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        
+        /* Enhanced spacing after header and before footer */
+        main {
+            flex: 1;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        
+        /* Footer spacing enhancement */
+        footer {
+            margin-top: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Remove default margins from sections */
+        section {
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Remove margins from common elements */
+        h1, h2, h3, h4, h5, h6, p {
+            margin-top: 0;
+        }
+        
+        /* Ensure no gaps in layout */
+        .container {
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Global framework overrides to eliminate spacing */
+        .container, .container-fluid {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        
+        /* Override DaisyUI/Tailwind spacing */
+        .hero, .hero-content, .hero-overlay {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Override Bootstrap margins */
+        .row {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        
+        .col, .col-* {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Reset all section and div margins */
+        section, div, article, aside, header, footer {
+            margin-top: 0 !important;
+        }
+        
+        /* Force remove spacing from common utility classes */
+        .py-*, .pt-*, .pb-*, .my-*, .mt-*, .mb-* {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Page-specific overrides */
+        body > main,
+        body > main > *:first-child {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        
+        /* Footer positioning */
+        body > footer {
+            margin-top: auto !important;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-base-100 min-h-screen {% block body_class %}{% endblock %}">
+    <!-- Navigation -->
+    <nav class="navbar" style="background: #667eea !important; display: flex !important; align-items: center !important;">
+        <div class="navbar-content" style="display: flex !important; align-items: center !important; width: 100% !important; max-width: 1200px !important; margin: 0 auto !important; padding: 0 1rem !important;">
+            <!-- CommuMap Logo - LEFT SIDE -->
+            <a href="{% url 'core:home' %}" class="logo" style="font-size: 1.5rem !important; font-weight: bold !important; color: white !important; text-decoration: none !important; margin-right: auto !important; order: 1 !important;">
+                🗺️ CommuMap
+            </a>
+            
+            <!-- Navigation Links - CENTER -->
+            <ul class="nav-links" style="display: flex !important; gap: 2rem !important; list-style: none !important; margin: 0 !important; padding: 0 !important; flex: 1 !important; justify-content: center !important; order: 2 !important;">
+                {% if user.is_authenticated and user.role == 'service_manager' %}
+                    <li><a href="{% url 'manager:home' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;"><span>🏠</span> Home</a></li>
+                {% elif user.is_authenticated and user.role == 'community_moderator' %}
+                    <li><a href="{% url 'moderators:home' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;"><span>🏠</span> Home</a></li>
+                {% elif user.is_authenticated and user.role == 'admin' %}
+                    <li><a href="{% url 'console:home' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;"><span>🏠</span> Home</a></li>
+                {% else %}
+                    <li><a href="{% url 'core:home' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;"><span>🏠</span> Home</a></li>
+                {% endif %}
+                
+                <!-- Services, Map, Search links for authenticated users only -->
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'services:list' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">📋 Services</a></li>
+                    <li><a href="{% url 'services:map' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">🗺️ Map</a></li>
+                    <li><a href="{% url 'services:search' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">🔍 Search</a></li>
+                {% endif %}
+                
+                {% if user.is_authenticated %}
+                    {% if user.role == 'user' %}
+                        <li><a href="{% url 'users:dashboard' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">📊 Dashboard</a></li>
+                    {% elif user.role == 'service_manager' and user.is_verified %}
+                        <li><a href="{% url 'manager:dashboard' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">📊 Dashboard</a></li>
+                    {% elif user.role == 'community_moderator' and user.is_verified %}
+                        <li><a href="{% url 'moderators:dashboard' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">📊 Dashboard</a></li>
+                    {% elif user.role == 'admin' %}
+                        <li><a href="{% url 'console:dashboard' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">📊 Dashboard</a></li>
+                    {% else %}
+                        <li><a href="{% url 'users:dashboard' %}" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">📊 Dashboard</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+            
+            <!-- User Actions - RIGHT SIDE -->
+            <div class="nav-user" style="display: flex !important; gap: 1rem !important; align-items: center !important; order: 3 !important;">
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'core:logout' %}" style="display: inline; margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link" style="background: none !important; border: none !important; color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; cursor: pointer !important; font-family: inherit !important; font-size: inherit !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important; border-radius: 0.25rem !important; transition: background-color 0.2s !important;">🚪 Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'core:login' %}" class="nav-link" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">🔑 Login</a>
+                    <a href="{% url 'core:register' %}" class="nav-link" style="color: white !important; text-decoration: none !important; padding: 0.5rem 1rem !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;">👤 Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1" style="flex: 1; margin: 0; padding-top: 2rem; padding-left: 0; padding-right: 0; padding-bottom: 0; width: 100%;">
+        <!-- Enhanced Messages/Notifications -->
+        {% if messages %}
+            <div id="notification-container" style="position: fixed; top: 80px; right: 1.5rem; z-index: 1000; max-width: 420px; pointer-events: none;">
+                {% for message in messages %}
+                    <div class="notification-toast" 
+                         data-message-type="{{ message.tags }}"
+                         style="
+                            pointer-events: auto;
+                            background: linear-gradient(135deg, 
+                                {% if message.tags == 'error' %}
+                                    #ef4444 0%, #dc2626 100%
+                                {% elif message.tags == 'warning' %}
+                                    #f59e0b 0%, #d97706 100%
+                                {% elif message.tags == 'success' %}
+                                    #10b981 0%, #059669 100%
+                                {% elif message.tags == 'info' %}
+                                    #3b82f6 0%, #2563eb 100%
+                                {% else %}
+                                    #6366f1 0%, #4f46e5 100%
+                                {% endif %}
+                            );
+                            color: white;
+                            padding: 1rem 1.25rem;
+                            margin-bottom: 0.75rem;
+                            border-radius: 12px;
+                            box-shadow: 
+                                0 10px 25px rgba(0, 0, 0, 0.15),
+                                0 4px 10px rgba(0, 0, 0, 0.1);
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            backdrop-filter: blur(10px);
+                            position: relative;
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 0.75rem;
+                            transform: translateX(100%);
+                            opacity: 0;
+                            animation: slideInNotification 0.5s ease-out forwards;
+                            transition: all 0.3s ease;
+                            max-width: 100%;
+                            word-wrap: break-word;
+                        ">
+                        
+                        <!-- Icon -->
+                        <div style="
+                            font-size: 1.25rem;
+                            flex-shrink: 0;
+                            margin-top: 0.1rem;
+                        ">
+                            {% if message.tags == 'error' %}
+                                ❌
+                            {% elif message.tags == 'warning' %}
+                                ⚠️
+                            {% elif message.tags == 'success' %}
+                                ✅
+                            {% elif message.tags == 'info' %}
+                                ℹ️
+                            {% else %}
+                                🔔
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Message Content -->
+                        <div style="flex: 1; line-height: 1.4;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem;">
+                                {% if message.tags == 'error' %}
+                                    Error
+                                {% elif message.tags == 'warning' %}
+                                    Warning
+                                {% elif message.tags == 'success' %}
+                                    Success
+                                {% elif message.tags == 'info' %}
+                                    Information
+                                {% else %}
+                                    Notification
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 0.9rem; opacity: 0.95;">
+                                {{ message }}
+                            </div>
+                        </div>
+                        
+                        <!-- Close Button -->
+                        <button onclick="closeNotification(this)" 
+                                style="
+                                    background: rgba(255, 255, 255, 0.2);
+                                    border: none;
+                                    color: white;
+                                    cursor: pointer;
+                                    font-size: 1.1rem;
+                                    width: 28px;
+                                    height: 28px;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    transition: all 0.2s ease;
+                                    flex-shrink: 0;
+                                    margin-top: 0.1rem;
+                                " 
+                                onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.transform='scale(1.1)'"
+                                onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='scale(1)'">
+                            ×
+                        </button>
+                        
+                        <!-- Progress Bar -->
+                        <div style="
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            height: 3px;
+                            background: rgba(255, 255, 255, 0.3);
+                            border-radius: 0 0 12px 12px;
+                            animation: progressBar 5s linear forwards;
+                        "></div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Enhanced Notification Styles and Animations -->
+            <style>
+                @keyframes slideInNotification {
+                    0% {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    100% {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideOutNotification {
+                    0% {
+                        transform: translateX(0) scale(1);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateX(100%) scale(0.8);
+                        opacity: 0;
+                    }
+                }
+                
+                @keyframes progressBar {
+                    0% {
+                        width: 100%;
+                    }
+                    100% {
+                        width: 0%;
+                    }
+                }
+                
+                .notification-toast:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 
+                        0 15px 35px rgba(0, 0, 0, 0.2),
+                        0 6px 15px rgba(0, 0, 0, 0.15) !important;
+                }
+                
+                .notification-toast.closing {
+                    animation: slideOutNotification 0.3s ease-in forwards !important;
+                }
+                
+                /* Responsive Design */
+                @media (max-width: 640px) {
+                    #notification-container {
+                        right: 1rem;
+                        left: 1rem;
+                        max-width: none;
+                    }
+                    
+                    .notification-toast {
+                        font-size: 0.875rem;
+                    }
+                }
+            </style>
+            
+            <!-- Enhanced Notification JavaScript -->
+            <script>
+                function closeNotification(button) {
+                    const notification = button.closest('.notification-toast');
+                    notification.classList.add('closing');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }
+                
+                // Auto-close notifications after 5 seconds
+                document.addEventListener('DOMContentLoaded', function() {
+                    const notifications = document.querySelectorAll('.notification-toast');
+                    notifications.forEach((notification, index) => {
+                        // Stagger the appearance
+                        notification.style.animationDelay = (index * 100) + 'ms';
+                        
+                        // Auto-close after 5 seconds
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                closeNotification(notification.querySelector('button'));
+                            }
+                        }, 5000 + (index * 100));
+                    });
+                });
+                
+                // Add touch support for mobile
+                document.addEventListener('touchstart', function(e) {
+                    if (e.target.closest('.notification-toast')) {
+                        e.target.closest('.notification-toast').style.transform += ' scale(0.98)';
+                    }
+                });
+                
+                document.addEventListener('touchend', function(e) {
+                    if (e.target.closest('.notification-toast')) {
+                        e.target.closest('.notification-toast').style.transform = e.target.closest('.notification-toast').style.transform.replace(' scale(0.98)', '');
+                    }
+                });
+            </script>
+        {% endif %}
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: #667eea; color: white; text-align: center; padding: 2rem; margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <div style="margin-bottom: 1rem;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🗺️</div>
+            <div style="font-weight: bold; font-size: 1.25rem; margin-bottom: 0.5rem;">CommuMap</div>
+            <div style="margin-bottom: 0.5rem;">Connecting communities with essential services since 2024</div>
+            <div>© 2024 CommuMap. All rights reserved.</div>
+        </div>
+        <nav style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <a href="{% url 'core:about' %}" style="color: white; text-decoration: none;">About</a>
+            <a href="{% url 'core:privacy' %}" style="color: white; text-decoration: none;">Privacy</a>
+            <a href="{% url 'core:terms' %}" style="color: white; text-decoration: none;">Terms</a>
+            <a href="/contact/" style="color: white; text-decoration: none;">Contact</a>
+            <a href="/help/" style="color: white; text-decoration: none;">Help</a>
+        </nav>
+    </footer>
+
+    <!-- Force CSS class application -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force navigation layout
+        const navbar = document.querySelector('.navbar');
+        const navbarContent = document.querySelector('.navbar-content');
+        const logo = document.querySelector('.navbar .logo');
+        const navLinks = document.querySelector('.navbar .nav-links');
+        const navUser = document.querySelector('.navbar .nav-user');
+        
+        if (navbar) {
+            navbar.style.background = '#667eea';
+            navbar.style.color = 'white';
+            navbar.style.padding = '1rem 0';
+            navbar.style.position = 'sticky';
+            navbar.style.top = '0';
+            navbar.style.zIndex = '50';
+            navbar.style.width = '100%';
+        }
+        
+        if (navbarContent) {
+            navbarContent.style.display = 'flex';
+            navbarContent.style.alignItems = 'center';
+            navbarContent.style.maxWidth = '1200px';
+            navbarContent.style.margin = '0 auto';
+            navbarContent.style.padding = '0 1rem';
+            navbarContent.style.width = '100%';
+            navbarContent.style.justifyContent = 'flex-start';
+        }
+        
+        if (logo) {
+            logo.style.fontSize = '1.5rem';
+            logo.style.fontWeight = 'bold';
+            logo.style.textDecoration = 'none';
+            logo.style.color = 'white';
+            logo.style.marginRight = 'auto';
+            logo.style.order = '1';
+        }
+        
+        if (navLinks) {
+            navLinks.style.display = 'flex';
+            navLinks.style.gap = '2rem';
+            navLinks.style.listStyle = 'none';
+            navLinks.style.margin = '0';
+            navLinks.style.padding = '0';
+            navLinks.style.flex = '1';
+            navLinks.style.justifyContent = 'center';
+            navLinks.style.order = '2';
+        }
+        
+        if (navUser) {
+            navUser.style.display = 'flex';
+            navUser.style.gap = '1rem';
+            navUser.style.alignItems = 'center';
+            navUser.style.order = '3';
+        }
+        
+        // Force styles on all navigation links and buttons
+        const allNavLinks = document.querySelectorAll('.navbar a, .navbar button.nav-link');
+        allNavLinks.forEach(link => {
+            link.style.color = 'white';
+            link.style.textDecoration = 'none';
+            link.style.padding = '0.5rem 1rem';
+            link.style.borderRadius = '0.25rem';
+            // For logout button
+            if (link.tagName === 'BUTTON') {
+                link.style.background = 'none';
+                link.style.border = 'none';
+                link.style.cursor = 'pointer';
+                link.style.fontFamily = 'inherit';
+                link.style.fontSize = 'inherit';
+            }
+        });
+        
+        // Force apply classes to common elements
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="tel"]');
+        inputs.forEach(input => {
+            input.classList.add('form-input');
+        });
+        
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            select.classList.add('form-select');
+        });
+        
+        const buttons = document.querySelectorAll('button[type="submit"], .btn-auth');
+        buttons.forEach(button => {
+            button.classList.add('btn', 'btn-primary');
+        });
+        
+        // Apply grid classes
+        const grids = document.querySelectorAll('.grid');
+        grids.forEach(grid => {
+            if (!grid.style.display) {
+                grid.style.display = 'grid';
+            }
+        });
+        
+        // Apply container classes
+        const containers = document.querySelectorAll('.container');
+        containers.forEach(container => {
+            if (!container.style.maxWidth) {
+                container.style.maxWidth = '1200px';
+                container.style.margin = '0 auto';
+                container.style.padding = '0 1rem';
+            }
+        });
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

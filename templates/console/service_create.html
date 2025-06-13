@@ -1,0 +1,1481 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create New Service - CommuMap Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    /* CSS Variables for Modern Design System */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --primary-color: #667eea;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --dark-color: #2d3748;
+        --light-bg: #f7fafc;
+        --card-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        --hover-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        --border-radius: 16px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --spacing-unit: 1.5rem;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+        line-height: 1.6;
+    }
+
+    /* Enhanced Form Container - Better spacing below navbar */
+    .service-form-container {
+        margin: 3rem 0 4rem 0; /* Increased top margin for better separation */
+        padding-top: 2rem; /* Enhanced top padding for modern UI spacing */
+        position: relative;
+    }
+
+    /* Additional spacing for visual separation */
+    .service-form-container::before {
+        content: '';
+        display: block;
+        height: 1rem; /* Added spacing block for visual separation */
+    }
+
+    /* Modern Header */
+    .service-form-header {
+        background: var(--success-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 3rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    }
+
+    .service-form-header .content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .service-form-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .service-form-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Enhanced Form Sections */
+    .form-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: var(--transition);
+    }
+
+    .form-section:hover {
+        box-shadow: var(--hover-shadow);
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 0;
+        position: relative;
+    }
+
+    .section-header::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .section-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+    }
+
+    .section-content {
+        padding: 2rem;
+    }
+    
+    /* Enhanced Form Layout */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-row.triple {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    
+    .form-row.single {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group {
+        position: relative;
+    }
+
+    /* Modern Form Controls */
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        background: white;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .form-control:hover {
+        border-color: #cbd5e0;
+    }
+
+    /* Enhanced Labels */
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        position: relative;
+    }
+
+    .required-field::after {
+        content: "*";
+        color: var(--danger-color);
+        margin-left: 0.25rem;
+        font-weight: bold;
+    }
+
+    /* Form Grid Layouts */
+    .hours-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    /* Enhanced Checkboxes */
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .form-check:hover {
+        background: #edf2f7;
+        border-color: #cbd5e0;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #cbd5e0;
+        border-radius: 6px;
+        transition: var(--transition);
+    }
+
+    .form-check-input:checked {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .form-check-label {
+        font-weight: 500;
+        color: var(--dark-color);
+        cursor: pointer;
+        margin: 0;
+    }
+
+    /* Enhanced Form Actions */
+    .form-actions {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 2.5rem;
+        border-radius: var(--border-radius);
+        text-align: center;
+        margin-top: 3rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    /* Modern Buttons */
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-success:hover {
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: #6c757d;
+        border: 2px solid #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-light {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--dark-color);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-light:hover {
+        background: white;
+        color: var(--dark-color);
+    }
+
+    /* Enhanced Help Text and Notifications */
+    .help-text {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 0.5rem;
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .help-text::before {
+        content: "💡";
+        font-size: 0.9rem;
+    }
+
+    .coordinate-helper {
+        background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+        border: 2px solid #cbd5e0;
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        position: relative;
+    }
+
+    .coordinate-helper::before {
+        content: "🗺️";
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .tag-input-help {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        border: 2px solid #9ae6b4;
+        color: #2f855a;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .tag-input-help::before {
+        content: "🏷️";
+        font-size: 1.2rem;
+    }
+
+    .capacity-warning {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border: 2px solid #fbbf24;
+        color: #92400e;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .capacity-warning::before {
+        content: "⚠️";
+        font-size: 1.2rem;
+    }
+
+    /* Error States */
+    .text-danger {
+        color: var(--danger-color);
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+
+    .text-danger::before {
+        content: "❌";
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-row,
+        .form-row.triple {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .checkbox-group {
+            grid-template-columns: 1fr;
+        }
+
+        .hours-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .service-form-header {
+            padding: 2rem 1.5rem;
+        }
+
+        .service-form-header h1 {
+            font-size: 2rem;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            padding: 2rem 1.5rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Enhanced mobile spacing */
+        .service-form-container {
+            margin: 2rem 0 3rem 0; /* Reduced margin for mobile */
+            padding-top: 1.5rem; /* Adjusted padding for mobile */
+        }
+
+        .service-form-container::before {
+            height: 0.5rem; /* Reduced spacing block for mobile */
+        }
+
+        .container-fluid {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 1.5rem; /* Adjusted for mobile */
+            padding-bottom: 2rem; /* Adjusted for mobile */
+        }
+    }
+
+    /* Loading and Animation States */
+    .form-loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .form-section {
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Enhanced error display */
+    .field-with-error input,
+    .field-with-error textarea,
+    .field-with-error select {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .field-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+        font-weight: 500;
+    }
+
+    /* Success state for fields */
+    .field-success input,
+    .field-success textarea,
+    .field-success select {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+    }
+
+    /* Loading state for buttons */
+    .btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Enhanced notification styles */
+    .notification-container {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+    }
+
+    .form-notification {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-notification.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .form-notification.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .form-notification.info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Notification Container -->
+<div class="notification-container" id="notification-container">
+</div>
+
+<div class="service-form-container mt-8">
+    <div class="container-fluid py-8">
+        <!-- Enhanced Header -->
+        <div class="service-form-header">
+            <div class="content">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-2">
+                            <i class="fas fa-plus-circle me-3"></i>Create New Service
+                        </h1>
+                        <p class="mb-0">Add a new community service to CommuMap with comprehensive information and settings</p>
+                    </div>
+                    <div>
+                        <a href="{% url 'console:services' %}" class="btn btn-light">
+                            <i class="fas fa-arrow-left"></i> Back to Services
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger mb-4">
+        <h5><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</h5>
+        <ul class="mb-0">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>
+                        {% if field == '__all__' %}
+                            {{ error }}
+                        {% else %}
+                            <strong>{{ field|title }}:</strong> {{ error }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="service-form" novalidate>
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-info-circle section-icon"></i>
+                Basic Information
+            </h3>
+            <div class="section-content">
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label required-field">Service Name</label>
+                        {{ form.name }}
+                        {% if form.name.help_text %}
+                            <div class="help-text">{{ form.name.help_text }}</div>
+                        {% endif %}
+                        {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">URL Slug</label>
+                        {{ form.slug }}
+                        {% if form.slug.help_text %}
+                            <div class="help-text">{{ form.slug.help_text }}</div>
+                        {% endif %}
+                        {% if form.slug.errors %}
+                            <div class="text-danger">{{ form.slug.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label required-field">Short Description</label>
+                        {{ form.short_description }}
+                        {% if form.short_description.help_text %}
+                            <div class="help-text">{{ form.short_description.help_text }}</div>
+                        {% endif %}
+                        {% if form.short_description.errors %}
+                            <div class="text-danger">{{ form.short_description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label required-field">Detailed Description</label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}
+                            <div class="help-text">{{ form.description.help_text }}</div>
+                        {% endif %}
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label class="form-label required-field">Category</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label">Service Manager</label>
+                        {{ form.manager }}
+                        {% if form.manager.errors %}
+                            <div class="text-danger">{{ form.manager.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">Tags</label>
+                        {{ form.tags_input }}
+                        {% if form.tags_input.help_text %}
+                            <div class="tag-input-help">
+                                <strong>💡 Tip:</strong> {{ form.tags_input.help_text }}
+                            </div>
+                        {% endif %}
+                        {% if form.tags_input.errors %}
+                            <div class="text-danger">{{ form.tags_input.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Information -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-map-marker-alt section-icon"></i>
+                Location Information
+            </h3>
+            <div class="section-content">
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label required-field">Street Address</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                            <div class="text-danger">{{ form.address.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row triple">
+                    <div>
+                        <label class="form-label required-field">City</label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                            <div class="text-danger">{{ form.city.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label required-field">State/Province</label>
+                        {{ form.state_province }}
+                        {% if form.state_province.errors %}
+                            <div class="text-danger">{{ form.state_province.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label">Postal Code</label>
+                        {{ form.postal_code }}
+                        {% if form.postal_code.errors %}
+                            <div class="text-danger">{{ form.postal_code.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Country</label>
+                        {{ form.country }}
+                        {% if form.country.errors %}
+                            <div class="text-danger">{{ form.country.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div></div>
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label class="form-label required-field">Latitude</label>
+                        {{ form.latitude }}
+                        {% if form.latitude.help_text %}
+                            <div class="help-text">{{ form.latitude.help_text }}</div>
+                        {% endif %}
+                        {% if form.latitude.errors %}
+                            <div class="text-danger">{{ form.latitude.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label required-field">Longitude</label>
+                        {{ form.longitude }}
+                        {% if form.longitude.help_text %}
+                            <div class="help-text">{{ form.longitude.help_text }}</div>
+                        {% endif %}
+                        {% if form.longitude.errors %}
+                            <div class="text-danger">{{ form.longitude.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <button type="button" class="btn btn-outline-primary" id="get-coordinates-btn">
+                            <i class="fas fa-map-marker-alt"></i> Auto-detect Location
+                        </button>
+                        <small class="text-muted ms-2">Click to use your browser's geolocation (if available)</small>
+                    </div>
+                </div>
+                
+                <div class="coordinate-helper">
+                    <strong>📍 Need coordinates?</strong> You can use Google Maps to find the exact coordinates:
+                    <ol class="mb-0 mt-2">
+                        <li>Go to Google Maps and search for the address</li>
+                        <li>Right-click on the location pin</li>
+                        <li>The coordinates will appear at the top of the context menu</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-phone section-icon"></i>
+                Contact Information
+            </h3>
+            <div class="section-content">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Primary Phone</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="text-danger">{{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label">Alternative Phone</label>
+                        {{ form.phone_alt }}
+                        {% if form.phone_alt.errors %}
+                            <div class="text-danger">{{ form.phone_alt.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label">Website URL</label>
+                        {{ form.website }}
+                        {% if form.website.errors %}
+                            <div class="text-danger">{{ form.website.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operating Hours -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-clock section-icon"></i>
+                Operating Hours
+            </h3>
+            <div class="section-content">
+                <div class="checkbox-group">
+                    <div class="form-check">
+                        {{ form.is_24_7 }}
+                        <label class="form-check-label" for="{{ form.is_24_7.id_for_label }}">
+                            Open 24/7 (Skip individual day hours if checked)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="hours-grid" id="hours-section">
+                    <div>
+                        <label class="form-label">Monday</label>
+                        {{ form.hours_monday }}
+                    </div>
+                    <div>
+                        <label class="form-label">Tuesday</label>
+                        {{ form.hours_tuesday }}
+                    </div>
+                    <div>
+                        <label class="form-label">Wednesday</label>
+                        {{ form.hours_wednesday }}
+                    </div>
+                    <div>
+                        <label class="form-label">Thursday</label>
+                        {{ form.hours_thursday }}
+                    </div>
+                    <div>
+                        <label class="form-label">Friday</label>
+                        {{ form.hours_friday }}
+                    </div>
+                    <div>
+                        <label class="form-label">Saturday</label>
+                        {{ form.hours_saturday }}
+                    </div>
+                    <div>
+                        <label class="form-label">Sunday</label>
+                        {{ form.hours_sunday }}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">Seasonal Information</label>
+                        {{ form.seasonal_info }}
+                        {% if form.seasonal_info.help_text %}
+                            <div class="help-text">{{ form.seasonal_info.help_text }}</div>
+                        {% endif %}
+                        {% if form.seasonal_info.errors %}
+                            <div class="text-danger">{{ form.seasonal_info.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capacity & Service Details -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-users section-icon"></i>
+                Capacity & Service Details
+            </h3>
+            <div class="section-content">
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Maximum Capacity</label>
+                        {{ form.max_capacity }}
+                        {% if form.max_capacity.help_text %}
+                            <div class="help-text">{{ form.max_capacity.help_text }}</div>
+                        {% endif %}
+                        {% if form.max_capacity.errors %}
+                            <div class="text-danger">{{ form.max_capacity.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label">Current Capacity</label>
+                        {{ form.current_capacity }}
+                        {% if form.current_capacity.help_text %}
+                            <div class="help-text">{{ form.current_capacity.help_text }}</div>
+                        {% endif %}
+                        {% if form.current_capacity.errors %}
+                            <div class="text-danger">{{ form.current_capacity.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="capacity-warning">
+                    <strong>⚠️ Note:</strong> Current capacity should not exceed maximum capacity. These values help users understand availability.
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Current Status</label>
+                        {{ form.current_status }}
+                        {% if form.current_status.errors %}
+                            <div class="text-danger">{{ form.current_status.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div></div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <div class="form-check">
+                        {{ form.is_emergency_service }}
+                        <label class="form-check-label" for="{{ form.is_emergency_service.id_for_label }}">
+                            Emergency Service
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        {{ form.requires_appointment }}
+                        <label class="form-check-label" for="{{ form.requires_appointment.id_for_label }}">
+                            Requires Appointment
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        {{ form.accepts_walk_ins }}
+                        <label class="form-check-label" for="{{ form.accepts_walk_ins.id_for_label }}">
+                            Accepts Walk-ins
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        {{ form.is_free }}
+                        <label class="form-check-label" for="{{ form.is_free.id_for_label }}">
+                            Free Service
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">Cost Information</label>
+                        {{ form.cost_info }}
+                        {% if form.cost_info.help_text %}
+                            <div class="help-text">{{ form.cost_info.help_text }}</div>
+                        {% endif %}
+                        {% if form.cost_info.errors %}
+                            <div class="text-danger">{{ form.cost_info.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eligibility & Requirements -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-clipboard-check section-icon"></i>
+                Eligibility & Requirements
+            </h3>
+            <div class="section-content">
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">Eligibility Criteria</label>
+                        {{ form.eligibility_criteria }}
+                        {% if form.eligibility_criteria.help_text %}
+                            <div class="help-text">{{ form.eligibility_criteria.help_text }}</div>
+                        {% endif %}
+                        {% if form.eligibility_criteria.errors %}
+                            <div class="text-danger">{{ form.eligibility_criteria.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">Required Documents</label>
+                        {{ form.required_documents }}
+                        {% if form.required_documents.help_text %}
+                            <div class="help-text">{{ form.required_documents.help_text }}</div>
+                        {% endif %}
+                        {% if form.required_documents.errors %}
+                            <div class="text-danger">{{ form.required_documents.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row single">
+                    <div>
+                        <label class="form-label">Age Restrictions</label>
+                        {{ form.age_restrictions }}
+                        {% if form.age_restrictions.help_text %}
+                            <div class="help-text">{{ form.age_restrictions.help_text }}</div>
+                        {% endif %}
+                        {% if form.age_restrictions.errors %}
+                            <div class="text-danger">{{ form.age_restrictions.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Settings -->
+        <div class="form-section">
+            <h3 class="section-header">
+                <i class="fas fa-shield-alt section-icon"></i>
+                Admin Settings
+            </h3>
+            <div class="section-content">
+                <div class="checkbox-group">
+                    <div class="form-check">
+                        {{ form.is_verified }}
+                        <label class="form-check-label" for="{{ form.is_verified.id_for_label }}">
+                            Verified Service
+                        </label>
+                        {% if form.is_verified.help_text %}
+                            <div class="help-text">{{ form.is_verified.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            Active & Visible to Public
+                        </label>
+                        {% if form.is_active.help_text %}
+                            <div class="help-text">{{ form.is_active.help_text }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success btn-lg me-3">
+                <i class="fas fa-save"></i> Create Service
+            </button>
+            <a href="{% url 'console:services' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: rgba(0,0,0,0.1); z-index: 1000;">
+        <div class="progress-bar" style="height: 100%; width: 0%; background: var(--primary-gradient); transition: width 0.3s ease;"></div>
+    </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced form functionality
+    const form = document.querySelector('.service-form');
+    const progressBar = document.querySelector('.progress-bar');
+    const sections = document.querySelectorAll('.form-section');
+    
+    // Auto-generate slug from name with improved algorithm
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const slugField = document.getElementById('{{ form.slug.id_for_label }}');
+    
+    if (nameField && slugField) {
+        nameField.addEventListener('input', function() {
+            const nameValue = this.value;
+            if (nameValue && !slugField.value) {
+                const slug = nameValue.toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                slugField.value = slug;
+                
+                // Visual feedback
+                slugField.style.borderColor = '#48bb78';
+                setTimeout(() => {
+                    slugField.style.borderColor = '#e2e8f0';
+                }, 1000);
+            }
+        });
+    }
+
+    // Enhanced 24/7 toggle with smooth animations
+    const is24_7Checkbox = document.getElementById('{{ form.is_24_7.id_for_label }}');
+    const hoursSection = document.getElementById('hours-section');
+    
+    if (is24_7Checkbox && hoursSection) {
+        is24_7Checkbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            
+            hoursSection.style.transition = 'all 0.3s ease';
+            hoursSection.style.opacity = isChecked ? '0.5' : '1';
+            hoursSection.style.pointerEvents = isChecked ? 'none' : 'auto';
+            hoursSection.style.transform = isChecked ? 'scale(0.98)' : 'scale(1)';
+            
+            if (isChecked) {
+                // Clear and disable individual day hours
+                hoursSection.querySelectorAll('input').forEach(input => {
+                    if (!input.disabled) {
+                        input.value = '';
+                        input.style.backgroundColor = '#f7fafc';
+                    }
+                });
+                
+                // Show notification
+                showNotification('✅ Service set to 24/7 operation', 'success');
+            } else {
+                hoursSection.querySelectorAll('input').forEach(input => {
+                    input.style.backgroundColor = 'white';
+                });
+                showNotification('⏰ Please set individual day hours', 'info');
+            }
+        });
+    }
+
+    // Enhanced capacity validation with real-time feedback
+    const maxCapacityField = document.getElementById('{{ form.max_capacity.id_for_label }}');
+    const currentCapacityField = document.getElementById('{{ form.current_capacity.id_for_label }}');
+    
+    function validateCapacity() {
+        if (!maxCapacityField || !currentCapacityField) return true;
+        
+        const maxCapacity = parseInt(maxCapacityField.value) || 0;
+        const currentCapacity = parseInt(currentCapacityField.value) || 0;
+        
+        if (maxCapacity > 0 && currentCapacity > maxCapacity) {
+            currentCapacityField.style.borderColor = '#f56565';
+            showNotification('❌ Current capacity cannot exceed maximum capacity', 'error');
+            return false;
+        } else {
+            currentCapacityField.style.borderColor = '#e2e8f0';
+            return true;
+        }
+    }
+
+    if (maxCapacityField && currentCapacityField) {
+        [maxCapacityField, currentCapacityField].forEach(field => {
+            field.addEventListener('input', validateCapacity);
+            field.addEventListener('blur', validateCapacity);
+        });
+    }
+
+    // Form progress tracking
+    function updateProgress() {
+        const formData = new FormData(form);
+        const totalFields = form.querySelectorAll('input, select, textarea').length;
+        let filledFields = 0;
+        
+        form.querySelectorAll('input, select, textarea').forEach(field => {
+            if (field.type === 'checkbox') {
+                if (field.checked) filledFields++;
+            } else if (field.value.trim() !== '') {
+                filledFields++;
+            }
+        });
+        
+        const progress = (filledFields / totalFields) * 100;
+        progressBar.style.width = `${progress}%`;
+        
+        // Change color based on progress
+        if (progress < 30) {
+            progressBar.style.background = 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+        } else if (progress < 70) {
+            progressBar.style.background = 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
+        } else {
+            progressBar.style.background = 'var(--success-gradient)';
+        }
+    }
+
+    // Add progress tracking to all form fields
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('input', updateProgress);
+        field.addEventListener('change', updateProgress);
+    });
+
+    // Initial progress calculation
+    updateProgress();
+
+    // Enhanced form submission with loading state
+    form.addEventListener('submit', function(e) {
+        if (!validateCapacity()) {
+            e.preventDefault();
+            return;
+        }
+        
+        // Add loading state
+        form.classList.add('form-loading');
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Service...';
+        submitBtn.disabled = true;
+        
+        // Show success notification
+        showNotification('🚀 Creating your service...', 'info');
+        
+        // If validation fails, restore form state
+        setTimeout(() => {
+            const hasErrors = form.querySelector('.text-danger');
+            if (hasErrors) {
+                form.classList.remove('form-loading');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }, 1000);
+    });
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification-toast');
+        existingNotifications.forEach(notif => notif.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = `notification-toast notification-${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        `;
+        
+        // Set background based on type
+        const backgrounds = {
+            success: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+            error: 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)',
+            warning: 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)',
+            info: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)'
+        };
+        
+        notification.style.background = backgrounds[type] || backgrounds.info;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    }
+
+    // Add smooth focus transitions to form fields
+    form.querySelectorAll('.form-control').forEach(field => {
+        field.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'translateY(-2px)';
+        });
+        
+        field.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Section reveal animation on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(20px)';
+        section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(section);
+    });
+
+    // Geolocation functionality
+    const getLocationBtn = document.getElementById('get-coordinates-btn');
+    const latField = document.getElementById('{{ form.latitude.id_for_label }}');
+    const lngField = document.getElementById('{{ form.longitude.id_for_label }}');
+    
+    if (getLocationBtn && latField && lngField) {
+        getLocationBtn.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        latField.value = position.coords.latitude.toFixed(6);
+                        lngField.value = position.coords.longitude.toFixed(6);
+                        
+                        // Visual feedback
+                        latField.style.borderColor = '#28a745';
+                        lngField.style.borderColor = '#28a745';
+                        setTimeout(() => {
+                            latField.style.borderColor = '#e2e8f0';
+                            lngField.style.borderColor = '#e2e8f0';
+                        }, 2000);
+                        
+                        getLocationBtn.disabled = false;
+                        getLocationBtn.innerHTML = '<i class="fas fa-check"></i> Location detected!';
+                        setTimeout(() => {
+                            getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Auto-detect Location';
+                        }, 3000);
+                        
+                        showNotification('📍 Location detected successfully!', 'success');
+                    },
+                    function(error) {
+                        getLocationBtn.disabled = false;
+                        getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Auto-detect Location';
+                        showNotification('❌ Could not detect location. Please enter manually.', 'error');
+                    }
+                );
+            } else {
+                showNotification('❌ Geolocation is not supported by your browser.', 'error');
+            }
+        });
+    }
+
+    // Enhanced form validation
+    function validateForm() {
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            const value = field.type === 'checkbox' ? field.checked : field.value.trim();
+            const fieldContainer = field.closest('.form-row');
+            
+            if (!value) {
+                fieldContainer.classList.add('field-with-error');
+                field.style.borderColor = '#dc3545';
+                isValid = false;
+            } else {
+                fieldContainer.classList.remove('field-with-error');
+                field.style.borderColor = '#28a745';
+                setTimeout(() => {
+                    field.style.borderColor = '#e2e8f0';
+                }, 1000);
+            }
+        });
+        
+        return isValid;
+    }
+
+    // Form submission enhancement
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            showNotification('❌ Please fill in all required fields.', 'error');
+            
+            // Scroll to first error
+            const firstError = form.querySelector('.field-with-error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Service...';
+        }
+    });
+
+    // Auto-save functionality (optional)
+    let autoSaveTimer;
+    function autoSave() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            // Save form data to localStorage
+            const formData = {};
+            form.querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type === 'checkbox') {
+                    formData[field.name] = field.checked;
+                } else {
+                    formData[field.name] = field.value;
+                }
+            });
+            localStorage.setItem('admin_service_form_draft', JSON.stringify(formData));
+            showNotification('💾 Draft saved automatically', 'info');
+        }, 2000);
+    }
+
+    // Add auto-save to form fields and real-time validation
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('input', autoSave);
+        
+        // Real-time validation for required fields
+        if (field.hasAttribute('required')) {
+            field.addEventListener('blur', function() {
+                const value = this.type === 'checkbox' ? this.checked : this.value.trim();
+                const fieldContainer = this.closest('.form-row');
+                
+                if (!value) {
+                    fieldContainer.classList.add('field-with-error');
+                    this.style.borderColor = '#dc3545';
+                } else {
+                    fieldContainer.classList.remove('field-with-error');
+                    fieldContainer.classList.add('field-success');
+                    this.style.borderColor = '#28a745';
+                    setTimeout(() => {
+                        fieldContainer.classList.remove('field-success');
+                        this.style.borderColor = '#e2e8f0';
+                    }, 2000);
+                }
+            });
+        }
+    });
+
+    // Load draft on page load
+    const savedDraft = localStorage.getItem('admin_service_form_draft');
+    if (savedDraft) {
+        try {
+            const draftData = JSON.parse(savedDraft);
+            Object.keys(draftData).forEach(fieldName => {
+                const field = form.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    if (field.type === 'checkbox') {
+                        field.checked = draftData[fieldName];
+                    } else {
+                        field.value = draftData[fieldName];
+                    }
+                }
+            });
+            showNotification('📋 Draft loaded', 'info');
+        } catch (e) {
+            console.log('Could not load draft');
+        }
+    }
+
+    // Clear draft on successful submission
+    form.addEventListener('submit', function() {
+        localStorage.removeItem('admin_service_form_draft');
+    });
+});
+</script>
+{% endblock %} 

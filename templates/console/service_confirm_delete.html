@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Service: {{ service.name }} - CommuMap Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    
+    .service-details {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .warning-section {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .confirmation-actions {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .service-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        padding: 2rem;
+    }
+    
+    .info-item {
+        margin-bottom: 1rem;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        color: #333;
+    }
+    
+    .danger-zone {
+        border: 2px solid #dc3545;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        background: #f8d7da;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="delete-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Delete Service
+                </h1>
+                <p class="mb-0">Permanently remove this service from CommuMap</p>
+            </div>
+            <div>
+                <a href="{% url 'console:services' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Back to Services
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Section -->
+    <div class="warning-section">
+        <h4 class="mb-3">⚠️ Warning: This action cannot be undone!</h4>
+        <p class="mb-2">You are about to permanently delete the following service:</p>
+        <ul class="mb-0">
+            <li>All service data will be permanently removed</li>
+            <li>User reviews and comments associated with this service will be orphaned</li>
+            <li>Service history and analytics will be lost</li>
+            <li>Any bookmarks or favorites will be broken</li>
+        </ul>
+    </div>
+
+    <!-- Service Details -->
+    <div class="service-details">
+        <h3 class="p-3 mb-0 border-bottom">Service Details</h3>
+        <div class="service-info-grid">
+            <div>
+                <div class="info-item">
+                    <div class="info-label">Service Name</div>
+                    <div class="info-value">{{ service.name }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Category</div>
+                    <div class="info-value">{{ service.category.name }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Location</div>
+                    <div class="info-value">{{ service.address }}, {{ service.city }}, {{ service.state_province }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Manager</div>
+                    <div class="info-value">
+                        {% if service.manager %}
+                            {{ service.manager.get_full_name }} ({{ service.manager.email }})
+                        {% else %}
+                            <span class="text-muted">Unassigned</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Contact Information</div>
+                    <div class="info-value">
+                        {% if service.phone %}
+                            Phone: {{ service.phone }}<br>
+                        {% endif %}
+                        {% if service.email %}
+                            Email: {{ service.email }}<br>
+                        {% endif %}
+                        {% if service.website %}
+                            Website: <a href="{{ service.website }}" target="_blank">{{ service.website }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="info-item">
+                    <div class="info-label">Current Status</div>
+                    <div class="info-value">
+                        <span class="badge bg-{% if service.current_status == 'open' %}success{% elif service.current_status == 'closed' %}danger{% else %}warning{% endif %}">
+                            {{ service.get_current_status_display }}
+                        </span>
+                        {% if not service.is_active %}
+                            <span class="badge bg-secondary ms-2">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Verification Status</div>
+                    <div class="info-value">
+                        {% if service.is_verified %}
+                            <span class="badge bg-success">Verified</span>
+                            {% if service.verified_at %}
+                                <small class="text-muted d-block">Verified on {{ service.verified_at|date:"M d, Y" }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning">Pending Verification</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Service Type</div>
+                    <div class="info-value">
+                        {% if service.is_emergency_service %}
+                            <span class="badge bg-danger">🚨 Emergency Service</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Regular Service</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Capacity</div>
+                    <div class="info-value">
+                        {% if service.max_capacity %}
+                            {{ service.current_capacity }}/{{ service.max_capacity }} 
+                            ({{ service.capacity_percentage|floatformat:1 }}% full)
+                        {% else %}
+                            <span class="text-muted">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Created</div>
+                    <div class="info-value">{{ service.created_at|date:"M d, Y H:i" }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Last Updated</div>
+                    <div class="info-value">{{ service.updated_at|date:"M d, Y H:i" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics (if available) -->
+    {% comment %}
+    <!-- Uncomment this section if you have service statistics -->
+    <div class="service-details">
+        <h3 class="p-3 mb-0 border-bottom">Impact & Statistics</h3>
+        <div class="p-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="h4 text-primary">{{ service.total_ratings }}</div>
+                        <div class="text-muted">Total Ratings</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="h4 text-primary">{{ service.quality_score|floatformat:1 }}</div>
+                        <div class="text-muted">Quality Score</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="h4 text-primary">{{ service.reviews.count }}</div>
+                        <div class="text-muted">Reviews</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="h4 text-primary">{{ service.comments.count }}</div>
+                        <div class="text-muted">Comments</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endcomment %}
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+        <h4 class="text-danger mb-3">
+            <i class="fas fa-skull-crossbones"></i> 
+            Danger Zone
+        </h4>
+        <p class="mb-3">
+            This action will permanently delete the service "<strong>{{ service.name }}</strong>" 
+            and all associated data. This cannot be undone.
+        </p>
+        
+        <div class="alert alert-danger">
+            <strong>Before proceeding:</strong>
+            <ul class="mb-0 mt-2">
+                <li>Consider deactivating the service instead of deleting it</li>
+                <li>Notify the service manager if applicable</li>
+                <li>Backup any important information</li>
+                <li>Consider the impact on community members who rely on this service</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Confirmation Actions -->
+    <div class="confirmation-actions">
+        <form method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-lg me-3" id="deleteBtn" disabled>
+                <i class="fas fa-trash"></i> Yes, Delete Service Permanently
+            </button>
+        </form>
+        
+        <a href="{% url 'console:service_edit' service.id %}" class="btn btn-warning btn-lg me-3">
+            <i class="fas fa-edit"></i> Edit Instead
+        </a>
+        
+        <a href="{% url 'console:services' %}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+        
+        <div class="mt-3">
+            <div class="form-check d-inline-block">
+                <input class="form-check-input" type="checkbox" id="confirmDelete" onchange="toggleDeleteButton()">
+                <label class="form-check-label text-danger" for="confirmDelete">
+                    I understand this action cannot be undone and will permanently delete this service
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDeleteButton() {
+    const checkbox = document.getElementById('confirmDelete');
+    const deleteBtn = document.getElementById('deleteBtn');
+    deleteBtn.disabled = !checkbox.checked;
+}
+
+// Additional confirmation on submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    const serviceName = "{{ service.name|escapejs }}";
+    if (!confirm(`Are you absolutely sure you want to delete "${serviceName}"? This action cannot be undone.`)) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %} 

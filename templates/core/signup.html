@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CommuMap</title>
+    
+    <!-- Tailwind CSS with DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        
+        .auth-container {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .auth-logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .auth-subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn-auth {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .auth-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6b7280;
+        }
+        
+        .auth-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-messages {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .help-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        /* Role-specific field sections */
+        .role-specific-fields {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .role-specific-fields.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+            display: block;
+        }
+        
+        .role-specific-fields h3 {
+            color: #334155;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .verification-info {
+            background: #e0f2fe;
+            border: 1px solid #0891b2;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: #0c4a6e;
+        }
+        
+        .verification-info .icon {
+            display: inline-block;
+            margin-right: 0.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .role-description {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f1f5f9;
+            border-left: 4px solid #667eea;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 0.5rem;
+            accent-color: #667eea;
+        }
+        
+        textarea.form-input {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .auth-card {
+                padding: 2rem;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Animation for field transitions */
+        .role-specific-fields {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">📍 CommuMap</div>
+                <h2 style="color: #1f2937; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;">Create Account</h2>
+                <p class="auth-subtitle">Join our community today and start exploring</p>
+            </div>
+
+            {% if form.errors %}
+            <div class="error-messages">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <div>{% if field != '__all__' %}{{ field|title }}: {% endif %}{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" id="signup-form">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            First Name *
+                        </label>
+                        {{ form.first_name }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            Last Name *
+                        </label>
+                        {{ form.last_name }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        Email Address *
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.help_text %}
+                    <div class="help-text">{{ form.email.help_text }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                        Phone Number
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.help_text %}
+                    <div class="help-text">{{ form.phone.help_text }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.role.id_for_label }}" class="form-label">
+                        Account Type *
+                    </label>
+                    {{ form.role }}
+                    {% if form.role.help_text %}
+                    <div class="help-text">{{ form.role.help_text }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Service Manager Verification Fields -->
+                <div id="service-manager-fields" class="role-specific-fields">
+                    <h3>Service Manager Verification</h3>
+                    <div class="role-description">
+                        Service Managers can create and manage service listings. You must provide official details for verification.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.service_name.id_for_label }}" class="form-label">
+                            Service Name *
+                        </label>
+                        {{ form.service_name }}
+                        {% if form.service_name.help_text %}
+                        <div class="help-text">{{ form.service_name.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.official_email.id_for_label }}" class="form-label">
+                            Official Email *
+                        </label>
+                        {{ form.official_email }}
+                        {% if form.official_email.help_text %}
+                        <div class="help-text">{{ form.official_email.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.contact_number.id_for_label }}" class="form-label">
+                            Official Contact Number *
+                        </label>
+                        {{ form.contact_number }}
+                        {% if form.contact_number.help_text %}
+                        <div class="help-text">{{ form.contact_number.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.organization.id_for_label }}" class="form-label">
+                            Organization *
+                        </label>
+                        {{ form.organization }}
+                        {% if form.organization.help_text %}
+                        <div class="help-text">{{ form.organization.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="verification-info">
+                        <span class="icon">ℹ️</span>
+                        Your account will require admin approval. Please ensure all information is accurate.
+                    </div>
+                </div>
+
+                <!-- Community Moderator Verification Fields -->
+                <div id="community-moderator-fields" class="role-specific-fields">
+                    <h3>Community Moderator Verification</h3>
+                    <div class="role-description">
+                        Community Moderators help verify services and moderate content. Please provide your relevant experience.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.community_experience.id_for_label }}" class="form-label">
+                            Community/Moderation Experience *
+                        </label>
+                        {{ form.community_experience }}
+                        {% if form.community_experience.help_text %}
+                        <div class="help-text">{{ form.community_experience.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.relevant_community.id_for_label }}" class="form-label">
+                            Relevant Community/Organization
+                        </label>
+                        {{ form.relevant_community }}
+                        {% if form.relevant_community.help_text %}
+                        <div class="help-text">{{ form.relevant_community.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Organization *
+                        </label>
+                        <input type="text" name="organization_moderator" class="form-input" id="id_organization_moderator" placeholder="Enter your organization name">
+                        <div class="help-text">Required for Community Moderators.</div>
+                    </div>
+
+                    <div class="verification-info">
+                        <span class="icon">ℹ️</span>
+                        Your account will require admin approval. Please provide detailed experience information.
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            Password *
+                        </label>
+                        {{ form.password1 }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            Confirm Password *
+                        </label>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+
+                {% if form.password1.help_text %}
+                <div class="help-text" style="margin-bottom: 1rem;">
+                    {{ form.password1.help_text }}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        {{ form.terms_accepted }}
+                        <span>I agree to the <a href="{% url 'core:terms' %}" target="_blank" style="color: #667eea; text-decoration: underline;">Terms of Service</a> and <a href="{% url 'core:privacy' %}" target="_blank" style="color: #667eea; text-decoration: underline;">Privacy Policy</a> *</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-auth">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="auth-link">
+                Already have an account? 
+                <a href="{% url 'core:login' %}">Sign in here</a>
+            </div>
+            
+            <div class="auth-link">
+                <a href="{% url 'core:landing' %}">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add classes to all form inputs
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="tel"]');
+            inputs.forEach(input => {
+                input.className = 'form-input';
+            });
+            
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => {
+                select.className = 'form-select';
+            });
+            
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                textarea.className = 'form-input';
+            });
+            
+            // Role-based field visibility
+            const roleSelect = document.getElementById('{{ form.role.id_for_label }}');
+            const serviceManagerFields = document.getElementById('service-manager-fields');
+            const communityModeratorFields = document.getElementById('community-moderator-fields');
+            
+            function toggleRoleFields() {
+                const selectedRole = roleSelect.value;
+                
+                // Hide all role-specific fields first
+                serviceManagerFields.classList.remove('active');
+                communityModeratorFields.classList.remove('active');
+                
+                // Clear required attributes
+                const allRoleInputs = document.querySelectorAll('#service-manager-fields input, #community-moderator-fields input, #community-moderator-fields textarea');
+                allRoleInputs.forEach(input => {
+                    input.required = false;
+                });
+                
+                // Show and configure fields based on selected role
+                if (selectedRole === 'service_manager') {
+                    serviceManagerFields.classList.add('active');
+                    
+                    // Set required attributes for service manager fields
+                    const serviceManagerInputs = document.querySelectorAll('#service-manager-fields input[name="service_name"], #service-manager-fields input[name="official_email"], #service-manager-fields input[name="contact_number"], #service-manager-fields input[name="organization"]');
+                    serviceManagerInputs.forEach(input => {
+                        input.required = true;
+                    });
+                    
+                } else if (selectedRole === 'community_moderator') {
+                    communityModeratorFields.classList.add('active');
+                    
+                    // Set required attributes for community moderator fields
+                    const moderatorInputs = document.querySelectorAll('#community-moderator-fields textarea[name="community_experience"], #id_organization_moderator');
+                    moderatorInputs.forEach(input => {
+                        input.required = true;
+                    });
+                }
+            }
+            
+            // Initial check
+            toggleRoleFields();
+            
+            // Listen for role changes
+            roleSelect.addEventListener('change', toggleRoleFields);
+            
+            // Form submission validation
+            document.getElementById('signup-form').addEventListener('submit', function(e) {
+                const selectedRole = roleSelect.value;
+                let valid = true;
+                
+                if (selectedRole === 'service_manager') {
+                    const requiredFields = ['service_name', 'official_email', 'contact_number', 'organization'];
+                    requiredFields.forEach(fieldName => {
+                        const field = document.querySelector(`input[name="${fieldName}"]`);
+                        if (field && !field.value.trim()) {
+                            valid = false;
+                            field.style.borderColor = '#dc2626';
+                        }
+                    });
+                } else if (selectedRole === 'community_moderator') {
+                    const experienceField = document.querySelector('textarea[name="community_experience"]');
+                    const orgField = document.getElementById('id_organization_moderator');
+                    
+                    if (experienceField && !experienceField.value.trim()) {
+                        valid = false;
+                        experienceField.style.borderColor = '#dc2626';
+                    }
+                    if (orgField && !orgField.value.trim()) {
+                        valid = false;
+                        orgField.style.borderColor = '#dc2626';
+                    }
+                    
+                    // Copy organization value to the main organization field for Community Moderators
+                    if (orgField && orgField.value.trim()) {
+                        const mainOrgField = document.querySelector('input[name="organization"]');
+                        if (mainOrgField) {
+                            mainOrgField.value = orgField.value;
+                        }
+                    }
+                }
+                
+                if (!valid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields for your selected account type.');
+                }
+            });
+            
+            // Reset border color on input
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input, textarea')) {
+                    e.target.style.borderColor = '#e5e7eb';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

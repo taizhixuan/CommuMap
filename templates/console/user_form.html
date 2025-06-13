@@ -1,0 +1,504 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}
+{% if target_user %}Edit User{% else %}Add User{% endif %} - Admin Console
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<style>
+    .user-form-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        padding: 3rem 0;
+        color: #f1f5f9;
+    }
+    
+    .form-card {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(20px);
+    }
+    
+    .form-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(71, 85, 105, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section h3 {
+        color: #f1f5f9;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .form-label {
+        color: #f1f5f9;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        color: #f1f5f9;
+        padding: 0.875rem 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+        color: #f1f5f9;
+    }
+    
+    .form-check-input {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        margin-right: 0.75rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .form-check-label {
+        color: #cbd5e1;
+        font-weight: 500;
+    }
+    
+    .help-text {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+    
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .enhanced-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .enhanced-btn:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        box-shadow: 0 8px 25px rgba(75, 85, 99, 0.3);
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        box-shadow: 0 12px 35px rgba(75, 85, 99, 0.4);
+        color: white;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+    
+    .role-specific-section {
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="user-form-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-10">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h1>
+                            {% if target_user %}
+                                <i class="fas fa-user-edit me-3"></i>Edit User Account
+                            {% else %}
+                                <i class="fas fa-user-plus me-3"></i>Create New User
+                            {% endif %}
+                        </h1>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Basic Information -->
+                        <div class="form-section">
+                            <h3>
+                                <div class="section-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                Basic Information
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
+                                    {{ form.email|add_class:"form-control" }}
+                                    {% if form.email.errors %}
+                                        {% for error in form.email.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
+                                    {{ form.full_name|add_class:"form-control" }}
+                                    {% if form.full_name.errors %}
+                                        {% for error in form.full_name.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                                    {{ form.first_name|add_class:"form-control" }}
+                                    {% if form.first_name.errors %}
+                                        {% for error in form.first_name.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                                    {{ form.last_name|add_class:"form-control" }}
+                                    {% if form.last_name.errors %}
+                                        {% for error in form.last_name.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                    {{ form.phone|add_class:"form-control" }}
+                                    {% if form.phone.errors %}
+                                        {% for error in form.phone.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <!-- Empty column for spacing -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Role and Permissions -->
+                        <div class="form-section">
+                            <h3>
+                                <div class="section-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                Role and Permissions
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.role.id_for_label }}" class="form-label">User Role *</label>
+                                    {{ form.role|add_class:"form-select" }}
+                                    <div class="help-text" id="role-description">
+                                        Select the appropriate role for this user
+                                    </div>
+                                    {% if form.role.errors %}
+                                        {% for error in form.role.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check mb-3">
+                                        {{ form.is_active|add_class:"form-check-input" }}
+                                        <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                                            <strong>Active Account</strong>
+                                        </label>
+                                        <div class="help-text">User can log in and access the system</div>
+                                    </div>
+                                    {% if form.is_verified %}
+                                    <div class="form-check">
+                                        {{ form.is_verified|add_class:"form-check-input" }}
+                                        <label for="{{ form.is_verified.id_for_label }}" class="form-check-label">
+                                            <strong>Verified Account</strong>
+                                        </label>
+                                        <div class="help-text">Skip verification process for special roles</div>
+                                    </div>
+                                    {% endif %}
+                                    {% if form.send_notification %}
+                                    <div class="form-check mt-3">
+                                        {{ form.send_notification|add_class:"form-check-input" }}
+                                        <label for="{{ form.send_notification.id_for_label }}" class="form-check-label">
+                                            <strong>Send Welcome Email</strong>
+                                        </label>
+                                        <div class="help-text">Send account creation notification to user</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Fields for New Users -->
+                        {% if not target_user %}
+                        <div class="form-section">
+                            <h3>
+                                <div class="section-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                Password Setup
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password *</label>
+                                    {{ form.password1|add_class:"form-control" }}
+                                    {% if form.password1.help_text %}
+                                        <div class="help-text">{{ form.password1.help_text }}</div>
+                                    {% else %}
+                                        <div class="help-text">Password must be at least 8 characters long.</div>
+                                    {% endif %}
+                                    {% if form.password1.errors %}
+                                        {% for error in form.password1.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password *</label>
+                                    {{ form.password2|add_class:"form-control" }}
+                                    {% if form.password2.help_text %}
+                                        <div class="help-text">{{ form.password2.help_text }}</div>
+                                    {% else %}
+                                        <div class="help-text">Enter the same password as before, for verification.</div>
+                                    {% endif %}
+                                    {% if form.password2.errors %}
+                                        {% for error in form.password2.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Role-specific Information -->
+                        <div class="form-section" id="role-specific-section" style="display: none;">
+                            <h3>
+                                <div class="section-icon">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                Role-specific Information
+                            </h3>
+
+                            <!-- Service Manager Fields -->
+                            <div id="service-manager-fields" style="display: none;">
+                                <h5 class="text-light mb-3">Service Manager Details</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.service_name.id_for_label }}" class="form-label">Service Name</label>
+                                        {{ form.service_name|add_class:"form-control" }}
+                                        {% if form.service_name.errors %}
+                                            {% for error in form.service_name.errors %}
+                                                <div class="error-message">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.official_email.id_for_label }}" class="form-label">Official Email</label>
+                                        {{ form.official_email|add_class:"form-control" }}
+                                        {% if form.official_email.errors %}
+                                            {% for error in form.official_email.errors %}
+                                                <div class="error-message">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.contact_number.id_for_label }}" class="form-label">Contact Number</label>
+                                        {{ form.contact_number|add_class:"form-control" }}
+                                        {% if form.contact_number.errors %}
+                                            {% for error in form.contact_number.errors %}
+                                                <div class="error-message">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.organization.id_for_label }}" class="form-label">Organization</label>
+                                        {{ form.organization|add_class:"form-control" }}
+                                        {% if form.organization.errors %}
+                                            {% for error in form.organization.errors %}
+                                                <div class="error-message">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Community Moderator Fields -->
+                            <div id="community-moderator-fields" style="display: none;">
+                                <h5 class="text-light mb-3">Community Moderator Details</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.relevant_community.id_for_label }}" class="form-label">Relevant Community</label>
+                                        {{ form.relevant_community|add_class:"form-control" }}
+                                        {% if form.relevant_community.errors %}
+                                            {% for error in form.relevant_community.errors %}
+                                                <div class="error-message">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.organization.id_for_label }}" class="form-label">Organization</label>
+                                        {{ form.organization|add_class:"form-control" }}
+                                        {% if form.organization.errors %}
+                                            {% for error in form.organization.errors %}
+                                                <div class="error-message">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="{{ form.community_experience.id_for_label }}" class="form-label">Community Experience</label>
+                                    {{ form.community_experience|add_class:"form-control" }}
+                                    {% if form.community_experience.errors %}
+                                        {% for error in form.community_experience.errors %}
+                                            <div class="error-message">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Buttons -->
+                        <div class="button-group">
+                            <a href="{% url 'console:users' %}" class="enhanced-btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="enhanced-btn">
+                                <i class="fas fa-save me-2"></i>
+                                {% if target_user %}Update User{% else %}Create User{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('{{ form.role.id_for_label }}');
+    const roleSpecificSection = document.getElementById('role-specific-section');
+    const serviceManagerFields = document.getElementById('service-manager-fields');
+    const communityModeratorFields = document.getElementById('community-moderator-fields');
+    
+    function toggleRoleFields() {
+        const selectedRole = roleSelect.value;
+        const roleDescription = document.getElementById('role-description');
+        
+        // Hide all role-specific fields first
+        serviceManagerFields.style.display = 'none';
+        communityModeratorFields.style.display = 'none';
+        roleSpecificSection.style.display = 'none';
+        
+        // Update role description and show appropriate fields
+        switch (selectedRole) {
+            case 'user':
+                roleDescription.textContent = 'Regular users who search and bookmark services. No special permissions required.';
+                break;
+            case 'service_manager':
+                roleDescription.textContent = 'Manages specific service listings and real-time status updates. Requires verification.';
+                roleSpecificSection.style.display = 'block';
+                serviceManagerFields.style.display = 'block';
+                break;
+            case 'community_moderator':
+                roleDescription.textContent = 'Verifies services and moderates community content. Requires verification.';
+                roleSpecificSection.style.display = 'block';
+                communityModeratorFields.style.display = 'block';
+                break;
+            case 'admin':
+                roleDescription.textContent = 'System-wide administration and user management. Full system access.';
+                break;
+            default:
+                roleDescription.textContent = 'Select the appropriate role for this user';
+        }
+    }
+    
+    // Initialize on page load
+    toggleRoleFields();
+    
+    // Add event listener for role changes
+    roleSelect.addEventListener('change', toggleRoleFields);
+});
+</script>
+{% endblock %} 

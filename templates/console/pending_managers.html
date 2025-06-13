@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pending Service Managers - Admin Console{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Admin Dark Theme */
+    .admin-theme {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        padding-bottom: 2rem;
+    }
+    
+    .admin-header {
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid #334155;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+        z-index: -1;
+    }
+    
+    .admin-card {
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid rgba(71, 85, 105, 0.8);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .admin-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        border-color: rgba(99, 102, 241, 0.5);
+    }
+    
+    .enhanced-table {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(71, 85, 105, 0.6);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .enhanced-table thead th {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border: none;
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 0.75rem;
+        border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+    }
+    
+    .enhanced-table tbody tr {
+        border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .enhanced-table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.08);
+        transform: scale(1.01);
+    }
+    
+    .enhanced-table tbody td {
+        padding: 1rem 0.75rem;
+        border: none;
+        color: #1f2937;
+        vertical-align: middle;
+    }
+    
+    .enhanced-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+    
+    .btn-primary-enhanced {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-primary-enhanced:hover {
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+        color: white;
+    }
+    
+    .btn-success-enhanced {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-success-enhanced:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        color: white;
+    }
+    
+    .btn-danger-enhanced {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-danger-enhanced:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+        color: white;
+    }
+    
+    .action-btn-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: white;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-verify {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .btn-verify:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: scale(1.1);
+        color: white;
+    }
+    
+    .btn-reject {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .btn-reject:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: scale(1.1);
+        color: white;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    
+    .verification-details {
+        background: rgba(15, 23, 42, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+    }
+    
+    .verification-details small {
+        color: #6b7280;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-row {
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.15) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #60a5fa, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #cbd5e1;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-theme">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="h2 mb-2 fw-bold">
+                        <i class="fas fa-clock me-3"></i>Pending Service Managers
+                    </h1>
+                    <p class="text-light opacity-75 mb-0">
+                        Review and approve service manager verification requests
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{% url 'console:users' %}" class="enhanced-btn btn-primary-enhanced">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics -->
+        <div class="row stats-row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value">{{ pending_managers.count }}</div>
+                    <div class="stat-label">Pending Requests</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value">{{ page_obj.paginator.count }}</div>
+                    <div class="stat-label">Total on Page</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value">
+                        {% if pending_managers %}
+                            {{ pending_managers.0.verification_requested_at|timesince }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Oldest Request</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value">
+                        <i class="fas fa-business-time"></i>
+                    </div>
+                    <div class="stat-label">Service Managers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Managers Table -->
+        <div class="admin-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="mb-1 fw-bold">Service Manager Verification Queue</h5>
+                    <p class="text-muted mb-0">Review applications and manage approvals</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'console:pending_moderators' %}" class="enhanced-btn btn-primary-enhanced">
+                        <i class="fas fa-shield-alt me-2"></i>Pending Moderators
+                    </a>
+                </div>
+            </div>
+
+            {% if pending_managers %}
+                <div class="table-responsive">
+                    <table class="table enhanced-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Manager</th>
+                                <th>Contact</th>
+                                <th>Organization</th>
+                                <th>Experience</th>
+                                <th>Requested</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for manager in pending_managers %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if manager.profile_picture %}
+                                            <img src="{{ manager.profile_picture.url }}" 
+                                                 alt="{{ manager.full_name }}" 
+                                                 class="user-avatar me-3">
+                                        {% else %}
+                                            <div class="user-avatar-placeholder me-3">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="user-name">{{ manager.full_name|default:manager.email }}</div>
+                                            <small class="text-muted">{{ manager.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-content">
+                                    {% if manager.phone %}
+                                        <div class="fw-semibold">{{ manager.phone }}</div>
+                                    {% endif %}
+                                    {% if manager.location %}
+                                        <small class="location-text">{{ manager.location }}</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-content">
+                                    {% if manager.organization %}
+                                        <div class="fw-semibold">{{ manager.organization }}</div>
+                                    {% else %}
+                                        <small class="text-muted">Not specified</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-content">
+                                    {% if manager.service_experience %}
+                                        <small>{{ manager.service_experience|truncatechars:50 }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Not provided</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-content">
+                                    <small>{{ manager.verification_requested_at|date:"M j, Y" }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ manager.verification_requested_at|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock me-1"></i>Pending
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-btn-group">
+                                        <form method="post" action="{% url 'console:verify_user' manager.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="notes" value="Approved by admin">
+                                            <button type="submit" class="action-btn btn-verify" 
+                                                    title="Approve Manager"
+                                                    onclick="return confirm('Are you sure you want to approve {{ manager.full_name|default:manager.email }} as a Service Manager?')">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'console:reject_user' manager.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="notes" value="Application rejected by admin">
+                                            <button type="submit" class="action-btn btn-reject" 
+                                                    title="Reject Application"
+                                                    onclick="return confirm('Are you sure you want to reject {{ manager.full_name|default:manager.email }}\'s application?')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-dark">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-check text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <h4 class="mt-3 text-muted">No Pending Managers</h4>
+                    <p class="text-muted">All service manager verification requests have been processed.</p>
+                    <a href="{% url 'console:users' %}" class="enhanced-btn btn-primary-enhanced mt-3">
+                        <i class="fas fa-users me-2"></i>View All Users
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% endblock %} 

@@ -1,0 +1,744 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ service.name }} - Feedback - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Feedback Page Styling */
+    .feedback-container {
+        min-height: calc(100vh - 200px);
+        padding-top: 3rem;
+        padding-bottom: 4rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .feedback-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+    
+    .feedback-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .feedback-subtitle {
+        color: #64748b;
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feedback-address {
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+    
+    .main-content-spacing {
+        margin-top: 2rem !important;
+        margin-bottom: 4rem !important;
+    }
+    
+    .feedback-item {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .feedback-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .feedback-item.unread::before {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    
+    .feedback-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .feedback-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+    
+    .rating-stars {
+        display: flex;
+        gap: 0.25rem;
+    }
+    
+    .star {
+        color: #d1d5db;
+        font-size: 1.25rem;
+    }
+    
+    .star.filled {
+        color: #fbbf24;
+    }
+    
+    .feedback-content {
+        padding: 2rem;
+    }
+    
+    .feedback-footer {
+        background: #f8fafc;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .reply-section {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border-left: 4px solid #3b82f6;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border-radius: 1rem;
+    }
+    
+    .filter-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        margin-bottom: 3rem;
+        border: 1px solid #f1f5f9;
+    }
+    
+    .filter-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
+    
+    .stats-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        text-align: center;
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+    
+    .stat-card:nth-child(1)::before {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+    
+    .stat-card:nth-child(2)::before {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    
+    .stat-card:nth-child(3)::before {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .stat-card:nth-child(4)::before {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .analytics-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        margin-top: 1rem;
+    }
+    
+    .analytics-btn:hover {
+        background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+        color: white;
+    }
+    
+    .quick-filter-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        background: white;
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .quick-filter-btn:hover,
+    .quick-filter-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+    
+    /* Force remove purple from all feedback icons */
+    .feedback-container i.fa,
+    .feedback-container i.fas,
+    .feedback-container .fa,
+    .feedback-container .fas {
+        background: transparent !important;
+        background-image: none !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: #6b7280 !important;
+        color: #6b7280 !important;
+    }
+    
+    @media (max-width: 768px) {
+        .feedback-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+        
+        .feedback-title {
+            font-size: 2rem;
+        }
+        
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .feedback-header-section {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .stats-section {
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .feedback-content {
+            padding: 1.5rem;
+        }
+    }
+    
+    .role-badge { 
+        font-size: 0.75rem; 
+        padding: 0.3rem 0.8rem; 
+        border-radius: 30px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        border: 2px solid transparent !important; 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 0.5rem; 
+        min-width: 90px; 
+        text-align: center; 
+        position: relative; 
+        overflow: hidden; 
+        color: #fff !important; 
+    }
+    
+    .role-user { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%) !important; }
+    .role-admin { background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%) !important; }
+    .role-community_moderator { background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%) !important; }
+    .role-service_manager { background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feedback-container">
+    <div class="container mx-auto px-4 py-8 main-content-spacing">
+        <!-- Header -->
+        <div class="feedback-header">
+            <h1 class="feedback-title">
+                <i class="fas fa-comments" style="color: #6b7280; margin-right: 0.5rem;"></i>
+                Service Feedback
+            </h1>
+            <p class="feedback-subtitle">{{ service.name }}</p>
+            <p class="feedback-address">{{ service.address }}</p>
+            
+            <a href="{% url 'manager:service_analytics' service.id %}" class="analytics-btn">
+                <i class="fas fa-chart-line"></i>
+                View Analytics
+            </a>
+        </div>
+
+    <!-- Feedback Statistics -->
+    <div class="stats-section">
+        <div class="stat-card">
+            <div class="text-2xl font-bold text-blue-600 mb-2">42</div>
+            <div class="text-gray-600">Total Reviews</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-2xl font-bold text-yellow-500 mb-2">4.8</div>
+            <div class="text-gray-600">Average Rating</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-2xl font-bold text-green-600 mb-2">5</div>
+            <div class="text-gray-600">Unread Reviews</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-2xl font-bold text-purple-600 mb-2">85%</div>
+            <div class="text-gray-600">Response Rate</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <form method="get" class="filter-row">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Search Feedback</span>
+                </label>
+                <input type="text" name="q" placeholder="Search by content, reviewer name..." 
+                       value="{{ request.GET.q|default:'' }}" 
+                       class="input input-bordered">
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Rating</span>
+                </label>
+                <select name="rating" class="select select-bordered">
+                    <option value="">All Ratings</option>
+                    <option value="5" {% if request.GET.rating == '5' %}selected{% endif %}>5 Stars</option>
+                    <option value="4" {% if request.GET.rating == '4' %}selected{% endif %}>4 Stars</option>
+                    <option value="3" {% if request.GET.rating == '3' %}selected{% endif %}>3 Stars</option>
+                    <option value="2" {% if request.GET.rating == '2' %}selected{% endif %}>2 Stars</option>
+                    <option value="1" {% if request.GET.rating == '1' %}selected{% endif %}>1 Star</option>
+                </select>
+            </div>
+            
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Status</span>
+                </label>
+                <select name="status" class="select select-bordered">
+                    <option value="">All</option>
+                    <option value="unread" {% if request.GET.status == 'unread' %}selected{% endif %}>Unread</option>
+                    <option value="replied" {% if request.GET.status == 'replied' %}selected{% endif %}>Replied</option>
+                    <option value="flagged" {% if request.GET.status == 'flagged' %}selected{% endif %}>Flagged</option>
+                </select>
+            </div>
+            
+            <div class="form-control">
+                <button type="submit" class="btn btn-primary">
+                    🔍 Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+        <!-- Quick Filters -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <a href="?" class="quick-filter-btn {% if not request.GET %}active{% endif %}">
+                <i class="fas fa-list"></i>
+                All Feedback
+            </a>
+            <a href="?status=unread" class="quick-filter-btn {% if request.GET.status == 'unread' %}active{% endif %}">
+                <i class="fas fa-exclamation-circle"></i>
+                Unread (5)
+            </a>
+        <a href="?rating=1" class="btn btn-outline btn-sm {% if request.GET.rating == '1' %}btn-active{% endif %}">
+            ⭐ 1 Star
+        </a>
+        <a href="?rating=5" class="btn btn-outline btn-sm {% if request.GET.rating == '5' %}btn-active{% endif %}">
+            ⭐⭐⭐⭐⭐ 5 Stars
+        </a>
+    </div>
+
+    <!-- Feedback List -->
+    <div class="space-y-4">
+        {% for review in reviews %}
+            <div class="feedback-item {% if not review.is_read %}unread{% endif %}">
+                <div class="feedback-content">
+                    <div class="feedback-header-section">
+                        <div class="flex items-center gap-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-neutral text-neutral-content rounded-full w-12 h-12">
+                                    <span class="text-lg">{{ review.user.username|first|upper }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-800">
+                                    {{ review.user.get_display_name|default:review.user.username }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ review.created_at|timesince }} ago
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col items-end gap-2">
+                            <div class="rating-stars">
+                                {% for i in "12345" %}
+                                    <span class="star {% if i|add:0 <= review.rating %}filled{% endif %}">★</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="flex gap-1">
+                                {% if not review.is_read %}
+                                    <span class="badge badge-primary badge-sm">New</span>
+                                {% endif %}
+                                {% if review.manager_reply %}
+                                    <span class="badge badge-success badge-sm">Replied</span>
+                                {% endif %}
+                                {% if review.is_flagged %}
+                                    <span class="badge badge-warning badge-sm">Flagged</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-gray-700 mb-4">
+                        {{ review.comment }}
+                    </div>
+                    
+                    {% if review.manager_reply %}
+                        <div class="reply-section">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="text-sm font-medium text-blue-800">Your Reply:</div>
+                                <span class="badge badge-xs role-badge role-{{ user.role }}">
+                                    {% if user.role == 'admin' %}<i class="fas fa-crown"></i> ADMIN
+                                    {% elif user.role == 'community_moderator' %}<i class="fas fa-shield-alt"></i> COMMUNITY MODERATOR
+                                    {% elif user.role == 'service_manager' %}<i class="fas fa-cogs"></i> SERVICE MANAGER
+                                    {% else %}<i class="fas fa-user"></i> USER
+                                    {% endif %}
+                                </span>
+                                <div class="text-xs text-gray-500">{{ review.reply_date|timesince }} ago</div>
+                            </div>
+                            <div class="text-gray-700">{{ review.manager_reply }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="feedback-footer">
+                    <div class="flex items-center gap-4">
+                        {% if review.helpful_count %}
+                            <span class="text-sm text-gray-600">
+                                👍 {{ review.helpful_count }} found this helpful
+                            </span>
+                        {% endif %}
+                        {% if review.photos.exists %}
+                            <span class="text-sm text-gray-600">
+                                📷 {{ review.photos.count }} photo{{ review.photos.count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        {% if not review.is_read %}
+                            <button onclick="markAsRead('{{ review.id }}')" 
+                                    class="btn btn-sm btn-outline">
+                                ✓ Mark Read
+                            </button>
+                        {% endif %}
+                        
+                        {% if not review.manager_reply %}
+                            <button onclick="openReplyModal('{{ review.id }}', '{{ review.user.get_display_name|default:review.user.username }}', '{{ review.comment|escapejs }}')" 
+                                    class="btn btn-sm btn-primary">
+                                💬 Reply
+                            </button>
+                        {% else %}
+                            <button onclick="openReplyModal('{{ review.id }}', '{{ review.user.get_display_name|default:review.user.username }}', '{{ review.comment|escapejs }}', '{{ review.manager_reply|escapejs }}')" 
+                                    class="btn btn-sm btn-outline">
+                                ✏️ Edit Reply
+                            </button>
+                        {% endif %}
+                        
+                        <div class="dropdown dropdown-end">
+                            <button type="button" tabindex="0" class="btn btn-sm btn-ghost" onclick="toggleDropdown('review-menu-{{ review.id }}'); event.stopPropagation();" aria-label="Review options">⋮</button>
+                            <ul id="review-menu-{{ review.id }}" tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40 hidden">
+                                <li>
+                                    <a onclick="toggleFlag('{{ review.id }}')">
+                                        {% if review.is_flagged %}🚩 Unflag{% else %}🚩 Flag{% endif %}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a onclick="shareReview('{{ review.id }}')">
+                                        📤 Share
+                                    </a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a onclick="reportReview('{{ review.id }}')" class="text-error">
+                                        ⚠️ Report
+                                    </a>
+                                </li>
+                                {% if user.is_authenticated and user == review.user %}
+                                <li>
+                                    <a href="{% url 'feedback:delete_feedback' review.id %}" class="text-error" onclick="return confirm('Are you sure you want to delete this feedback?');">
+                                        <i class="fas fa-trash mr-1"></i>Delete Feedback
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <!-- Empty State -->
+            <div class="text-center py-16">
+                <div class="text-6xl mb-4">💬</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">No Feedback Found</h3>
+                <p class="text-gray-600 mb-6">
+                    {% if request.GET %}
+                        No feedback matches your current filters. Try adjusting your search criteria.
+                    {% else %}
+                        No reviews have been submitted for this service yet.
+                    {% endif %}
+                </p>
+                {% if request.GET %}
+                    <a href="{% url 'manager:service_feedback' service.id %}" class="btn btn-outline">
+                        Clear Filters
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <div class="flex justify-center mt-8">
+            <div class="btn-group">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-outline">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline">Previous</a>
+                {% endif %}
+                
+                <span class="btn btn-active">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline">Last</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+        <!-- Navigation -->
+        <div class="text-center mt-8">
+            <div class="flex gap-4 justify-center">
+                <a href="{% url 'manager:service_status' service.id %}" class="analytics-btn">
+                    <i class="fas fa-chart-bar"></i>
+                    Manage Status
+                </a>
+                <a href="{% url 'manager:service_analytics' service.id %}" class="analytics-btn">
+                    <i class="fas fa-chart-line"></i>
+                    View Analytics
+                </a>
+                <a href="{% url 'manager:services' %}" class="analytics-btn" style="background: linear-gradient(135deg, #6b7280, #4b5563);">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to My Services
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reply Modal -->
+<dialog id="reply-modal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">💬 Reply to Feedback</h3>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+            <div class="flex items-center gap-2 mb-2">
+                <strong id="reviewer-name"></strong>
+                <span class="text-sm text-gray-500">wrote:</span>
+            </div>
+            <div id="original-comment" class="text-gray-700"></div>
+        </div>
+        
+        <form id="reply-form">
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text">Your Reply</span>
+                </label>
+                <textarea id="reply-text" 
+                          class="textarea textarea-bordered h-32" 
+                          placeholder="Thank you for your feedback..."></textarea>
+            </div>
+            
+            <div class="form-control mb-6">
+                <label class="cursor-pointer label">
+                    <span class="label-text">Make this reply public</span>
+                    <input type="checkbox" id="public-reply" class="checkbox checkbox-primary" checked>
+                </label>
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn" onclick="closeReplyModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Send Reply</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentReviewId = null;
+
+function markAsRead(reviewId) {
+    // Here you would make an AJAX call to mark the review as read
+    console.log('Marking review as read:', reviewId);
+    
+    // For demo, just remove the unread styling
+    const feedbackItem = document.querySelector(`[data-review-id="${reviewId}"]`);
+    if (feedbackItem) {
+        feedbackItem.classList.remove('unread');
+    }
+    
+    // Update button
+    event.target.remove();
+}
+
+function openReplyModal(reviewId, reviewerName, originalComment, existingReply = '') {
+    currentReviewId = reviewId;
+    
+    document.getElementById('reviewer-name').textContent = reviewerName;
+    document.getElementById('original-comment').textContent = originalComment;
+    document.getElementById('reply-text').value = existingReply;
+    
+    document.getElementById('reply-modal').showModal();
+}
+
+function closeReplyModal() {
+    document.getElementById('reply-modal').close();
+    currentReviewId = null;
+}
+
+function toggleFlag(reviewId) {
+    console.log('Toggling flag for review:', reviewId);
+    // Here you would make an AJAX call to toggle the flag status
+    alert('Flag status toggled for review: ' + reviewId);
+}
+
+function shareReview(reviewId) {
+    console.log('Sharing review:', reviewId);
+    // Here you would implement sharing functionality
+    alert('Share functionality for review: ' + reviewId);
+}
+
+function reportReview(reviewId) {
+    if (confirm('Are you sure you want to report this review?')) {
+        console.log('Reporting review:', reviewId);
+        // Here you would make an AJAX call to report the review
+        alert('Review reported: ' + reviewId);
+    }
+}
+
+// Handle reply form submission
+document.getElementById('reply-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const replyText = document.getElementById('reply-text').value;
+    const isPublic = document.getElementById('public-reply').checked;
+    
+    if (!replyText.trim()) {
+        alert('Please enter a reply message.');
+        return;
+    }
+    
+    // Here you would make an AJAX call to save the reply
+    console.log('Saving reply for review:', currentReviewId, {
+        reply: replyText,
+        isPublic: isPublic
+    });
+    
+    alert('Reply sent successfully!');
+    closeReplyModal();
+    
+    // Refresh the page to show the new reply
+    location.reload();
+});
+
+// Auto-refresh unread count every 30 seconds
+setInterval(function() {
+    console.log('Checking for new feedback...');
+    // Here you would make an AJAX call to check for new feedback
+}, 30000);
+
+function toggleDropdown(menuId) {
+    const menu = document.getElementById(menuId);
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+    // Optionally close other open dropdowns
+    document.querySelectorAll('.dropdown-content.menu').forEach(function(el) {
+        if (el.id !== menuId) el.classList.add('hidden');
+    });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-content.menu').forEach(dropdown => {
+            dropdown.classList.add('hidden');
+        });
+    }
+});
+</script>
+{% endblock %} 

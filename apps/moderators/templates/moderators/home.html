@@ -1,0 +1,755 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Moderator Home - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Color Variables */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        
+        --glass-bg: rgba(255, 255, 255, 0.25);
+        --glass-border: rgba(255, 255, 255, 0.18);
+        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        --hover-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.5);
+        
+        --border-radius-sm: 12px;
+        --border-radius-md: 20px;
+        --border-radius-lg: 24px;
+        --border-radius-xl: 32px;
+    }
+    
+    /* Global Styles */
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    /* Enhanced Hero Section */
+    .hero-section {
+        background: var(--primary-gradient);
+        position: relative;
+        overflow: hidden;
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        animation: floatingShapes 20s ease-in-out infinite;
+    }
+    
+    @keyframes floatingShapes {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(180deg); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        max-width: 900px;
+        padding: 0 2rem;
+    }
+    
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .hero-title {
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 800;
+        line-height: 1.1;
+        color: white;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .hero-subtitle {
+        font-size: clamp(1.125rem, 3vw, 1.5rem);
+        color: rgba(255,255,255,0.9);
+        line-height: 1.6;
+        margin-bottom: 3rem;
+        font-weight: 400;
+    }
+    
+    /* Modern Button System */
+    .btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+        box-shadow: var(--card-shadow);
+    }
+    
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .btn-primary { 
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-secondary { 
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .btn-accent { 
+        background: var(--warning-gradient);
+        color: white;
+        border: none;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 6rem 0;
+        position: relative;
+        margin-top: -4rem;
+        z-index: 20;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-top: 4rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius-lg);
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--card-gradient);
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card.warning { --card-gradient: var(--warning-gradient); }
+    .stat-card.info { --card-gradient: var(--info-gradient); }
+    .stat-card.danger { --card-gradient: var(--danger-gradient); }
+    
+    .stat-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: var(--card-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        background: var(--card-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-subtitle {
+        color: #6b7280;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    
+    /* Tools Section */
+    .tools-section {
+        background: white;
+        padding: 6rem 0;
+    }
+    
+    .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 2.5rem;
+        margin-top: 4rem;
+    }
+    
+    .tool-card {
+        background: white;
+        border-radius: var(--border-radius-lg);
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .tool-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--tool-gradient);
+        transform: scaleY(0.6);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .tool-card:hover::before {
+        transform: scaleY(1);
+    }
+    
+    .tool-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    }
+    
+    .tool-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tool-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--border-radius-sm);
+        background: var(--tool-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .tool-title {
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+    
+    .tool-description {
+        color: #6b7280;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    .tool-card.warning { --tool-gradient: var(--warning-gradient); }
+    .tool-card.info { --tool-gradient: var(--info-gradient); }
+    .tool-card.success { --tool-gradient: var(--success-gradient); }
+    .tool-card.danger { --tool-gradient: var(--danger-gradient); }
+    .tool-card.primary { --tool-gradient: var(--primary-gradient); }
+    .tool-card.secondary { --tool-gradient: var(--dark-gradient); }
+    
+    /* Impact Section */
+    .impact-section {
+        background: var(--dark-gradient);
+        color: white;
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .impact-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
+    }
+    
+    .impact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin: 4rem 0;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .impact-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius-md);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--card-shadow);
+    }
+    
+    .impact-card:hover {
+        transform: translateY(-4px) scale(1.05);
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .impact-number {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .impact-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Section Headers */
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .section-title {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+    
+    .section-subtitle {
+        font-size: 1.25rem;
+        color: #6b7280;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    
+    .impact-section .section-title {
+        color: white;
+    }
+    
+    .impact-section .section-subtitle {
+        color: rgba(255,255,255,0.8);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 70vh;
+            padding: 2rem 0;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .tools-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .impact-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .tool-card,
+        .stat-card {
+            padding: 2rem;
+        }
+        
+        .section-header {
+            margin-bottom: 2rem;
+        }
+    }
+    
+    /* Animation Classes */
+    .animate-fade-in {
+        opacity: 0;
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .animate-slide-up {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: slideUp 0.8s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Stagger animation delays */
+    .animate-delay-1 { animation-delay: 0.1s; }
+    .animate-delay-2 { animation-delay: 0.2s; }
+    .animate-delay-3 { animation-delay: 0.3s; }
+    .animate-delay-4 { animation-delay: 0.4s; }
+    .animate-delay-5 { animation-delay: 0.5s; }
+    .animate-delay-6 { animation-delay: 0.6s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Hero Section -->
+<div class="hero-section">
+    <div class="hero-content animate-fade-in">
+        <div class="hero-badge">
+            <span>🛡️</span>
+            <span>Community Moderator Portal</span>
+        </div>
+        
+        <h1 class="hero-title">
+            Welcome back,<br>
+            <span style="background: linear-gradient(135deg, #fee140 0%, #fa709a 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">{{ user.get_display_name }}</span>
+        </h1>
+        
+        <p class="hero-subtitle">
+            Your comprehensive dashboard for community moderation, content oversight, and member engagement. 
+            Keep our platform safe, vibrant, and thriving.
+        </p>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+            <a href="{% url 'moderators:dashboard' %}" class="btn-modern btn-primary">
+                <span>📊</span>
+                <span>Open Dashboard</span>
+            </a>
+            <a href="{% url 'moderators:services_pending' %}" class="btn-modern btn-secondary">
+                <span>📋</span>
+                <span>Review Services</span>
+            </a>
+            <a href="{% url 'moderators:comments_pending' %}" class="btn-modern btn-accent">
+                <span>💬</span>
+                <span>Moderate Comments</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Stats Section -->
+<div class="stats-section">
+    <div class="container mx-auto px-6">
+        <div class="section-header">
+            <h2 class="section-title">Current Workload</h2>
+            <p class="section-subtitle">Stay on top of your moderation tasks with real-time statistics</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card warning animate-slide-up animate-delay-1">
+                <div class="stat-icon">📋</div>
+                <div class="stat-number">{{ pending_services_count }}</div>
+                <div class="stat-label">Pending Services</div>
+                <div class="stat-subtitle">Services awaiting your review and approval</div>
+                <a href="{% url 'moderators:services_pending' %}" class="btn-modern" style="background: var(--warning-gradient); color: white;">
+                    <span>🔍</span>
+                    <span>Review Now</span>
+                </a>
+            </div>
+            
+            <div class="stat-card info animate-slide-up animate-delay-2">
+                <div class="stat-icon">💬</div>
+                <div class="stat-number">{{ pending_comments_count }}</div>
+                <div class="stat-label">Pending Comments</div>
+                <div class="stat-subtitle">User comments requiring moderation</div>
+                <a href="{% url 'moderators:comments_pending' %}" class="btn-modern" style="background: var(--info-gradient); color: white;">
+                    <span>✅</span>
+                    <span>Moderate Now</span>
+                </a>
+            </div>
+            
+            <div class="stat-card danger animate-slide-up animate-delay-3">
+                <div class="stat-icon">🚨</div>
+                <div class="stat-number">{{ flagged_content_count }}</div>
+                <div class="stat-label">Flagged Content</div>
+                <div class="stat-subtitle">Community-reported content to investigate</div>
+                <a href="{% url 'moderators:feedback' %}" class="btn-modern" style="background: var(--danger-gradient); color: white;">
+                    <span>🔧</span>
+                    <span>Resolve Issues</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Tools Section -->
+<div class="tools-section">
+    <div class="container mx-auto px-6">
+        <div class="section-header">
+            <h2 class="section-title">Moderation Toolkit</h2>
+            <p class="section-subtitle">Access powerful tools designed to streamline your moderation workflow</p>
+        </div>
+        
+        <div class="tools-grid">
+            <div class="tool-card warning animate-slide-up animate-delay-1">
+                <div class="tool-header">
+                    <div class="tool-icon">📋</div>
+                    <h3 class="tool-title">Service Approval Queue</h3>
+                </div>
+                <p class="tool-description">
+                    Review and approve new service submissions from community managers. Ensure quality standards and community guidelines compliance.
+                </p>
+                <a href="{% url 'moderators:services_pending' %}" class="btn-modern" style="background: var(--warning-gradient); color: white;">
+                    <span>🔍</span>
+                    <span>Enter Queue</span>
+                </a>
+            </div>
+            
+            <div class="tool-card info animate-slide-up animate-delay-2">
+                <div class="tool-header">
+                    <div class="tool-icon">💬</div>
+                    <h3 class="tool-title">Comment Moderation</h3>
+                </div>
+                <p class="tool-description">
+                    Moderate user comments and reviews to maintain healthy community discussions. Foster positive engagement while preventing harmful content.
+                </p>
+                <a href="{% url 'moderators:comments_pending' %}" class="btn-modern" style="background: var(--info-gradient); color: white;">
+                    <span>✅</span>
+                    <span>Start Moderating</span>
+                </a>
+            </div>
+            
+            <div class="tool-card success animate-slide-up animate-delay-3">
+                <div class="tool-header">
+                    <div class="tool-icon">📢</div>
+                    <h3 class="tool-title">Community Outreach</h3>
+                </div>
+                <p class="tool-description">
+                    Create and manage community announcements, events, and outreach posts. Keep members informed and engaged with important updates.
+                </p>
+                <a href="{% url 'moderators:outreach' %}" class="btn-modern" style="background: var(--success-gradient); color: white;">
+                    <span>📝</span>
+                    <span>Manage Outreach</span>
+                </a>
+            </div>
+            
+            <div class="tool-card danger animate-slide-up animate-delay-4">
+                <div class="tool-header">
+                    <div class="tool-icon">🚨</div>
+                    <h3 class="tool-title">Flagged Content Review</h3>
+                </div>
+                <p class="tool-description">
+                    Investigate and resolve content flagged by community members. Handle violations, disputes, and maintain safety standards.
+                </p>
+                <a href="{% url 'moderators:feedback' %}" class="btn-modern" style="background: var(--danger-gradient); color: white;">
+                    <span>🔧</span>
+                    <span>Review Flags</span>
+                </a>
+            </div>
+            
+            <div class="tool-card primary animate-slide-up animate-delay-5">
+                <div class="tool-header">
+                    <div class="tool-icon">📊</div>
+                    <h3 class="tool-title">Analytics Dashboard</h3>
+                </div>
+                <p class="tool-description">
+                    Track moderation performance, view action history, and analyze community trends to improve effectiveness.
+                </p>
+                <a href="{% url 'moderators:actions' %}" class="btn-modern" style="background: var(--primary-gradient); color: white;">
+                    <span>📈</span>
+                    <span>View Analytics</span>
+                </a>
+            </div>
+            
+            <div class="tool-card secondary animate-slide-up animate-delay-6">
+                <div class="tool-header">
+                    <div class="tool-icon">👤</div>
+                    <h3 class="tool-title">Profile Settings</h3>
+                </div>
+                <p class="tool-description">
+                    Update your moderator profile, notification preferences, and account settings for optimal workflow management.
+                </p>
+                <a href="{% url 'moderators:profile' %}" class="btn-modern" style="background: var(--dark-gradient); color: white;">
+                    <span>⚙️</span>
+                    <span>Edit Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modern Impact Section -->
+<div class="impact-section">
+    <div class="container mx-auto px-6">
+        <div class="section-header">
+            <h2 class="section-title">Your Community Impact</h2>
+            <p class="section-subtitle">See the positive difference you're making every day</p>
+        </div>
+        
+        <div class="impact-grid">
+            <div class="impact-card animate-slide-up animate-delay-1">
+                <div class="impact-number">✅</div>
+                <div class="impact-label">Services Approved</div>
+            </div>
+            <div class="impact-card animate-slide-up animate-delay-2">
+                <div class="impact-number">💬</div>
+                <div class="impact-label">Comments Moderated</div>
+            </div>
+            <div class="impact-card animate-slide-up animate-delay-3">
+                <div class="impact-number">📢</div>
+                <div class="impact-label">Outreach Posts</div>
+            </div>
+            <div class="impact-card animate-slide-up animate-delay-4">
+                <div class="impact-number">🚨</div>
+                <div class="impact-label">Issues Resolved</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 4rem; position: relative; z-index: 10;">
+            <p style="font-size: 1.25rem; margin-bottom: 2rem; color: rgba(255,255,255,0.9);">
+                Thank you for your dedication to keeping our community safe and thriving!
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+                <a href="{% url 'moderators:dashboard' %}" class="btn-modern" style="background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); color: white;">
+                    <span>📊</span>
+                    <span>Full Dashboard</span>
+                </a>
+                <a href="{% url 'moderators:actions' %}" class="btn-modern" style="background: var(--warning-gradient); color: white;">
+                    <span>📈</span>
+                    <span>Detailed Stats</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced animations and interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add intersection observer for animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all animated elements
+    document.querySelectorAll('.animate-slide-up, .animate-fade-in').forEach(el => {
+        observer.observe(el);
+    });
+    
+    // Add hover effects for cards
+    document.querySelectorAll('.stat-card, .tool-card, .impact-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = this.style.transform.replace('scale(1)', 'scale(1.02)');
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = this.style.transform.replace('scale(1.02)', 'scale(1)');
+        });
+    });
+    
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

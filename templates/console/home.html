@@ -1,0 +1,833 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Console Home - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Admin Dark Theme */
+    .admin-home {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Override any framework spacing on admin pages */
+    .admin-home * {
+        margin-top: 0;
+    }
+    
+    .admin-home .container,
+    .admin-home .container-fluid {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Hero Section - Perfectly Centered */
+    .admin-hero {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .admin-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(100,116,139,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .admin-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 4px solid #3b82f6;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        margin: 0 auto 2rem;
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+        transition: transform 0.3s ease;
+    }
+    
+    .admin-avatar:hover {
+        transform: scale(1.05);
+    }
+    
+    .welcome-text {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        width: 100%;
+    }
+    
+    .admin-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
+    .admin-subtitle {
+        font-size: 1.2rem;
+        color: #94a3b8;
+        font-weight: 300;
+        text-align: center;
+        margin-bottom: 0;
+    }
+    
+    /* Quick Actions Grid */
+    .quick-actions {
+        padding: 3rem 0;
+    }
+
+    /* Administrative Controls 3x2 Grid Layout */
+    .admin-controls-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 2rem 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+
+    .admin-controls-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Grid item styling */
+    .admin-controls-grid .grid-item {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Responsive grid layout */
+    @media (max-width: 992px) {
+        .admin-controls-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .admin-controls-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 1rem;
+        }
+    }
+    
+    /* Fix for equal height cards */
+    .action-card-wrapper {
+        display: flex;
+        height: 100%;
+    }
+    
+    .action-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        min-height: 280px;
+    }
+    
+    .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: #3b82f6;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .action-card:hover::before {
+        left: 100%;
+    }
+    
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: white;
+        flex-shrink: 0;
+    }
+    
+    .icon-users { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+    .icon-services { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .icon-health { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .icon-announcements { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .icon-maintenance { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    .icon-emergency { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
+    
+    .action-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #f1f5f9;
+        flex-shrink: 0;
+    }
+    
+    .action-description {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+    
+    .action-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        flex-shrink: 0;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #3b82f6;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    /* System Status Overview */
+    .system-status {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .status-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 12px;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-excellent { background: #10b981; }
+    .status-good { background: #22c55e; }
+    .status-warning { background: #f59e0b; }
+    .status-critical { background: #ef4444; animation: pulse 1s infinite; }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.1); }
+    }
+    
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .status-item {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .status-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-label {
+        font-size: 0.875rem;
+        color: #94a3b8;
+    }
+    
+    /* Recent Activity Feed */
+    .activity-feed {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-text {
+        font-size: 0.875rem;
+        color: #e2e8f0;
+        margin-bottom: 0.25rem;
+    }
+    
+    .activity-time {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    /* Emergency Banner */
+    .emergency-banner {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        font-weight: 600;
+        animation: emergency-pulse 2s infinite;
+        box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
+    }
+    
+    @keyframes emergency-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.9; }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .admin-hero {
+            min-height: 100vh;
+            padding: 1rem 0;
+        }
+        
+        .hero-content {
+            padding: 1rem;
+        }
+        
+        .admin-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-title {
+            font-size: 2rem;
+        }
+        
+        .admin-subtitle {
+            font-size: 1rem;
+        }
+        
+        .action-card {
+            padding: 1.5rem;
+        }
+        
+        .status-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .d-flex.gap-4 {
+            gap: 1rem !important;
+        }
+
+        .quick-actions .row.gx-4.gy-5 {
+            row-gap: 2rem !important;
+            column-gap: 1rem !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .d-flex.gap-4 {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .d-flex.gap-4 .text-muted {
+            display: none;
+        }
+
+        .quick-actions {
+            padding: 2rem 0;
+        }
+
+        .quick-actions .row.gx-4.gy-5 {
+            row-gap: 1.5rem !important;
+            column-gap: 0.75rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-home">
+    <!-- Emergency Mode Banner -->
+    {% if emergency_mode %}
+    <div class="container">
+        <div class="emergency-banner">
+            <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
+            <strong>EMERGENCY MODE ACTIVE</strong> - All non-essential services are restricted
+            <a href="{% url 'console:emergency_mode_toggle' %}" class="btn btn-outline-light btn-sm ms-3"
+               onclick="return confirm('Deactivate emergency mode?')">
+                <i class="fas fa-power-off me-1"></i>Deactivate
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hero Section -->
+    <section class="admin-hero">
+        <div class="hero-content">
+            <div class="admin-avatar">
+                {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Admin" class="w-100 h-100 rounded-circle">
+                {% else %}
+                <i class="fas fa-user-shield"></i>
+                {% endif %}
+            </div>
+            
+            <div class="welcome-text">
+                <h1 class="admin-title">Welcome, {{ user.get_display_name }}</h1>
+                <p class="admin-subtitle">CommuMap System Administrator</p>
+            </div>
+            
+            <!-- System Health Quick Overview -->
+            <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap text-center">
+                <div class="d-flex align-items-center">
+                    <span class="status-indicator {% if system_health.overall_score >= 80 %}status-excellent{% elif system_health.overall_score >= 60 %}status-good{% elif system_health.overall_score >= 40 %}status-warning{% else %}status-critical{% endif %}"></span>
+                    <span class="fw-medium">System Health: {{ system_health.overall_score|default:0 }}%</span>
+                </div>
+                <div class="text-muted">|</div>
+                <div>
+                    <i class="fas fa-users me-1"></i>
+                    {{ stats.total_users }} Users
+                </div>
+                <div class="text-muted">|</div>
+                <div>
+                    <i class="fas fa-building me-1"></i>
+                    {{ stats.active_services }} Active Services
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="container admin-controls-container">
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <h2 class="h3 text-center mb-1">Administrative Controls</h2>
+                    <p class="text-center text-muted">Quick access to all system management functions</p>
+                </div>
+            </div>
+            
+            <div class="admin-controls-grid">
+                <!-- User Management -->
+                <div class="grid-item">
+                    <a href="{% url 'console:users' %}" class="action-card">
+                        <div class="action-icon icon-users">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="action-title">User Management</h3>
+                        <p class="action-description">
+                            Manage user accounts, roles, and verification status. Handle pending approvals and user permissions.
+                        </p>
+                        <div class="action-stats">
+                            <div>
+                                <div class="stat-number">{{ stats.total_users }}</div>
+                                <div class="stat-label">Total Users</div>
+                            </div>
+                            <div>
+                                <div class="stat-number">{{ stats.pending_verifications }}</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Service Management -->
+                <div class="grid-item">
+                    <a href="{% url 'console:services' %}" class="action-card">
+                        <div class="action-icon icon-services">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3 class="action-title">Service Management</h3>
+                        <p class="action-description">
+                            Oversee all community services, manage emergency controls, and monitor service quality.
+                        </p>
+                        <div class="action-stats">
+                            <div>
+                                <div class="stat-number">{{ stats.total_services }}</div>
+                                <div class="stat-label">Total Services</div>
+                            </div>
+                            <div>
+                                <div class="stat-number">{{ stats.active_services }}</div>
+                                <div class="stat-label">Active</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- System Health -->
+                <div class="grid-item">
+                    <a href="{% url 'console:system_health' %}" class="action-card">
+                        <div class="action-icon icon-health">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3 class="action-title">System Health</h3>
+                        <p class="action-description">
+                            Monitor system performance, database health, memory usage, and application metrics.
+                        </p>
+                        <div class="action-stats">
+                            <div>
+                                <div class="stat-number">{{ system_health.overall_score|default:0 }}%</div>
+                                <div class="stat-label">Health Score</div>
+                            </div>
+                            <div>
+                                <div class="stat-number">{{ system_health.memory_usage|default:0 }}%</div>
+                                <div class="stat-label">Memory</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- System Announcements -->
+                <div class="grid-item">
+                    <a href="{% url 'console:announcements' %}" class="action-card">
+                        <div class="action-icon icon-announcements">
+                            <i class="fas fa-megaphone"></i>
+                        </div>
+                        <h3 class="action-title">Announcements</h3>
+                        <p class="action-description">
+                            Create and manage system-wide announcements, emergency alerts, and targeted communications.
+                        </p>
+                        <div class="action-stats">
+                            <div>
+                                <div class="stat-number">{{ active_announcements|length }}</div>
+                                <div class="stat-label">Active</div>
+                            </div>
+                            <div>
+                                <div class="stat-number">{{ urgent_announcements|length|default:0 }}</div>
+                                <div class="stat-label">Urgent</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Maintenance Tools -->
+                <div class="grid-item">
+                    <a href="{% url 'console:maintenance' %}" class="action-card">
+                        <div class="action-icon icon-maintenance">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 class="action-title">Maintenance</h3>
+                        <p class="action-description">
+                            Database backups, cache management, log rotation, and system maintenance operations.
+                        </p>
+                        <div class="action-stats">
+                            <div>
+                                <div class="stat-number">{{ recent_tasks|length }}</div>
+                                <div class="stat-label">Recent Tasks</div>
+                            </div>
+                            <div>
+                                <div class="stat-number">{{ failed_tasks|default:0 }}</div>
+                                <div class="stat-label">Failed</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Emergency Controls -->
+                <div class="grid-item">
+                    <a href="{% url 'console:emergency_mode_toggle' %}" class="action-card" 
+                       onclick="return confirm('Are you sure you want to toggle emergency mode?')">
+                        <div class="action-icon icon-emergency">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="action-title">Emergency Controls</h3>
+                        <p class="action-description">
+                            Activate emergency mode, send urgent alerts, and manage critical system operations.
+                        </p>
+                        <div class="action-stats">
+                            <div>
+                                <div class="stat-number">{% if emergency_mode %}ON{% else %}OFF{% endif %}</div>
+                                <div class="stat-label">Emergency Mode</div>
+                            </div>
+                            <div>
+                                <div class="stat-number">{{ maintenance_mode|yesno:"ON,OFF" }}</div>
+                                <div class="stat-label">Maintenance</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Status & Recent Activity -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- System Status -->
+                <div class="col-lg-6 mb-4">
+                    <div class="system-status h-100">
+                        <div class="status-header">
+                            <h3 class="h5 mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                System Status
+                            </h3>
+                            <a href="{% url 'console:system_health' %}" class="btn btn-outline-primary btn-sm">
+                                View Details
+                            </a>
+                        </div>
+                        
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <div class="status-value text-{% if system_health.database_health >= 90 %}success{% elif system_health.database_health >= 70 %}warning{% else %}danger{% endif %}">
+                                    {{ system_health.database_health|default:0 }}%
+                                </div>
+                                <div class="status-label">Database</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value text-{% if system_health.cache_health >= 90 %}success{% elif system_health.cache_health >= 70 %}warning{% else %}danger{% endif %}">
+                                    {{ system_health.cache_health|default:0 }}%
+                                </div>
+                                <div class="status-label">Cache</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value text-{% if system_health.memory_usage <= 80 %}success{% elif system_health.memory_usage <= 90 %}warning{% else %}danger{% endif %}">
+                                    {{ system_health.memory_usage|default:0 }}%
+                                </div>
+                                <div class="status-label">Memory</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-value text-{% if system_health.disk_usage <= 80 %}success{% elif system_health.disk_usage <= 90 %}warning{% else %}danger{% endif %}">
+                                    {{ system_health.disk_usage|default:0 }}%
+                                </div>
+                                <div class="status-label">Disk</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="col-lg-6 mb-4">
+                    <div class="activity-feed h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5 mb-0">
+                                <i class="fas fa-history me-2"></i>
+                                Recent Activity
+                            </h3>
+                            <a href="{% url 'console:audit_logs' %}" class="btn btn-outline-primary btn-sm">
+                                View All
+                            </a>
+                        </div>
+                        
+                        {% if recent_logs %}
+                        {% for log in recent_logs|slice:":5" %}
+                        <div class="activity-item">
+                            <div class="activity-icon bg-{% if log.action == 'user_created' %}success{% elif log.action == 'user_deleted' %}danger{% elif 'emergency' in log.action %}warning{% else %}primary{% endif %}">
+                                <i class="fas fa-{% if log.action == 'user_created' %}user-plus{% elif log.action == 'user_deleted' %}user-minus{% elif 'service' in log.action %}building{% elif 'emergency' in log.action %}exclamation-triangle{% else %}cog{% endif %}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-text">{{ log.description|truncatewords:8 }}</div>
+                                <div class="activity-time">{{ log.created_at|timesince }} ago by {{ log.user.get_display_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clock fa-2x text-muted mb-2"></i>
+                            <div class="text-muted">No recent activity</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access Footer -->
+    <section class="py-4 bg-dark">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                        <small class="text-muted">
+                            Logged in as Admin • Last login: {{ user.last_active|timesince }} ago
+                        </small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{% url 'console:dashboard' %}" class="btn btn-outline-light btn-sm me-2">
+                        <i class="fas fa-chart-bar me-1"></i>Dashboard
+                    </a>
+                    <a href="{% url 'console:profile' %}" class="btn btn-outline-light btn-sm me-2">
+                        <i class="fas fa-user me-1"></i>Profile
+                    </a>
+                    <a href="{% url 'console:settings' %}" class="btn btn-outline-light btn-sm me-2">
+                        <i class="fas fa-cog me-1"></i>Settings
+                    </a>
+                    <a href="{% url 'core:logout' %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh system health every 60 seconds
+    setInterval(function() {
+        fetch('{% url "console:system_metrics" %}')
+            .then(response => response.json())
+            .then(data => {
+                // Update health indicators
+                const indicators = document.querySelectorAll('.status-indicator');
+                indicators.forEach(indicator => {
+                    const score = data.overall_score || 0;
+                    indicator.className = 'status-indicator ';
+                    if (score >= 80) indicator.className += 'status-excellent';
+                    else if (score >= 60) indicator.className += 'status-good';
+                    else if (score >= 40) indicator.className += 'status-warning';
+                    else indicator.className += 'status-critical';
+                });
+                
+                // Update status values
+                if (data.database_health) {
+                    const dbValue = document.querySelector('.status-grid .status-item:nth-child(1) .status-value');
+                    if (dbValue) dbValue.textContent = data.database_health + '%';
+                }
+                if (data.cache_health) {
+                    const cacheValue = document.querySelector('.status-grid .status-item:nth-child(2) .status-value');
+                    if (cacheValue) cacheValue.textContent = data.cache_health + '%';
+                }
+                if (data.memory_usage) {
+                    const memValue = document.querySelector('.status-grid .status-item:nth-child(3) .status-value');
+                    if (memValue) memValue.textContent = data.memory_usage + '%';
+                }
+                if (data.disk_usage) {
+                    const diskValue = document.querySelector('.status-grid .status-item:nth-child(4) .status-value');
+                    if (diskValue) diskValue.textContent = data.disk_usage + '%';
+                }
+            })
+            .catch(error => console.log('System health update failed:', error));
+    }, 60000);
+
+    // Add smooth hover effects
+    document.querySelectorAll('.action-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+    });
+
+    // Add loading states for emergency toggle
+    document.querySelector('a[href*="emergency_mode_toggle"]')?.addEventListener('click', function(e) {
+        if (confirm('Are you sure you want to toggle emergency mode?')) {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+            this.classList.add('disabled');
+        } else {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %} 

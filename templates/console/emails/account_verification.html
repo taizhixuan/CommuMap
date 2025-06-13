@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Verification Required - {{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏳ Account Verification Required</h1>
+        </div>
+        
+        <div class="content">
+            <h2>Hello, {{ user.get_display_name }}!</h2>
+            
+            <p>Thank you for registering with {{ site_name }}! Your account has been created successfully.</p>
+            
+            <div class="warning-box">
+                <strong>Verification Required:</strong> Your {{ user.get_role_display }} role requires administrative approval before you can access all features.
+            </div>
+            
+            <h3>What happens next?</h3>
+            <ul>
+                <li>Our administrative team will review your account details</li>
+                <li>You will receive an email notification once your account is verified</li>
+                <li>The verification process typically takes 1-2 business days</li>
+            </ul>
+            
+            <h3>Account Details:</h3>
+            <ul>
+                <li><strong>Email:</strong> {{ user.email }}</li>
+                <li><strong>Role:</strong> {{ user.get_role_display }}</li>
+                <li><strong>Registration Date:</strong> {{ user.created_at|date:"F d, Y" }}</li>
+            </ul>
+            
+            <p>We appreciate your patience while we verify your account. This process helps us maintain the quality and security of our platform.</p>
+        </div>
+        
+        <div class="footer">
+            <p>Thank you for joining the {{ site_name }} community!</p>
+            <p>Best regards,<br>The {{ site_name }} Team</p>
+        </div>
+    </div>
+</body>
+</html> 

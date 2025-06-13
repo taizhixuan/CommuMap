@@ -1,0 +1,1115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manager Profile - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 20px 60px rgba(0, 0, 0, 0.15);
+        --shadow-strong: 0 30px 80px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Enhanced Background */
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+        min-height: 100vh;
+    }
+
+    /* Profile page container with proper spacing - remove main override to fix header sticking */
+    .profile-page-container {
+        min-height: calc(100vh - 200px);
+        padding-top: 6rem !important;
+        padding-bottom: 4rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+        margin-top: 0;
+    }
+    
+    /* Override base.html spacing restrictions for this page */
+    .profile-page-container .container {
+        padding-top: 2rem !important;
+        margin-top: 0 !important;
+    }
+
+    /* Glass Morphism Containers */
+    .glass-container {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: var(--shadow-soft);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 24px 24px 0 0;
+    }
+
+    .glass-container:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    /* Enhanced Profile Header */
+    .profile-header {
+        background: var(--primary-gradient);
+        border-radius: 32px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        box-shadow: var(--shadow-strong);
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .profile-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+    }
+
+    /* Enhanced Avatar */
+    .avatar-container {
+        position: relative;
+    }
+
+    .avatar-large {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .avatar-large:hover {
+        transform: scale(1.05);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .avatar-status {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--success-gradient);
+        border: 4px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    /* Enhanced Badges */
+    .enhanced-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 1.5rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .status-badge.verified {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        animation: verified-glow 3s ease-in-out infinite;
+    }
+
+    .status-badge.pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+        animation: pending-pulse 2s ease-in-out infinite;
+    }
+
+    .status-badge.member {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    @keyframes verified-glow {
+        0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+        50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+    }
+
+    @keyframes pending-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    /* Enhanced Form Styling */
+    .modern-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-field {
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+        position: relative;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .form-input:hover {
+        border-color: #d1d5db;
+    }
+
+    /* Enhanced Save Button */
+    .save-profile-btn {
+        background: var(--success-gradient);
+        border: none;
+        border-radius: 20px;
+        padding: 18px 40px;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-width: 200px;
+        margin: 0 auto;
+    }
+
+    .save-profile-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .save-profile-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        scale: 1.02;
+    }
+
+    .save-profile-btn:hover::before {
+        left: 100%;
+    }
+
+    .save-profile-btn:active {
+        transform: translateY(-1px);
+        scale: 0.98;
+    }
+
+    /* Enhanced Security Items */
+    .security-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .security-card {
+        background: white;
+        border: 2px solid #f1f5f9;
+        border-radius: 20px;
+        padding: 24px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .security-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .security-card:hover {
+        border-color: #667eea;
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .security-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .security-card.enabled {
+        background: linear-gradient(135deg, #f0fdf4 0%, #fafffe 100%);
+        border-color: #bbf7d0;
+    }
+
+    .security-card.disabled {
+        background: linear-gradient(135deg, #fef2f2 0%, #fffffe 100%);
+        border-color: #fecaca;
+    }
+
+    /* Enhanced Toggle Switches */
+    .custom-toggle {
+        position: relative;
+        width: 60px;
+        height: 30px;
+        background: #e5e7eb;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .custom-toggle.active {
+        background: var(--success-gradient);
+    }
+
+    .custom-toggle::before {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .custom-toggle.active::before {
+        transform: translateX(30px);
+    }
+
+    /* Enhanced Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--primary-gradient);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 12px;
+    }
+
+    /* Enhanced Action Buttons */
+    .action-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .action-card {
+        background: white;
+        border: 2px solid #f1f5f9;
+        border-radius: 20px;
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .action-card:hover {
+        border-color: #e2e8f0;
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 12px 24px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .action-btn.export { background: var(--info-gradient); }
+    .action-btn.support { background: var(--warning-gradient); }
+    .action-btn.danger { background: var(--danger-gradient); }
+
+    /* Enhanced Modals */
+    .modern-modal {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 2rem;
+        }
+        
+        .avatar-large {
+            width: 120px;
+            height: 120px;
+            font-size: 3rem;
+        }
+        
+        .modern-form-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .glass-container {
+            padding: 1.5rem;
+            border-radius: 20px;
+        }
+        
+        .profile-header {
+            padding: 2rem;
+            border-radius: 24px;
+        }
+    }
+
+    /* Loading Animations */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Success Animations */
+    @keyframes checkmark {
+        0% { stroke-dashoffset: 50; }
+        100% { stroke-dashoffset: 0; }
+    }
+
+    .success-checkmark {
+        stroke-dasharray: 50;
+        stroke-dashoffset: 50;
+        animation: checkmark 0.5s ease-out forwards;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-container">
+    <div class="container mx-auto px-4 py-8 main-content-spacing">
+    
+    <!-- Enhanced Profile Header -->
+    <div class="profile-header" style="margin-bottom: 4rem;">
+        <div class="profile-content">
+            <div class="avatar-container">
+                <div class="avatar-large">
+                    {{ manager.first_name|first|upper|default:'M' }}{{ manager.last_name|first|upper|default:'' }}
+                </div>
+                {% if manager.is_verified %}
+                    <div class="avatar-status">✓</div>
+                {% endif %}
+            </div>
+            
+            <div class="profile-info">
+                <h1 class="text-4xl font-bold mb-2">
+                    {% if manager.first_name or manager.last_name %}
+                        {{ manager.first_name }} {{ manager.last_name }}
+                    {% else %}
+                        {{ manager.username }}
+                    {% endif %}
+                </h1>
+                <p class="text-xl opacity-90 mb-2">🎯 Service Manager</p>
+                <p class="opacity-75 mb-4">{{ manager.email }}</p>
+                
+                <div class="enhanced-badges">
+                    {% if manager.is_verified %}
+                        <span class="status-badge verified">
+                            <span>✅</span>
+                            <span>Verified Account</span>
+                        </span>
+                    {% else %}
+                        <span class="status-badge pending">
+                            <span>⏳</span>
+                            <span>Verification Pending</span>
+                        </span>
+                    {% endif %}
+                    
+                    <span class="status-badge member">
+                        <span>📅</span>
+                        <span>Member since {{ manager.date_joined|date:"M Y" }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Dashboard -->
+    <div class="glass-container" style="margin-top: 3rem;">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span>📊</span>
+            <span>Account Overview</span>
+        </h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-value">{{ manager_stats.services_managed|default:"0" }}</div>
+                <div class="stat-label">Services Managed</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-value">{{ manager_stats.total_feedback|default:"0" }}</div>
+                <div class="stat-label">Total Feedback</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🤝</div>
+                <div class="stat-value">{{ manager_stats.people_helped|default:"0" }}</div>
+                <div class="stat-label">People Helped</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="glass-container">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span>📞</span>
+            <span>Profile Information</span>
+        </h2>
+        
+        <!-- Display form errors if any -->
+        {% if form.errors %}
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-lg">
+                <div class="flex">
+                    <div class="ml-3">
+                        <h3 class="text-red-800 font-bold">Please correct the following errors:</h3>
+                        <div class="text-red-700 text-sm mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <p>• {{ field|title }}: {{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <form id="profile-form" method="post">
+            {% csrf_token %}
+            <div class="modern-form-grid">
+                <div class="form-field">
+                    <label class="form-label">First Name *</label>
+                    <input type="text" name="first_name" class="form-input" value="{{ form.first_name.value|default:'' }}" required>
+                    {% if form.first_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.first_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Last Name *</label>
+                    <input type="text" name="last_name" class="form-input" value="{{ form.last_name.value|default:'' }}" required>
+                    {% if form.last_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.last_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Email Address *</label>
+                    <input type="email" name="email" class="form-input" value="{{ form.email.value|default:'' }}" required>
+                    {% if form.email.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-input" value="{{ form.phone.value|default:'' }}">
+                    {% if form.phone.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-field" style="grid-column: 1 / -1;">
+                    <label class="form-label">Display Name</label>
+                    <input type="text" name="full_name" class="form-input" value="{{ form.full_name.value|default:'' }}">
+                    {% if form.full_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.full_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <button type="submit" class="save-profile-btn">
+                    <span class="btn-icon">💾</span>
+                    <span class="btn-text">Save Profile</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="glass-container">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span>🔒</span>
+            <span>Security Settings</span>
+        </h2>
+        
+        <div class="security-grid">
+            <div class="security-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">🔑 Password Protection</h3>
+                        <p class="text-gray-600 mt-1">Keep your account secure with a strong password</p>
+                    </div>
+                    <button class="action-btn" onclick="openPasswordModal()">
+                        <span>Change Password</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="security-card" id="mfa-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">📱 Two-Factor Authentication</h3>
+                        <p class="text-gray-600 mt-1">Add an extra layer of security</p>
+                    </div>
+                    <div class="custom-toggle" id="mfa-toggle" onclick="toggleMFA()"></div>
+                </div>
+            </div>
+            
+            <div class="security-card enabled" id="email-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">📧 Email Notifications</h3>
+                        <p class="text-gray-600 mt-1">Stay updated with service activities</p>
+                    </div>
+                    <div class="custom-toggle active" id="email-toggle" onclick="toggleEmailNotifications()"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Actions -->
+    <div class="glass-container">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span>⚙️</span>
+            <span>Account Actions</span>
+        </h2>
+        
+        <div class="action-grid">
+            <div class="action-card">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-lg">📥 Export Data</h3>
+                    <p class="text-gray-600 mt-1">Download your service data and analytics</p>
+                </div>
+                <button class="action-btn export">
+                    <span>📥</span>
+                    <span>Export</span>
+                </button>
+            </div>
+            
+            <div class="action-card">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-lg">💬 Account Support</h3>
+                    <p class="text-gray-600 mt-1">Get help with your account or services</p>
+                </div>
+                <button class="action-btn support">
+                    <span>💬</span>
+                    <span>Contact Support</span>
+                </button>
+            </div>
+            
+            <div class="action-card" style="border-color: #fecaca; background: linear-gradient(135deg, #fef2f2 0%, #fffffe 100%);">
+                <div>
+                    <h3 class="font-bold text-red-800 text-lg">⏸️ Deactivate Account</h3>
+                    <p class="text-red-600 mt-1">Temporarily disable your account</p>
+                </div>
+                <button class="action-btn danger" onclick="confirmDeactivation()">
+                    <span>⏸️</span>
+                    <span>Deactivate</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Back to Dashboard -->
+    <div class="text-center mt-8">
+        <a href="{% url 'manager:dashboard' %}" class="inline-flex items-center gap-3 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 shadow-sm hover:shadow-md group">
+            <span class="text-2xl group-hover:scale-110 transition-transform duration-300">←</span>
+            <span class="font-semibold text-gray-700 group-hover:text-purple-700 transition-colors duration-300">Back to Dashboard</span>
+        </a>
+    </div>
+</div>
+
+<!-- Enhanced Password Modal -->
+<div id="password-modal" class="modern-modal fixed inset-0 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span>🔑</span>
+                <span>Change Password</span>
+            </h3>
+            
+            <form id="password-form">
+                <div class="form-field mb-4">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-input" required>
+                </div>
+                
+                <div class="form-field mb-4">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-input" required>
+                </div>
+                
+                <div class="form-field mb-6">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-input" required>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" onclick="closePasswordModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced MFA Modal -->
+<div id="mfa-modal" class="modern-modal fixed inset-0 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span>🔐</span>
+                <span>Setup Two-Factor Authentication</span>
+            </h3>
+            
+            <div class="text-center mb-6">
+                <div class="inline-block p-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                    <div class="text-6xl mb-4">📱</div>
+                    <p class="text-gray-600">QR Code would appear here</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3 mb-6 text-sm text-gray-600">
+                <p>1. Install an authenticator app like Google Authenticator or Authy</p>
+                <p>2. Scan the QR code above with your authenticator app</p>
+                <p>3. Enter the verification code below</p>
+            </div>
+            
+            <div class="form-field mb-6">
+                <label class="form-label">Verification Code</label>
+                <input type="text" placeholder="000000" maxlength="6" class="form-input text-center text-2xl tracking-widest">
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" onclick="closeMFAModal()">
+                    Cancel
+                </button>
+                <button type="button" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" onclick="setupMFA()">
+                    Enable MFA
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Enhanced toggle functions
+function toggleMFA() {
+    const toggle = document.getElementById('mfa-toggle');
+    const card = document.getElementById('mfa-card');
+    
+    if (toggle.classList.contains('active')) {
+        // Disable MFA
+        toggle.classList.remove('active');
+        card.classList.remove('enabled');
+        card.classList.add('disabled');
+        showNotification('🔐 Two-Factor Authentication disabled', 'info');
+    } else {
+        // Show setup modal
+        document.getElementById('mfa-modal').classList.remove('hidden');
+    }
+}
+
+function toggleEmailNotifications() {
+    const toggle = document.getElementById('email-toggle');
+    const card = document.getElementById('email-card');
+    
+    if (toggle.classList.contains('active')) {
+        toggle.classList.remove('active');
+        card.classList.remove('enabled');
+        card.classList.add('disabled');
+        showNotification('📧 Email notifications disabled', 'info');
+    } else {
+        toggle.classList.add('active');
+        card.classList.remove('disabled');
+        card.classList.add('enabled');
+        showNotification('📧 Email notifications enabled', 'success');
+    }
+}
+
+function setupMFA() {
+    const toggle = document.getElementById('mfa-toggle');
+    const card = document.getElementById('mfa-card');
+    
+    toggle.classList.add('active');
+    card.classList.remove('disabled');
+    card.classList.add('enabled');
+    
+    closeMFAModal();
+    showNotification('🔐 Two-Factor Authentication enabled successfully!', 'success');
+}
+
+// Modal functions
+function openPasswordModal() {
+    document.getElementById('password-modal').classList.remove('hidden');
+}
+
+function closePasswordModal() {
+    document.getElementById('password-modal').classList.add('hidden');
+}
+
+function closeMFAModal() {
+    document.getElementById('mfa-modal').classList.add('hidden');
+    // Reset toggle if user cancels
+    const toggle = document.getElementById('mfa-toggle');
+    if (!toggle.classList.contains('active')) {
+        toggle.classList.remove('active');
+    }
+}
+
+function confirmDeactivation() {
+    if (confirm('⚠️ Are you sure you want to deactivate your account? This will hide all your services from public view.')) {
+        showNotification('⏸️ Account deactivation initiated', 'warning');
+    }
+}
+
+// Enhanced notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification fixed top-20 right-4 z-50 max-w-md`;
+    
+    let bgColor, borderColor;
+    switch(type) {
+        case 'success': bgColor = 'bg-green-50'; borderColor = 'border-green-400'; break;
+        case 'warning': bgColor = 'bg-yellow-50'; borderColor = 'border-yellow-400'; break;
+        case 'error': bgColor = 'bg-red-50'; borderColor = 'border-red-400'; break;
+        default: bgColor = 'bg-blue-50'; borderColor = 'border-blue-400';
+    }
+    
+    notification.innerHTML = `
+        <div class="${bgColor} border-l-4 ${borderColor} p-4 rounded-lg shadow-lg backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium">${message}</span>
+                <button onclick="this.closest('.notification').remove()" class="ml-4 text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+        </div>
+    `;
+    
+    // Add to page with animation
+    document.body.appendChild(notification);
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'transform 0.3s ease';
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Enhanced form submission with visual feedback
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('.save-profile-btn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnIcon = submitBtn.querySelector('.btn-icon');
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.8';
+    btnText.textContent = 'Saving...';
+    btnIcon.textContent = '⏳';
+    
+    // Add spinning animation
+    submitBtn.style.animation = 'pulse 1s infinite';
+});
+
+// Enhanced password form submission
+document.getElementById('password-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+    submitBtn.style.opacity = '0.8';
+    
+    // Simulate API call
+    setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.style.opacity = '1';
+        closePasswordModal();
+        showNotification('🔑 Password updated successfully!', 'success');
+    }, 2000);
+});
+
+// Close modals when clicking outside
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modern-modal')) {
+        e.target.classList.add('hidden');
+    }
+});
+
+// Enhanced form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('profile-form');
+    const inputs = form.querySelectorAll('input');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.style.borderColor = '#ef4444';
+                this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            } else {
+                this.style.borderColor = '#e5e7eb';
+                this.style.boxShadow = 'none';
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.style.borderColor === 'rgb(239, 68, 68)') {
+                this.style.borderColor = '#e5e7eb';
+                this.style.boxShadow = 'none';
+            }
+        });
+    });
+});
+
+// Add smooth scrolling to page
+document.documentElement.style.scrollBehavior = 'smooth';
+
+// Add subtle parallax effect to header
+window.addEventListener('scroll', function() {
+    const header = document.querySelector('.profile-header');
+    const scrolled = window.pageYOffset;
+    const rate = scrolled * -0.5;
+    
+    if (header) {
+        header.style.transform = `translateY(${rate}px)`;
+    }
+});
+</script>
+</div>
+{% endblock %} 

@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Profile - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-profile {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .profile-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .profile-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.4);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.4),
+            0 10px 20px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(100,116,139,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .profile-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .profile-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #3b82f6;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+    
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+    
+    .profile-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-subtitle {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    /* Enhanced Form Styling */
+    .form-group {
+        margin-bottom: 2rem;
+    }
+    
+    .form-label {
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-control {
+        background: rgba(15, 23, 42, 0.6);
+        border: 2px solid rgba(71, 85, 105, 0.4);
+        color: #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+        background: rgba(15, 23, 42, 0.8);
+        border-color: #3b82f6;
+        box-shadow: 
+            0 0 0 0.25rem rgba(59, 130, 246, 0.2),
+            0 4px 12px rgba(59, 130, 246, 0.15);
+        outline: none;
+        transform: translateY(-1px);
+    }
+    
+    .form-control::placeholder {
+        color: #64748b;
+    }
+    
+    /* Two-column layout for name fields */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Action buttons styling */
+    .action-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(100, 116, 139, 0.3);
+    }
+    
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-outline-light {
+        background: transparent;
+        color: #94a3b8;
+        border: 2px solid rgba(148, 163, 184, 0.3);
+    }
+    
+    .btn-outline-light:hover {
+        background: rgba(148, 163, 184, 0.1);
+        color: #f1f5f9;
+        border-color: rgba(148, 163, 184, 0.6);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Alert styling */
+    .alert {
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 2rem;
+        border: none;
+        position: relative;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Error styling */
+    .text-danger {
+        color: #ef4444 !important;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 1rem;
+        }
+        
+        .profile-card {
+            padding: 2rem;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+        
+        .profile-title {
+            font-size: 1.75rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .profile-card {
+            padding: 1.5rem;
+        }
+        
+        .profile-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+        }
+        
+        .form-control {
+            padding: 0.875rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-profile">
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-content">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Admin" class="w-100 h-100 rounded-circle">
+                        {% else %}
+                        <i class="fas fa-user-shield"></i>
+                        {% endif %}
+                    </div>
+                    <h1 class="profile-title">Admin Profile</h1>
+                    <p class="profile-subtitle">Manage your account information</p>
+                </div>
+                
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                First Name
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger">
+                                {{ form.first_name.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                Last Name
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger">
+                                {{ form.last_name.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.help_text %}
+                        <div class="form-text text-muted">{{ form.email.help_text }}</div>
+                        {% endif %}
+                        {% if form.email.errors %}
+                        <div class="text-danger">
+                            {{ form.email.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">
+                            Phone Number
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                        <div class="text-danger">
+                            {{ form.phone.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="{% url 'console:home' %}" class="btn btn-outline-light">
+                            <i class="fas fa-arrow-left"></i>Back to Home
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

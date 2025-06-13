@@ -1,0 +1,1083 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Service Management - CommuMap Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    /* Modern CSS Variables for consistent theming */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --primary-color: #667eea;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --dark-color: #343a40;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        --hover-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        --border-radius: 12px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+        padding-bottom: 40px;
+    }
+    
+    /* Admin Services Wrapper - Enhanced spacing below navbar */
+    .admin-services-wrapper {
+        margin: 3rem 0 4rem 0; /* Increased top margin for better separation */
+        min-height: calc(100vh - 200px);
+        position: relative;
+        padding-top: 1.5rem; /* Additional padding for modern UI spacing */
+    }
+    
+    /* Main Content Spacing */
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        padding-top: 1.5rem; /* Enhanced top padding for consistent spacing */
+        padding-bottom: 3rem; /* Consistent bottom padding */
+    }
+    
+    /* Header and Footer spacing */
+    .service-management-header {
+        margin-top: 0 !important;
+    }
+    
+    /* Ensure proper spacing between sections */
+    main {
+        padding: 2rem 0;
+    }
+    
+    /* Additional spacing for better visual separation */
+    .admin-services-wrapper::before {
+        content: '';
+        display: block;
+        height: 1rem; /* Added spacing block for visual separation */
+    }
+    
+    .admin-services-wrapper::after {
+        content: '';
+        display: block;
+        height: 3rem;
+    }
+    
+    /* Enhanced Header */
+    .service-management-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 3rem;
+        margin-top: 0;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .service-management-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+    }
+    
+    .service-management-header .content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .header-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .header-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    /* Modern Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        padding: 0 1rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 2rem 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    
+    /* Enhanced Filters Section */
+    .filters-section {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        margin-bottom: 3rem;
+        margin: 0 1rem 3rem 1rem;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .filters-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .filters-header h5 {
+        margin: 0;
+        color: var(--dark-color);
+        font-weight: 700;
+    }
+    
+    .filters-header .filter-icon {
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+    }
+    
+    .filter-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        background: transparent;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-light {
+        background: rgba(255,255,255,0.9);
+        color: var(--dark-color);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        color: var(--dark-color);
+    }
+    
+    /* Enhanced Bulk Actions */
+    .bulk-actions {
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        margin: 0 1rem 2rem 1rem;
+        border: 2px solid #ffcc02;
+        box-shadow: var(--card-shadow);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .bulk-actions-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: #e65100;
+        font-weight: 700;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    }
+    
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+        color: white;
+    }
+    
+    /* Modern Table Design */
+    .services-table {
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(255,255,255,0.2);
+        margin: 0 1rem 2rem 1rem;
+    }
+    
+    .table {
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .table-dark {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+    }
+    
+    .table-dark th {
+        border: none;
+        padding: 1.25rem 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+    
+    .service-row {
+        transition: var(--transition);
+        border: none;
+    }
+    
+    .service-row:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transform: scale(1.005);
+        box-shadow: inset 0 0 0 2px rgba(102, 126, 234, 0.1);
+    }
+    
+    .service-row td {
+        padding: 1.25rem 1rem;
+        border-top: 1px solid #f1f3f4;
+        vertical-align: middle;
+    }
+    
+    /* Enhanced Status Badges */
+    .service-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .status-open { 
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border: 1px solid #b8dabc;
+    }
+    
+    .status-closed { 
+        background: linear-gradient(135deg, #f8d7da 0%, #f1b0b7 100%);
+        color: #721c24;
+        border: 1px solid #f1b0b7;
+    }
+    
+    .status-full { 
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .status-emergency { 
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    .verification-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .verified { 
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+    }
+    
+    .unverified { 
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        color: #212529;
+        box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+    }
+    
+    /* Modern Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s;
+    }
+    
+    .action-btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn-edit { 
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-edit:hover { 
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+        color: white;
+    }
+    
+    .btn-delete { 
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-delete:hover { 
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        color: white;
+    }
+    
+    .btn-emergency { 
+        background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
+    }
+    
+    .btn-emergency:hover { 
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(253, 126, 20, 0.4);
+        color: white;
+    }
+    
+    .btn-info { 
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+    }
+    
+    .btn-info:hover { 
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(23, 162, 184, 0.4);
+        color: white;
+    }
+    
+    .emergency-indicator {
+        color: #dc3545;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    /* Enhanced Info Cards */
+    .service-info h6 {
+        color: var(--dark-color);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .service-manager strong {
+        color: var(--primary-color);
+    }
+    
+    .location-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .text-info {
+        color: var(--info-color) !important;
+        font-weight: 600;
+    }
+    
+    /* Enhanced Pagination */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+    
+    .pagination {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .page-link {
+        border: none;
+        padding: 0.75rem 1rem;
+        color: var(--primary-color);
+        background: white;
+        transition: var(--transition);
+    }
+    
+    .page-link:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .page-item.active .page-link {
+        background: var(--primary-gradient);
+        border: none;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Checkbox Enhancements */
+    .checkbox-col {
+        width: 50px;
+        text-align: center;
+    }
+    
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        transition: var(--transition);
+    }
+    
+    .form-check-input:checked {
+        background: var(--primary-gradient);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state h5 {
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+    }
+    
+    /* Badge Styles */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .bg-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+        color: white;
+    }
+    
+    .bg-light {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        color: var(--dark-color);
+        border: 1px solid #dee2e6;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .filter-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        
+        .action-buttons {
+            flex-wrap: wrap;
+        }
+        
+        .service-management-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .header-title {
+            font-size: 2rem;
+        }
+        
+        /* Enhanced mobile spacing */
+        .admin-services-wrapper {
+            margin: 2rem 0 3rem 0; /* Reduced margin for mobile */
+            padding-top: 1rem; /* Reduced padding for mobile */
+        }
+        
+        .container-fluid {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 1rem; /* Adjusted for mobile */
+            padding-bottom: 2rem; /* Adjusted for mobile */
+        }
+    }
+    
+    /* Loading Animation */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--primary-color);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        transform: translate(-50%, -50%);
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-services-wrapper mt-8">
+    <div class="container-fluid py-8">
+        <!-- Header -->
+        <div class="service-management-header">
+        <div class="content">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="header-title mb-2">
+                        <i class="fas fa-cogs me-3"></i>Service Management Dashboard
+                    </h1>
+                    <p class="header-subtitle mb-0">Comprehensive content management for community services</p>
+                </div>
+                <div>
+                    <a href="{% url 'console:service_create' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-plus me-2"></i> Add New Service
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-number">{{ stats.total_services }}</div>
+            <div class="stat-label">Total Services</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-number">{{ stats.active_services }}</div>
+            <div class="stat-label">Active Services</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔐</div>
+            <div class="stat-number">{{ stats.verified_services }}</div>
+            <div class="stat-label">Verified Services</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number">{{ stats.pending_services }}</div>
+            <div class="stat-label">Pending Approval</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-number">{{ stats.emergency_services }}</div>
+            <div class="stat-label">Emergency Services</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-number">{{ stats.unassigned_services }}</div>
+            <div class="stat-label">Unassigned</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filters-header">
+            <i class="fas fa-filter filter-icon"></i>
+            <h5>Advanced Search & Filters</h5>
+        </div>
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div>
+                    <label class="form-label">🔍 Search Services</label>
+                    {{ search_form.search }}
+                </div>
+                <div>
+                    <label class="form-label">Status</label>
+                    {{ search_form.status }}
+                </div>
+                <div>
+                    <label class="form-label">Category</label>
+                    {{ search_form.category }}
+                </div>
+                <div>
+                    <label class="form-label">Verification</label>
+                    {{ search_form.verification_status }}
+                </div>
+                <div>
+                    <label class="form-label">Active Status</label>
+                    {{ search_form.active_status }}
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                    <a href="{% url 'console:services' %}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        {{ search_form.emergency_services }}
+                        <label class="form-check-label" for="{{ search_form.emergency_services.id_for_label }}">
+                            Show only emergency services
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Manager Assignment</label>
+                    {{ search_form.has_manager }}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="bulk-actions" id="bulk-actions" style="display: none;">
+        <div class="bulk-actions-header">
+            <i class="fas fa-tasks me-2"></i>
+            <strong>Bulk Actions</strong> - <span id="selected-count">0</span> services selected
+        </div>
+        <form id="bulk-action-form" method="post" action="{% url 'console:bulk_service_action' %}">
+            {% csrf_token %}
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">🔧 Bulk Action</label>
+                    {{ bulk_action_form.action }}
+                </div>
+                <div class="col-md-3" id="status-field" style="display: none;">
+                    <label class="form-label">New Status</label>
+                    {{ bulk_action_form.new_status }}
+                </div>
+                <div class="col-md-3" id="category-field" style="display: none;">
+                    <label class="form-label">New Category</label>
+                    {{ bulk_action_form.new_category }}
+                </div>
+                <div class="col-md-3">
+                    {{ bulk_action_form.service_ids }}
+                    <div class="form-check mb-2">
+                        {{ bulk_action_form.confirm }}
+                        <label class="form-check-label" for="{{ bulk_action_form.confirm.id_for_label }}">
+                            ✅ Confirm action
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-bolt me-2"></i> Apply Action
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearBulkSelection()">
+                        <i class="fas fa-times me-2"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Services Table -->
+    <div class="services-table">
+        <table class="table table-striped mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="checkbox-col">
+                        <input type="checkbox" class="form-check-input bulk-select-all" 
+                               id="selectAll" onchange="toggleAllServices(this)">
+                    </th>
+                    <th>Service</th>
+                    <th>Category</th>
+                    <th>Manager</th>
+                    <th>Status</th>
+                    <th>Verification</th>
+                    <th>Location</th>
+                    <th>Emergency</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr class="service-row">
+                    <td class="checkbox-col">
+                        <input type="checkbox" class="form-check-input service-checkbox" 
+                               value="{{ service.id }}" onchange="updateBulkActions()">
+                    </td>
+                    <td>
+                        <div class="service-info">
+                            <h6 class="mb-1">{{ service.name }}</h6>
+                            <p class="mb-0 text-muted small">{{ service.short_description|truncatechars:80 }}</p>
+                            <div class="small text-muted">
+                                Created: {{ service.created_at|date:"M d, Y" }}
+                                {% if service.updated_at != service.created_at %}
+                                    | Updated: {{ service.updated_at|date:"M d, Y" }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">{{ service.category.name }}</span>
+                        {% if service.tags %}
+                            <div class="mt-1">
+                                {% for tag in service.tags %}
+                                    <span class="badge bg-light text-dark small">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if service.manager %}
+                            <div class="service-manager">
+                                <strong>{{ service.manager.get_full_name }}</strong><br>
+                                <small>{{ service.manager.email }}</small>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="service-status status-{{ service.current_status }}">
+                            {{ service.get_current_status_display }}
+                        </span>
+                        {% if not service.is_active %}
+                            <div><small class="text-danger">Inactive</small></div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if service.is_verified %}
+                            <span class="verification-badge verified">Verified</span>
+                            {% if service.verified_at %}
+                                <div class="small text-muted">{{ service.verified_at|date:"M d" }}</div>
+                            {% endif %}
+                        {% else %}
+                            <span class="verification-badge unverified">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="location-info small">
+                            <div>{{ service.city }}, {{ service.state_province }}</div>
+                            {% if service.address %}
+                                <div class="text-muted">{{ service.address|truncatechars:30 }}</div>
+                            {% endif %}
+                            {% if service.max_capacity %}
+                                <div class="text-info">
+                                    Capacity: {{ service.current_capacity }}/{{ service.max_capacity }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if service.is_emergency_service %}
+                            <span class="emergency-indicator">🚨 Emergency</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'console:service_edit' service.id %}" 
+                               class="action-btn btn-edit" title="Edit Service">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" onclick="toggleEmergency('{{ service.id }}', '{{ service.name|escapejs }}')" 
+                                    class="action-btn btn-emergency" title="Toggle Emergency">
+                                <i class="fas fa-bolt"></i>
+                            </button>
+                            <a href="{% url 'services:detail' service.id %}" 
+                               class="action-btn btn-info" title="View Public Page" target="_blank">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'console:service_delete' service.id %}" 
+                               class="action-btn btn-delete" title="Delete Service"
+                               onclick="return confirm('Are you sure you want to delete this service?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h5>No Services Found</h5>
+                            <p class="mb-3">We couldn't find any services matching your criteria.</p>
+                            <div>
+                                <a href="{% url 'console:service_create' %}" class="btn btn-primary me-2">
+                                    <i class="fas fa-plus me-2"></i>Create New Service
+                                </a>
+                                <a href="{% url 'console:services' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-refresh me-2"></i>Clear Filters
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination-wrapper">
+        <nav aria-label="Services pagination">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+    </div>
+    <!-- Bottom Spacing -->
+    <div class="mb-5"></div>
+</div>
+
+<script>
+function toggleAllServices(checkbox) {
+    const serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+    serviceCheckboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const selectedServices = document.querySelectorAll('.service-checkbox:checked');
+    const bulkActionsDiv = document.getElementById('bulk-actions');
+    const serviceIdsInput = document.getElementById('{{ bulk_action_form.service_ids.id_for_label }}');
+    const selectedCount = document.getElementById('selected-count');
+    
+    if (selectedServices.length > 0) {
+        const serviceIds = Array.from(selectedServices).map(cb => cb.value);
+        serviceIdsInput.value = serviceIds.join(',');
+        bulkActionsDiv.style.display = 'block';
+        selectedCount.textContent = selectedServices.length;
+    } else {
+        bulkActionsDiv.style.display = 'none';
+        serviceIdsInput.value = '';
+        selectedCount.textContent = '0';
+    }
+}
+
+function clearBulkSelection() {
+    document.querySelectorAll('.service-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAll').checked = false;
+    updateBulkActions();
+}
+
+// Show/hide conditional fields based on action selection
+document.getElementById('{{ bulk_action_form.action.id_for_label }}').addEventListener('change', function() {
+    const statusField = document.getElementById('status-field');
+    const categoryField = document.getElementById('category-field');
+    
+    statusField.style.display = this.value === 'change_status' ? 'block' : 'none';
+    categoryField.style.display = this.value === 'change_category' ? 'block' : 'none';
+});
+
+// Emergency toggle function
+function toggleEmergency(serviceId, serviceName) {
+    if (confirm(`Toggle emergency status for "${serviceName}"?`)) {
+        // Create and submit a hidden form for POST request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/services/${serviceId}/emergency-toggle/`;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add form to document and submit
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

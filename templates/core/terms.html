@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service - CommuMap{% endblock %}
+
+{% block body_class %}modern-page{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern legal page design */
+    .legal-hero {
+        background: linear-gradient(135deg, 
+            rgba(99, 102, 241, 0.1) 0%, 
+            rgba(147, 51, 234, 0.1) 50%,
+            rgba(236, 72, 153, 0.1) 100%
+        );
+        min-height: 40vh;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .legal-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='0.03'%3E%3Cpath d='m0 40l40-40h-40v40z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.6;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    
+    .legal-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 2rem;
+        box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+    }
+    
+    .content-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 3rem;
+        margin: 3rem auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        position: relative;
+    }
+    
+    .content-container::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+        border-radius: 24px;
+        z-index: -1;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 3rem 0 1.5rem 0;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(59, 130, 246, 0.1);
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .terms-section {
+        margin-bottom: 3rem;
+    }
+    
+    .terms-section h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+    
+    .terms-section h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 2rem 0 1rem 0;
+    }
+    
+    .terms-section p {
+        color: #4b5563;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+    }
+    
+    .terms-section ul, .terms-section ol {
+        margin: 1rem 0 1.5rem 0;
+        padding-left: 2rem;
+    }
+    
+    .terms-section li {
+        color: #4b5563;
+        line-height: 1.7;
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+    }
+    
+    .highlight-box {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .highlight-box::before {
+        content: '✓';
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #22c55e, #10b981);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .highlight-box p {
+        margin-left: 3rem;
+        margin-bottom: 0;
+        font-weight: 500;
+        color: #059669;
+    }
+    
+    .warning-box {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .warning-box::before {
+        content: '⚠';
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .warning-box p {
+        margin-left: 3rem;
+        margin-bottom: 0;
+        font-weight: 500;
+        color: #dc2626;
+    }
+    
+    .info-box {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 16px;
+        padding: 2rem;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .info-box::before {
+        content: 'ℹ';
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .info-box p {
+        margin-left: 3rem;
+        margin-bottom: 0;
+        font-weight: 500;
+        color: #3b82f6;
+    }
+    
+    .contact-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        margin-top: 3rem;
+    }
+    
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .modern-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        border: none;
+        border-radius: 16px;
+        color: white;
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        margin-top: 2rem;
+    }
+    
+    .modern-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .last-updated {
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        text-align: center;
+        color: #3b82f6;
+        font-weight: 600;
+        margin-bottom: 2rem;
+    }
+    
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease;
+    }
+    
+    .animate-on-scroll.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="legal-hero">
+    <div class="hero-content">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="legal-icon">📋</div>
+                <h1 class="text-5xl md:text-6xl font-black mb-4 text-gray-800">Terms of Service</h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Our terms and conditions for using CommuMap services.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
+    <div class="container mx-auto px-6">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="content-container animate-on-scroll">
+                <div class="last-updated">
+                    Last updated: January 2024
+                </div>
+                
+                <div class="highlight-box">
+                    <p>
+                        <strong>Quick Summary:</strong> By using CommuMap, you agree to these terms. 
+                        We provide community resource mapping services while maintaining transparency and user safety.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">✍️</div>
+                        <h2>1. Acceptance of Terms</h2>
+                    </div>
+                    <p>
+                        By accessing and using CommuMap, you accept and agree to be bound by the terms and provision of this agreement. 
+                        If you do not agree to abide by the above, please do not use this service.
+                    </p>
+                    
+                    <div class="info-box">
+                        <p>These terms apply to all users, including visitors, registered users, and service providers.</p>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">🏢</div>
+                        <h2>2. Description of Service</h2>
+                    </div>
+                    <p>
+                        CommuMap is a community resource mapping platform that helps users discover and access community services 
+                        in Selangor, Malaysia. Our platform provides information about:
+                    </p>
+                    <ul>
+                        <li>Healthcare facilities and services</li>
+                        <li>Educational institutions and programs</li>
+                        <li>Social services and support programs</li>
+                        <li>Government services and offices</li>
+                        <li>Emergency services and contacts</li>
+                        <li>Community organizations and resources</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">👤</div>
+                        <h2>3. User Accounts</h2>
+                    </div>
+                    <p>To access certain features of our service, you may be required to create an account:</p>
+                    <ul>
+                        <li>You must provide accurate and complete registration information</li>
+                        <li>You are responsible for maintaining the confidentiality of your account</li>
+                        <li>You must notify us immediately of any unauthorized access to your account</li>
+                        <li>You must be at least 13 years old to create an account</li>
+                        <li>Each user may maintain only one account</li>
+                    </ul>
+                    
+                    <div class="warning-box">
+                        <p>You are fully responsible for all activities that occur under your account.</p>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">⚖️</div>
+                        <h2>4. User Responsibilities</h2>
+                    </div>
+                    <p>As a user of CommuMap, you agree to:</p>
+                    <ul>
+                        <li>Provide accurate information when submitting service listings or reviews</li>
+                        <li>Respect the privacy and rights of other users</li>
+                        <li>Use the platform only for lawful and authorized purposes</li>
+                        <li>Not transmit any harmful, threatening, or offensive content</li>
+                        <li>Not attempt to gain unauthorized access to our systems</li>
+                        <li>Not use automated systems to access or interact with the platform</li>
+                        <li>Report any bugs, security vulnerabilities, or inappropriate content</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">ℹ️</div>
+                        <h2>5. Service Information</h2>
+                    </div>
+                    <p>
+                        While we strive to provide accurate and up-to-date information about community services, 
+                        we cannot guarantee the accuracy, completeness, or reliability of any information on our platform.
+                    </p>
+                    
+                    <div class="info-box">
+                        <p>Users should verify service information independently before relying on it for important decisions.</p>
+                    </div>
+                    
+                    <h3>Information Sources</h3>
+                    <ul>
+                        <li>Official government databases and websites</li>
+                        <li>Verified partner organizations</li>
+                        <li>Community-contributed information (subject to moderation)</li>
+                        <li>Third-party verified data sources</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">🔒</div>
+                        <h2>6. Privacy</h2>
+                    </div>
+                    <p>
+                        Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service, 
+                        to understand our practices regarding the collection, use, and disclosure of your personal information.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <p>
+                            We are committed to protecting your personal information and maintaining transparency 
+                            about our data practices.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">©️</div>
+                        <h2>7. Intellectual Property</h2>
+                    </div>
+                    <p>
+                        The service and its original content, features, and functionality are and will remain the exclusive property 
+                        of CommuMap and its licensors. The service is protected by copyright, trademark, and other laws.
+                    </p>
+                    
+                    <h3>Your Content</h3>
+                    <p>
+                        When you submit content to our platform (reviews, comments, service information), you retain ownership 
+                        of your content but grant us a license to use, display, and distribute it on our platform.
+                    </p>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">⚠️</div>
+                        <h2>8. Limitation of Liability</h2>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <p>
+                            CommuMap is provided "as is" without warranties of any kind. We do not guarantee uninterrupted 
+                            or error-free service.
+                        </p>
+                    </div>
+                    
+                    <p>
+                        In no event shall CommuMap, nor its directors, employees, partners, agents, suppliers, or affiliates, 
+                        be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.
+                    </p>
+                    
+                    <h3>Service Limitations</h3>
+                    <ul>
+                        <li>We do not guarantee the accuracy of service information</li>
+                        <li>We are not responsible for the quality of services listed</li>
+                        <li>We do not mediate disputes between users and service providers</li>
+                        <li>We are not liable for any harm resulting from reliance on platform information</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">🚫</div>
+                        <h2>9. Termination</h2>
+                    </div>
+                    <p>
+                        We may terminate or suspend your account and bar access to the service immediately, without prior notice or liability, 
+                        under our sole discretion, for any reason whatsoever including breach of these Terms.
+                    </p>
+                    
+                    <h3>Grounds for Termination</h3>
+                    <ul>
+                        <li>Violation of these terms of service</li>
+                        <li>Fraudulent or deceptive activity</li>
+                        <li>Harmful behavior toward other users</li>
+                        <li>Misuse of the platform or its features</li>
+                        <li>Failure to respond to verification requests</li>
+                    </ul>
+                    
+                    <div class="info-box">
+                        <p>You may also terminate your account at any time by contacting our support team.</p>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">🔄</div>
+                        <h2>10. Changes to Terms</h2>
+                    </div>
+                    <p>
+                        We reserve the right, at our sole discretion, to modify or replace these Terms at any time. 
+                        If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <p>
+                            We will notify users of significant changes via email and prominent notices on our platform.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="terms-section">
+                    <div class="section-header">
+                        <div class="section-icon">🌍</div>
+                        <h2>11. Governing Law</h2>
+                    </div>
+                    <p>
+                        These Terms shall be interpreted and governed by the laws of Malaysia, without regard to its conflict 
+                        of law provisions. Any disputes arising from these terms or your use of the service shall be subject 
+                        to the exclusive jurisdiction of the courts of Selangor, Malaysia.
+                    </p>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">📧</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Questions About Our Terms?</h2>
+                    <p class="text-gray-600 mb-4">
+                        If you have any questions about these Terms of Service, please don't hesitate to contact us.
+                    </p>
+                    <div class="text-left max-w-md mx-auto">
+                        <p class="mb-2"><strong>Email:</strong> legal@commumap.org</p>
+                        <p class="mb-2"><strong>Response Time:</strong> Within 72 hours</p>
+                        <p><strong>Address:</strong> Selangor, Malaysia</p>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="{% url 'core:landing' %}" class="modern-btn">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all elements with animate-on-scroll class
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
+    
+    // Smooth scrolling for section links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

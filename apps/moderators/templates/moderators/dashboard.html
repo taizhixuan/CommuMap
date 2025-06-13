@@ -1,0 +1,1365 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Moderator Dashboard - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Color Palette & Variables */
+    :root {
+        --primary-color: #4f46e5;
+        --primary-hover: #3730a3;
+        --success-color: #10b981;
+        --success-hover: #059669;
+        --danger-color: #ef4444;
+        --danger-hover: #dc2626;
+        --warning-color: #f59e0b;
+        --warning-hover: #d97706;
+        --info-color: #3b82f6;
+        --info-hover: #1d4ed8;
+        --neutral-color: #6b7280;
+        --neutral-hover: #4b5563;
+        --surface-color: #ffffff;
+        --surface-secondary: #f8fafc;
+        --surface-accent: #f1f5f9;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --text-muted: #9ca3af;
+        --border-color: #e5e7eb;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        --radius-2xl: 1.5rem;
+    }
+
+    /* Page Layout */
+    .page-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--surface-secondary) 0%, var(--surface-accent) 100%);
+    }
+
+    /* Hero Header Section */
+    .hero-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 50%, var(--success-color) 100%);
+        color: white;
+        padding: 5rem 0;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 450px;
+        text-align: center;
+    }
+
+    .hero-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="20" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="50" r="1.2" fill="rgba(255,255,255,0.08)"/><circle cx="70" cy="90" r="1.8" fill="rgba(255,255,255,0.12)"/></svg>');
+        animation: float 25s linear infinite;
+    }
+
+    .hero-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+        z-index: 0;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        33% { transform: translateY(-15px) rotate(120deg); }
+        66% { transform: translateY(-10px) rotate(240deg); }
+        100% { transform: translateY(0px) rotate(360deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+    }
+
+    .hero-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        width: 100%;
+    }
+
+    .hero-main-content {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .hero-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .badge-icon {
+        font-size: 1.25rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .badge-text {
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+        line-height: 1.1;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-subtitle {
+        font-size: 1.4rem;
+        opacity: 0.9;
+        font-weight: 400;
+        margin-bottom: 2.5rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-welcome-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .hero-welcome-inline:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .welcome-text {
+        opacity: 0.85;
+        font-weight: 500;
+    }
+
+    .welcome-name {
+        font-weight: 700;
+        color: rgba(255, 255, 255, 1);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Content Container */
+    .content-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Quick Actions Section */
+    .quick-actions-section {
+        background: var(--surface-color);
+        border-radius: var(--radius-2xl);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .quick-action-card {
+        background: linear-gradient(135deg, var(--surface-color) 0%, var(--surface-accent) 100%);
+        border: 2px solid transparent;
+        border-radius: var(--radius-xl);
+        padding: 2rem 1.5rem;
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        min-height: 140px;
+        justify-content: center;
+    }
+
+    .quick-action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 0;
+    }
+
+    .quick-action-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .quick-action-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-2xl);
+        border-color: var(--card-border);
+    }
+
+    .quick-action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+        z-index: 1;
+        position: relative;
+    }
+
+    .quick-action-card:hover .quick-action-icon {
+        transform: scale(1.15) rotate(5deg);
+    }
+
+    .quick-action-label {
+        font-weight: 700;
+        font-size: 0.95rem;
+        z-index: 1;
+        position: relative;
+        color: var(--text-primary);
+    }
+
+    .quick-action-warning {
+        --card-color-1: #fef3c7;
+        --card-color-2: #f59e0b;
+        --card-border: var(--warning-color);
+    }
+
+    .quick-action-info {
+        --card-color-1: #dbeafe;
+        --card-color-2: #3b82f6;
+        --card-border: var(--info-color);
+    }
+
+    .quick-action-success {
+        --card-color-1: #d1fae5;
+        --card-color-2: #10b981;
+        --card-border: var(--success-color);
+    }
+
+    .quick-action-danger {
+        --card-color-1: #fee2e2;
+        --card-color-2: #ef4444;
+        --card-border: var(--danger-color);
+    }
+
+    .quick-action-primary {
+        --card-color-1: #ede9fe;
+        --card-color-2: #8b5cf6;
+        --card-border: var(--primary-color);
+    }
+
+    .quick-action-neutral {
+        --card-color-1: #f3f4f6;
+        --card-color-2: #6b7280;
+        --card-border: var(--neutral-color);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        border-left: 4px solid var(--stat-color);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--stat-color), transparent);
+        opacity: 0.05;
+        border-radius: 50%;
+        transform: translate(30px, -30px);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .stat-card-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-info h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--stat-color);
+        line-height: 1;
+    }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        background: linear-gradient(135deg, var(--stat-color), var(--stat-color-dark));
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .stat-action {
+        margin-top: 1.5rem;
+    }
+
+    .stat-warning {
+        --stat-color: var(--warning-color);
+        --stat-color-dark: var(--warning-hover);
+    }
+
+    .stat-info-color {
+        --stat-color: var(--info-color);
+        --stat-color-dark: var(--info-hover);
+    }
+
+    .stat-danger {
+        --stat-color: var(--danger-color);
+        --stat-color-dark: var(--danger-hover);
+    }
+
+    .stat-success {
+        --stat-color: var(--success-color);
+        --stat-color-dark: var(--success-hover);
+    }
+
+    /* Action Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-hover), var(--info-hover));
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--warning-color), var(--warning-hover));
+        color: white;
+    }
+
+    .btn-info {
+        background: linear-gradient(135deg, var(--info-color), var(--info-hover));
+        color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+        color: white;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+        background: var(--surface-accent);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    /* Content Cards */
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .content-card {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .content-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+
+    .content-card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .view-all-btn {
+        background: var(--surface-accent);
+        border: 2px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .view-all-btn:hover {
+        background: var(--surface-color);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-1px);
+    }
+
+    /* Preview Items */
+    .preview-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .preview-item {
+        background: var(--surface-accent);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .preview-item:hover {
+        background: var(--surface-color);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .preview-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .preview-content {
+        flex: 1;
+    }
+
+    .preview-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-description {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 0.75rem;
+    }
+
+    .preview-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .preview-badge {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .preview-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: 1rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    .empty-message {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    /* Activity Table */
+    .activity-table {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .table th {
+        background: var(--surface-accent);
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .table td {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .table tbody tr:hover {
+        background: var(--surface-accent);
+    }
+
+    .activity-badge {
+        background: var(--warning-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.modal-open {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--surface-color);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: var(--shadow-2xl);
+        border: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--surface-color);
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        color: var(--text-primary);
+        resize: vertical;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-header {
+            padding: 3rem 0;
+            min-height: 350px;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-badge {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-welcome-inline {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .welcome-text {
+            font-size: 0.9rem;
+        }
+
+        .content-container {
+            padding: 1rem;
+        }
+        
+        .quick-actions-section,
+        .content-card,
+        .activity-table {
+            padding: 1.5rem;
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        .preview-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .preview-actions {
+            margin-left: 0;
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-header {
+            padding: 2rem 0;
+            min-height: 300px;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-badge {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge-icon {
+            font-size: 1rem;
+        }
+
+        .hero-welcome-inline {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+
+
+
+    /* Loading Animation */
+    .loading {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Pulse animation for important items */
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Hero Header -->
+    <div class="hero-header">
+        <div class="hero-content">
+            <div class="content-container">
+                <div class="hero-container">
+                    <div class="hero-main-content">
+                        <div class="hero-badge">
+                            <span class="badge-icon">🛡️</span>
+                            <span class="badge-text">Community Guardian</span>
+                        </div>
+                        <h1 class="hero-title">Moderator Dashboard</h1>
+                        <p class="hero-subtitle">Your central command center for community moderation</p>
+                        <div class="hero-welcome-inline">
+                            <span class="welcome-text">Welcome back,</span>
+                            <span class="welcome-name">{{ user.get_display_name }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+            <h2 class="section-title">
+                🚀 Quick Actions
+            </h2>
+            <div class="quick-actions-grid">
+                <a href="{% url 'moderators:services_pending' %}" 
+                   class="quick-action-card quick-action-warning">
+                    <span class="quick-action-icon">📋</span>
+                    <span class="quick-action-label">Services Queue</span>
+                </a>
+                <a href="{% url 'moderators:comments_pending' %}" 
+                   class="quick-action-card quick-action-info">
+                    <span class="quick-action-icon">💬</span>
+                    <span class="quick-action-label">Comments Review</span>
+                </a>
+                <a href="{% url 'moderators:outreach' %}" 
+                   class="quick-action-card quick-action-success">
+                    <span class="quick-action-icon">📢</span>
+                    <span class="quick-action-label">Outreach Hub</span>
+                </a>
+                <a href="{% url 'moderators:feedback' %}" 
+                   class="quick-action-card quick-action-danger">
+                    <span class="quick-action-icon">🚨</span>
+                    <span class="quick-action-label">Flagged Content</span>
+                </a>
+                <a href="#" 
+                   class="quick-action-card quick-action-primary">
+                    <span class="quick-action-icon">📊</span>
+                    <span class="quick-action-label">Analytics</span>
+                </a>
+                <a href="{% url 'moderators:profile' %}" 
+                   class="quick-action-card quick-action-neutral">
+                    <span class="quick-action-icon">👤</span>
+                    <span class="quick-action-label">Profile</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <!-- Pending Services -->
+            <div class="stat-card stat-warning">
+                <div class="stat-card-content">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>Pending Services</h3>
+                            <div class="stat-number" data-counter="pending_services_count">{{ pending_services_count }}</div>
+                        </div>
+                        <div class="stat-icon">📋</div>
+                    </div>
+                    <div class="stat-action">
+                        <a href="{% url 'moderators:services_pending' %}" class="btn btn-warning btn-sm">
+                            <span>🔍</span>
+                            Review Services
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Comments -->
+            <div class="stat-card stat-info-color">
+                <div class="stat-card-content">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>Pending Comments</h3>
+                            <div class="stat-number" data-counter="pending_comments_count">{{ pending_comments_count }}</div>
+                        </div>
+                        <div class="stat-icon">💬</div>
+                    </div>
+                    <div class="stat-action">
+                        <a href="{% url 'moderators:comments_pending' %}" class="btn btn-info btn-sm">
+                            <span>✅</span>
+                            Review Comments
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flagged Content -->
+            <div class="stat-card stat-danger">
+                <div class="stat-card-content">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>Flagged Content</h3>
+                            <div class="stat-number" data-counter="flagged_content_count">{{ flagged_content_count }}</div>
+                        </div>
+                        <div class="stat-icon">🚨</div>
+                    </div>
+                    <div class="stat-action">
+                        <a href="{% url 'moderators:feedback' %}" class="btn btn-danger btn-sm">
+                            <span>🛡️</span>
+                            Handle Flags
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Outreach -->
+            <div class="stat-card stat-success">
+                <div class="stat-card-content">
+                    <div class="stat-header">
+                        <div class="stat-info">
+                            <h3>Active Outreach</h3>
+                            <div class="stat-number" data-counter="active_outreach_posts">{{ active_outreach_posts }}</div>
+                        </div>
+                        <div class="stat-icon">📢</div>
+                    </div>
+                    <div class="stat-action">
+                        <a href="{% url 'moderators:outreach' %}" class="btn btn-success btn-sm">
+                            <span>📝</span>
+                            Manage Outreach
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Previews -->
+        <div class="content-grid">
+            <!-- Pending Services Preview -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h2 class="content-card-title">Recent Service Submissions</h2>
+                    <a href="{% url 'moderators:services_pending' %}" class="view-all-btn">
+                        <span>👁️</span>
+                        View All
+                    </a>
+                </div>
+                
+                {% if pending_services %}
+                    <div class="preview-items">
+                        {% for service in pending_services %}
+                        <div class="preview-item">
+                            <div class="preview-header">
+                                <div class="preview-content">
+                                    <h3 class="preview-title">{{ service.name }}</h3>
+                                    <p class="preview-description">{{ service.description|truncatewords:15 }}</p>
+                                    <div class="preview-meta">
+                                        <span class="preview-badge">{{ service.category.name }}</span>
+                                        <span>by {{ service.manager.get_display_name }}</span>
+                                        <span>{{ service.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                                <div class="preview-actions">
+                                    <button class="btn btn-success btn-sm" 
+                                            onclick="approveService('{{ service.pk }}')">
+                                        <span>✅</span>
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="rejectService('{{ service.pk }}')">
+                                        <span>❌</span>
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">🎉</div>
+                        <p class="empty-message">No pending services to review</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Pending Comments Preview -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <h2 class="content-card-title">Recent Comments</h2>
+                    <a href="{% url 'moderators:comments_pending' %}" class="view-all-btn">
+                        <span>👁️</span>
+                        View All
+                    </a>
+                </div>
+                
+                {% if pending_comments %}
+                    <div class="preview-items">
+                        {% for comment in pending_comments %}
+                        <div class="preview-item">
+                            <div class="preview-header">
+                                <div class="preview-content">
+                                    <p class="preview-description">{{ comment.content|truncatewords:20 }}</p>
+                                    <div class="preview-meta">
+                                        <span>by {{ comment.user.get_display_name }}</span>
+                                        <span>•</span>
+                                        <span>on {{ comment.service.name|truncatewords:3 }}</span>
+                                        <span>•</span>
+                                        <span>{{ comment.created_at|timesince }} ago</span>
+                                    </div>
+                                </div>
+                                <div class="preview-actions">
+                                    <button class="btn btn-success btn-sm"
+                                            onclick="approveComment('{{ comment.pk }}')">
+                                        <span>✅</span>
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm"
+                                            onclick="rejectComment('{{ comment.pk }}')">
+                                        <span>❌</span>
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <p class="empty-message">No pending comments to review</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        {% if recent_actions %}
+        <div class="activity-table">
+            <div class="content-card-header">
+                <h2 class="content-card-title">Your Recent Actions</h2>
+                <a href="#" class="view-all-btn">
+                    <span>📊</span>
+                    View All Actions
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Target</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action in recent_actions %}
+                        <tr>
+                            <td>
+                                <span class="activity-badge">{{ action.get_action_type_display }}</span>
+                            </td>
+                            <td>{{ action.target_display }}</td>
+                            <td>{{ action.created_at|timesince }} ago</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Enhanced Modal -->
+<div id="reasonModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-title">📝 Provide Reason</h3>
+        <div class="py-4">
+            <textarea id="reasonText" class="form-input h-24" 
+                      placeholder="Enter reason for this action..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button id="confirmAction" class="btn btn-primary">
+                <span>✅</span>
+                Confirm
+            </button>
+            <button onclick="closeReasonModal()" class="btn btn-outline">
+                ❌ Cancel
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentAction = null;
+    let currentItemId = null;
+
+    function approveService(serviceId) {
+        performAction('approve_service', serviceId);
+    }
+
+    function rejectService(serviceId) {
+        currentAction = 'reject_service';
+        currentItemId = serviceId;
+        document.getElementById('reasonModal').classList.add('modal-open');
+    }
+
+    function approveComment(commentId) {
+        performAction('approve_comment', commentId);
+    }
+
+    function rejectComment(commentId) {
+        currentAction = 'reject_comment';
+        currentItemId = commentId;
+        document.getElementById('reasonModal').classList.add('modal-open');
+    }
+
+    function performAction(action, itemId) {
+        const reason = document.getElementById('reasonText').value || '';
+        let url;
+        
+        if (action === 'approve_service') {
+            url = `{% url 'moderators:api_approve_service' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId);
+        } else if (action === 'reject_service') {
+            url = `{% url 'moderators:api_reject_service' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId);
+        } else if (action === 'approve_comment') {
+            url = `{% url 'moderators:api_approve_comment' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId);
+        } else if (action === 'reject_comment') {
+            url = `{% url 'moderators:api_reject_comment' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', itemId);
+        }
+
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="loading"></span> Processing...';
+        button.disabled = true;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `reason=${encodeURIComponent(reason)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success feedback
+                button.innerHTML = '<span>✅</span> Success!';
+                button.className = button.className.replace(/btn-\w+/, 'btn-success');
+                
+                // Reload after delay to show feedback
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                alert('Error: ' + data.message);
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+            closeReasonModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+            button.innerHTML = originalText;
+            button.disabled = false;
+            closeReasonModal();
+        });
+    }
+
+    function closeReasonModal() {
+        document.getElementById('reasonModal').classList.remove('modal-open');
+        document.getElementById('reasonText').value = '';
+        currentAction = null;
+        currentItemId = null;
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('reasonModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeReasonModal();
+        }
+    });
+
+    // Confirm action from reason modal
+    document.getElementById('confirmAction').addEventListener('click', function() {
+        if (currentAction && currentItemId) {
+            performAction(currentAction, currentItemId);
+        }
+    });
+
+    // Auto-refresh counters every 30 seconds
+    setInterval(function() {
+        fetch(window.location.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Update only the counter values
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, 'text/html');
+            
+            // Update counters
+            const counters = [
+                'pending_services_count',
+                'pending_comments_count', 
+                'flagged_content_count',
+                'active_outreach_posts'
+            ];
+            
+            counters.forEach(counterId => {
+                const newValue = newDoc.querySelector(`[data-counter="${counterId}"]`);
+                const currentElement = document.querySelector(`[data-counter="${counterId}"]`);
+                if (newValue && currentElement && newValue.textContent !== currentElement.textContent) {
+                    // Add pulse animation when counter changes
+                    currentElement.textContent = newValue.textContent;
+                    currentElement.classList.add('pulse');
+                    setTimeout(() => {
+                        currentElement.classList.remove('pulse');
+                    }, 2000);
+                }
+            });
+        })
+        .catch(error => console.error('Error refreshing counters:', error));
+    }, 30000);
+
+    // Add smooth scrolling for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+</script>
+{% endblock %} 

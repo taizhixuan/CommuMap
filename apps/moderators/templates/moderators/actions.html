@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Moderation Actions - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Enhanced Button Styles */
+    .btn-gradient {
+        background: linear-gradient(135deg, var(--color-1), var(--color-2));
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-transform: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .btn-gradient::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-gradient:hover::before {
+        left: 100%;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .btn-info-gradient {
+        --color-1: #3b82f6;
+        --color-2: #1d4ed8;
+    }
+    
+    .btn-success-gradient {
+        --color-1: #10b981;
+        --color-2: #059669;
+    }
+    
+    .btn-warning-gradient {
+        --color-1: #f59e0b;
+        --color-2: #d97706;
+    }
+    
+    .btn-purple-gradient {
+        --color-1: #8b5cf6;
+        --color-2: #7c3aed;
+    }
+    
+    /* Enhanced Stats Cards */
+    .stats-card {
+        background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .stats-card:hover::before {
+        opacity: 1;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+    
+    .stats-success {
+        --bg-1: #d1fae5;
+        --bg-2: #a7f3d0;
+        --border-color: #10b981;
+    }
+    
+    .stats-info {
+        --bg-1: #dbeafe;
+        --bg-2: #bfdbfe;
+        --border-color: #3b82f6;
+    }
+    
+    .stats-warning {
+        --bg-1: #fef3c7;
+        --bg-2: #fed7aa;
+        --border-color: #f59e0b;
+    }
+    
+    .stats-error {
+        --bg-1: #fee2e2;
+        --bg-2: #fecaca;
+        --border-color: #ef4444;
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Enhanced Action Cards */
+    .action-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid transparent;
+        border-radius: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 0;
+    }
+    
+    .action-card:hover::before {
+        opacity: 0.05;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        border-color: #e5e7eb;
+    }
+    
+    .action-card-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Action Icons */
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-right: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .icon-approve {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    
+    .icon-reject {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .icon-edit {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+    
+    .icon-create {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+    }
+    
+    .icon-delete {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    
+    .icon-default {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+    
+    /* Action Type Badges */
+    .action-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    
+    .badge-approve {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        color: #065f46;
+        border: 1px solid #6ee7b7;
+    }
+    
+    .badge-reject {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+    }
+    
+    .badge-edit {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        color: #1e40af;
+        border: 1px solid #93c5fd;
+    }
+    
+    .badge-create {
+        background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+        color: #7c3aed;
+        border: 1px solid #c4b5fd;
+    }
+    
+    .badge-delete {
+        background: linear-gradient(135deg, #fef3c7, #fed7aa);
+        color: #d97706;
+        border: 1px solid #fbbf24;
+    }
+    
+    /* Filter Section */
+    .filter-container {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-select {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* View Details Button */
+    .view-details-btn {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .view-details-btn:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .action-card {
+            padding: 1.5rem;
+        }
+        
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-100">
+    <!-- Enhanced Header -->
+    <div class="bg-gradient-to-r from-amber-400 to-orange-400 text-white p-6 mb-6">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">📊 Moderation Actions</h1>
+                    <p class="text-lg opacity-90">Your moderation activity log and comprehensive audit trail</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="{% url 'moderators:dashboard' %}" class="btn btn-gradient btn-info-gradient">
+                        <span>🏠</span>
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6">
+        <!-- Enhanced Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card stats-success">
+                <div class="text-green-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-green-700">9</div>
+                <div class="text-sm font-semibold text-green-600">Approvals</div>
+                <div class="text-xs text-green-500 mt-1">Total actions performed</div>
+            </div>
+            
+            <div class="stats-card stats-info">
+                <div class="text-blue-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-blue-700">9</div>
+                <div class="text-sm font-semibold text-blue-600">This Month</div>
+                <div class="text-xs text-blue-500 mt-1">Recent activity</div>
+            </div>
+            
+            <div class="stats-card stats-warning">
+                <div class="text-amber-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-amber-700">9</div>
+                <div class="text-sm font-semibold text-amber-600">Today</div>
+                <div class="text-xs text-amber-500 mt-1">Actions today</div>
+            </div>
+            
+            <div class="stats-card stats-error">
+                <div class="text-red-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-red-700">0</div>
+                <div class="text-sm font-semibold text-red-600">Rejections</div>
+                <div class="text-xs text-red-500 mt-1">Content rejected</div>
+            </div>
+        </div>
+
+        <!-- Enhanced Filter Section -->
+        <div class="filter-container">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+                    </svg>
+                    Filter Actions
+                </h3>
+                <select class="filter-select">
+                    <option>🔍 All Actions</option>
+                    <option>✅ Approve Service</option>
+                    <option>❌ Reject Service</option>
+                    <option>✅ Approve Comment</option>
+                    <option>❌ Reject Comment</option>
+                    <option>📢 Outreach Posts</option>
+                    <option>✏️ Edit Actions</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Enhanced Actions List -->
+        <div class="card bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-xl rounded-2xl">
+            <div class="card-body p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                        <span class="text-4xl">📋</span>
+                        Action History
+                    </h2>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Last updated: {{ "now"|date:"M d, Y g:i A" }}</span>
+                    </div>
+                </div>
+
+                {% if actions %}
+                    <div class="space-y-6">
+                        {% for action in actions %}
+                        <div class="action-card">
+                            <div class="action-card-content">
+                                <div class="flex items-start gap-4">
+                                    <!-- Enhanced Action Icon -->
+                                    <div class="action-icon 
+                                        {% if 'approve' in action.action_type %}icon-approve
+                                        {% elif 'reject' in action.action_type %}icon-reject
+                                        {% elif 'edit' in action.action_type %}icon-edit
+                                        {% elif 'create' in action.action_type %}icon-create
+                                        {% elif 'delete' in action.action_type %}icon-delete
+                                        {% else %}icon-default{% endif %}">
+                                        {% if 'approve' in action.action_type %}✅
+                                        {% elif 'reject' in action.action_type %}❌
+                                        {% elif 'edit' in action.action_type %}✏️
+                                        {% elif 'create' in action.action_type %}➕
+                                        {% elif 'delete' in action.action_type %}🗑️
+                                        {% else %}📝{% endif %}
+                                    </div>
+
+                                    <!-- Enhanced Action Details -->
+                                    <div class="flex-1">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div>
+                                                <h3 class="text-xl font-bold text-gray-800 mb-2">{{ action.get_action_type_display }}</h3>
+                                                <p class="text-gray-600 text-lg mb-3">{{ action.target_display }}</p>
+                                                <div class="flex items-center gap-4 text-sm text-gray-500">
+                                                    <span class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                        {{ action.created_at|timesince }} ago
+                                                    </span>
+                                                    <span>•</span>
+                                                    <span>{{ action.created_at|date:"M d, Y g:i A" }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col items-end gap-3">
+                                                <span class="action-badge 
+                                                    {% if 'approve' in action.action_type %}badge-approve
+                                                    {% elif 'reject' in action.action_type %}badge-reject
+                                                    {% elif 'edit' in action.action_type %}badge-edit
+                                                    {% elif 'create' in action.action_type %}badge-create
+                                                    {% elif 'delete' in action.action_type %}badge-delete
+                                                    {% else %}badge-edit{% endif %}">
+                                                    {{ action.action_type|upper }}
+                                                </span>
+                                                <a href="{% url 'moderators:action_detail' action.pk %}" 
+                                                   class="view-details-btn">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                    </svg>
+                                                    View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if action.reason %}
+                                        <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-lg">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                                <span class="text-sm font-semibold text-blue-800">Reason:</span>
+                                            </div>
+                                            <p class="text-sm text-blue-700 italic leading-relaxed">{{ action.reason }}</p>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Enhanced Metadata -->
+                                        {% if action.metadata %}
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            {% for key, value in action.metadata.items %}
+                                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                                </svg>
+                                                {{ key }}: {{ value }}
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Enhanced Pagination -->
+                    {% if is_paginated %}
+                    <div class="flex justify-center mt-12">
+                        <div class="flex items-center gap-2 bg-white p-2 border-2 border-gray-200 rounded-xl shadow-lg">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1" class="btn btn-gradient btn-info-gradient btn-sm">First</a>
+                                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-gradient btn-info-gradient btn-sm">Previous</a>
+                            {% endif %}
+                            
+                            <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-semibold">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                            
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-gradient btn-info-gradient btn-sm">Next</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-gradient btn-info-gradient btn-sm">Last</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <!-- Enhanced Empty State -->
+                    <div class="text-center py-20">
+                        <div class="text-8xl mb-6">📋</div>
+                        <h3 class="text-3xl font-bold text-gray-700 mb-4">No Actions Recorded Yet</h3>
+                        <p class="text-gray-500 text-lg mb-8 max-w-md mx-auto">
+                            You haven't performed any moderation actions yet. Start reviewing content to see your activity here.
+                        </p>
+                        <a href="{% url 'moderators:dashboard' %}" class="btn btn-gradient btn-warning-gradient btn-lg">
+                            <span>🚀</span>
+                            Go to Dashboard
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced filter functionality
+    const filterSelect = document.querySelector('.filter-select');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+            // Add filter functionality here
+            console.log('Filter changed to:', this.value);
+        });
+    }
+    
+    // Add loading states to buttons
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Loading...';
+            // The page will navigate, so we don't need to reset the text
+        });
+    });
+    
+    // Smooth animations for cards
+    const cards = document.querySelectorAll('.action-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %} 

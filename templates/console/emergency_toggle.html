@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Emergency Mode Toggle - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .emergency-page {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        padding: 2rem 0;
+    }
+    
+    .emergency-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+    
+    .emergency-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 2rem;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+    
+    .emergency-active {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        box-shadow: 0 0 30px rgba(220, 38, 38, 0.5);
+    }
+    
+    .emergency-inactive {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+    
+    .status-indicator {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .status-active {
+        color: #ef4444;
+    }
+    
+    .status-inactive {
+        color: #10b981;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .warning-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .info-box {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="emergency-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="emergency-card">
+                    {% if request.method == 'GET' %}
+                    <!-- Display current status -->
+                    <div class="emergency-icon {% if emergency_mode %}emergency-active{% else %}emergency-inactive{% endif %}">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    
+                    <h1 class="h2 mb-3">Emergency Mode Control</h1>
+                    
+                    <div class="status-indicator {% if emergency_mode %}status-active{% else %}status-inactive{% endif %}">
+                        Emergency Mode: {% if emergency_mode %}ACTIVE{% else %}INACTIVE{% endif %}
+                    </div>
+                    
+                    {% if emergency_mode %}
+                    <div class="warning-box">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Emergency Mode is Currently Active</h5>
+                        <p class="mb-0">
+                            The system is operating in emergency mode. All non-essential services are restricted 
+                            and only emergency services are fully operational.
+                        </p>
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Click the button below to deactivate emergency mode and restore normal system operations.
+                    </p>
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg me-3" 
+                                onclick="return confirm('Deactivate emergency mode? This will restore normal system operations.')">
+                            <i class="fas fa-check me-2"></i>Deactivate Emergency Mode
+                        </button>
+                    </form>
+                    
+                    {% else %}
+                    <div class="info-box">
+                        <h5><i class="fas fa-info-circle me-2"></i>Emergency Mode is Currently Inactive</h5>
+                        <p class="mb-0">
+                            The system is operating normally. All services and features are available to users.
+                        </p>
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Click the button below to activate emergency mode. This will restrict non-essential services 
+                        and prioritize emergency operations.
+                    </p>
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg me-3" 
+                                onclick="return confirm('Activate emergency mode? This will restrict non-essential services and notify all users.')">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Activate Emergency Mode
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <a href="{% url 'console:home' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Console
+                    </a>
+                    
+                    <!-- Emergency Mode Effects -->
+                    <div class="mt-5">
+                        <h5 class="mb-3">Emergency Mode Effects:</h5>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Emergency services prioritized
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Critical notifications enabled
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Admin controls enhanced
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-times text-danger me-2"></i>
+                                        Non-essential features restricted
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-times text-danger me-2"></i>
+                                        User registrations limited
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-times text-danger me-2"></i>
+                                        Resource usage optimized
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- Processing response -->
+                    <div class="emergency-icon">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <h2>Processing...</h2>
+                    <p class="text-muted">Emergency mode status is being updated.</p>
+                    {% endif %}
+                    
+                    {% if messages %}
+                    <div class="mt-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-redirect after form submission
+    if (document.querySelector('.fa-spinner')) {
+        setTimeout(function() {
+            window.location.href = "{% url 'console:home' %}";
+        }, 2000);
+    }
+    
+    // Add confirmation dialogs with enhanced warning
+    document.querySelectorAll('form button[type="submit"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const isActivating = this.innerHTML.includes('Activate');
+            let message;
+            
+            if (isActivating) {
+                message = `⚠️ ACTIVATE EMERGENCY MODE ⚠️
+
+This will:
+• Restrict non-essential services
+• Send alerts to all users
+• Prioritize emergency operations
+• Enable enhanced monitoring
+
+Are you sure you want to proceed?`;
+            } else {
+                message = `✅ DEACTIVATE EMERGENCY MODE
+
+This will:
+• Restore normal system operations
+• Re-enable all services
+• Remove emergency restrictions
+• Notify users of status change
+
+Confirm deactivation?`;
+            }
+            
+            if (!confirm(message)) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show processing state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            this.disabled = true;
+            
+            // Submit form
+            this.closest('form').submit();
+        });
+    });
+</script>
+{% endblock %} 

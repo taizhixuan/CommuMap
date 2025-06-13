@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}System Settings - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-settings {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        padding: 2rem 0;
+    }
+    
+    .settings-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+    }
+    
+    .setting-item {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .setting-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .form-control {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        color: #e2e8f0;
+    }
+    
+    .form-control:focus {
+        background: rgba(15, 23, 42, 0.7);
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
+    
+    .form-label {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: #3b82f6;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-settings">
+    <div class="container">
+        <!-- Header -->
+        <div class="settings-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-cog me-2 text-primary"></i>
+                        System Settings
+                    </h1>
+                    <p class="text-muted mb-0">Manage system configuration and feature toggles</p>
+                </div>
+                <a href="{% url 'console:home' %}" class="btn btn-outline-light">
+                    <i class="fas fa-home me-1"></i>Home
+                </a>
+            </div>
+            
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- Settings Form -->
+        <div class="settings-card">
+            <h4 class="mb-4">
+                <i class="fas fa-sliders-h me-2"></i>
+                System Configuration
+            </h4>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Maintenance Mode -->
+                    <div class="col-md-6 mb-4">
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Maintenance Mode</h6>
+                                    <small class="text-muted">Temporarily disable the site for maintenance</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="maintenance_mode" 
+                                           {% if settings.maintenance_mode %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Registration Enabled -->
+                    <div class="col-md-6 mb-4">
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">User Registration</h6>
+                                    <small class="text-muted">Allow new users to register accounts</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="registration_enabled" 
+                                           {% if settings.registration_enabled %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Submissions -->
+                    <div class="col-md-6 mb-4">
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Service Submissions</h6>
+                                    <small class="text-muted">Allow service managers to submit new services</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="service_submissions_enabled" 
+                                           {% if settings.service_submissions_enabled %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Emergency Mode -->
+                    <div class="col-md-6 mb-4">
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Emergency Mode</h6>
+                                    <small class="text-muted">Enable emergency-only operations</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="emergency_mode" 
+                                           {% if settings.emergency_mode %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Text Settings -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="setting-item">
+                            <h6 class="mb-3">System Announcement</h6>
+                            <div class="mb-3">
+                                <label for="system_announcement" class="form-label">Announcement Text</label>
+                                <textarea name="system_announcement" id="system_announcement" 
+                                          class="form-control" rows="3" 
+                                          placeholder="Enter system-wide announcement...">{{ settings.system_announcement|default:"" }}</textarea>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="announcement_active" id="announcement_active" 
+                                       class="form-check-input" {% if settings.announcement_active %}checked{% endif %}>
+                                <label for="announcement_active" class="form-check-label">
+                                    Display announcement to users
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map Settings -->
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="setting-item">
+                            <label for="default_map_center_lat" class="form-label">Default Map Latitude</label>
+                            <input type="number" name="default_map_center_lat" id="default_map_center_lat" 
+                                   class="form-control" step="0.000001" 
+                                   value="{{ settings.default_map_center_lat|default:40.7128 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="setting-item">
+                            <label for="default_map_center_lng" class="form-label">Default Map Longitude</label>
+                            <input type="number" name="default_map_center_lng" id="default_map_center_lng" 
+                                   class="form-control" step="0.000001" 
+                                   value="{{ settings.default_map_center_lng|default:-74.0060 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="setting-item">
+                            <label for="default_map_zoom" class="form-label">Default Map Zoom</label>
+                            <input type="number" name="default_map_zoom" id="default_map_zoom" 
+                                   class="form-control" min="1" max="20" 
+                                   value="{{ settings.default_map_zoom|default:12 }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Emergency Settings -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="setting-item">
+                            <label for="emergency_search_radius_km" class="form-label">Emergency Search Radius (km)</label>
+                            <input type="number" name="emergency_search_radius_km" id="emergency_search_radius_km" 
+                                   class="form-control" min="1" max="100" step="0.1" 
+                                   value="{{ settings.emergency_search_radius_km|default:5 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Auto-approve Services</h6>
+                                    <small class="text-muted">Automatically approve new service submissions</small>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="auto_approve_services" 
+                                           {% if settings.auto_approve_services %}checked{% endif %}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <a href="{% url 'console:settings_backup' %}" class="btn btn-outline-info me-2">
+                            <i class="fas fa-download me-1"></i>Backup Settings
+                        </a>
+                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#restoreModal">
+                            <i class="fas fa-upload me-1"></i>Restore Settings
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Feature Flags -->
+        {% if feature_flags %}
+        <div class="settings-card">
+            <h4 class="mb-4">
+                <i class="fas fa-toggle-on me-2"></i>
+                Feature Flags
+            </h4>
+            
+            <div class="row">
+                {% for flag, enabled in feature_flags.items %}
+                <div class="col-md-6 mb-3">
+                    <div class="setting-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ flag|underscore_to_space }}</h6>
+                                <small class="text-muted">Feature toggle for {{ flag }}</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" data-feature="{{ flag }}" 
+                                       {% if enabled %}checked{% endif %} 
+                                       onchange="toggleFeature('{{ flag }}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Restore Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title">Restore Settings</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'console:settings_restore' %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="backup_file" class="form-label">Settings Backup File</label>
+                        <input type="file" name="backup_file" id="backup_file" class="form-control" 
+                               accept=".json" required>
+                        <div class="form-text">Upload a JSON settings backup file</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-upload me-1"></i>Restore Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle feature flags via AJAX
+    function toggleFeature(featureName, enabled) {
+        fetch('{% url "console:feature_toggle" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                feature: featureName,
+                enabled: enabled
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showNotification('Feature updated successfully', 'success');
+            } else {
+                // Revert toggle and show error
+                event.target.checked = !enabled;
+                showNotification('Failed to update feature', 'error');
+            }
+        })
+        .catch(error => {
+            // Revert toggle and show error
+            event.target.checked = !enabled;
+            showNotification('Error updating feature', 'error');
+        });
+    }
+    
+    // Show notification
+    function showNotification(message, type) {
+        // Simple alert for now - could be enhanced with toast notifications
+        if (type === 'success') {
+            alert('✅ ' + message);
+        } else {
+            alert('❌ ' + message);
+        }
+    }
+    
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const lat = document.getElementById('default_map_center_lat').value;
+        const lng = document.getElementById('default_map_center_lng').value;
+        
+        if (lat && (lat < -90 || lat > 90)) {
+            e.preventDefault();
+            alert('Latitude must be between -90 and 90 degrees');
+            return;
+        }
+        
+        if (lng && (lng < -180 || lng > 180)) {
+            e.preventDefault();
+            alert('Longitude must be between -180 and 180 degrees');
+            return;
+        }
+    });
+</script>
+{% endblock %} 

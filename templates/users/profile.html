@@ -1,0 +1,1100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Gradient Background */
+    .hero-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    /* Profile Container */
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 1rem 0 1rem;
+    }
+    
+    /* Modern Card Styles */
+    .floating-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .floating-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Profile Header */
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-avatar {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        overflow: hidden;
+    }
+    
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .profile-avatar i {
+        font-size: 3rem;
+        color: white;
+    }
+    
+    .avatar-upload-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .profile-avatar:hover .avatar-upload-overlay {
+        opacity: 1;
+    }
+    
+    .profile-info h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .profile-email {
+        font-size: 1.1rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+    
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+    }
+    
+    .modern-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .modern-btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8, #6a4190);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.9);
+        color: #374151;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        color: #374151;
+    }
+    
+    /* Information Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-section h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    
+    .info-value {
+        color: #1f2937;
+        font-weight: 500;
+    }
+    
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    
+    .status-verified {
+        background: #10b981;
+    }
+    
+    .status-pending {
+        background: #f59e0b;
+    }
+    
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stat-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem auto;
+        font-size: 2rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .quick-action {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .quick-action:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        color: #374151;
+    }
+    
+    .quick-action i {
+        font-size: 2rem;
+        color: #667eea;
+    }
+    
+    .quick-action span {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: scale(0.9) translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-content {
+        transform: scale(1) translateY(0);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #6b7280;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    
+    .modal-close:hover {
+        color: #374151;
+    }
+    
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .checkbox-group:hover {
+        border-color: #667eea;
+        background: rgba(255, 255, 255, 1);
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #667eea;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+    
+    /* Notification Toast */
+    .notification-toast {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        z-index: 1100;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+    
+    .notification-toast.success {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .notification-toast.error {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .notification-toast.show {
+        transform: translateX(0);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        
+        .profile-info h1 {
+            font-size: 2rem;
+        }
+        
+        .action-buttons {
+            justify-content: center;
+        }
+        
+        .modern-btn {
+            padding: 0.875rem 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .modal-content {
+            padding: 1.5rem;
+            margin: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-gradient">
+    <div class="profile-container">
+        <!-- Main Profile Card -->
+        <div class="floating-card">
+            <div class="profile-header">
+                <div class="profile-avatar" onclick="openEditModal()">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Profile Picture">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                    <div class="avatar-upload-overlay">
+                        <i class="fas fa-camera" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+                
+                <div class="profile-info">
+                    <h1>{{ user.get_display_name }}</h1>
+                    <div class="profile-email">{{ user.email }}</div>
+                    <div class="role-badge">
+                        <i class="fas fa-{% if user.role == 'admin' %}crown{% elif user.role == 'manager' %}briefcase{% elif user.role == 'moderator' %}shield-alt{% else %}user{% endif %}"></i>
+                        {{ user.get_role_display }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-section">
+                    <h3>
+                        <i class="fas fa-user-circle"></i>
+                        Personal Information
+                    </h3>
+                    <div class="info-item">
+                        <span class="info-label">First Name</span>
+                        <span class="info-value">{{ user.first_name|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Name</span>
+                        <span class="info-value">{{ user.last_name|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">{{ user.phone|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Member Since</span>
+                        <span class="info-value">{{ user.date_joined|date:"F d, Y" }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h3>
+                        <i class="fas fa-cog"></i>
+                        Account Settings
+                    </h3>
+                    <div class="info-item">
+                        <span class="info-label">Verification Status</span>
+                        <div class="status-indicator">
+                            {% if user.is_verified %}
+                                <div class="status-dot status-verified"></div>
+                                <span class="info-value">Verified</span>
+                            {% else %}
+                                <div class="status-dot status-pending"></div>
+                                <span class="info-value">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Active</span>
+                        <span class="info-value">
+                            {% if user.last_active %}
+                                {{ user.last_active|timesince }} ago
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email Notifications</span>
+                        <div class="status-indicator">
+                            <div class="status-dot status-verified"></div>
+                            <span class="info-value">Enabled</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="modern-btn btn-primary" onclick="openEditModal()">
+                    <i class="fas fa-edit"></i>
+                    Edit Profile
+                </button>
+                <button class="modern-btn btn-secondary" onclick="openPasswordModal()">
+                    <i class="fas fa-key"></i>
+                    Change Password
+                </button>
+                <button class="modern-btn btn-secondary" onclick="openPreferencesModal()">
+                    <i class="fas fa-cog"></i>
+                    Preferences
+                </button>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <div class="stat-number">{{ user.bookmarks.count|default:0 }}</div>
+                <div class="stat-label">Bookmarked Services</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="stat-number">{{ user.search_history.count|default:0 }}</div>
+                <div class="stat-label">Searches Performed</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <div class="stat-number">{{ user.date_joined|timesince|slice:":2" }}</div>
+                <div class="stat-label">Days Active</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-number">0</div>
+                <div class="stat-label">Reviews Written</div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="floating-card">
+            <h3 style="margin-bottom: 2rem; color: #1f2937; font-size: 1.5rem; font-weight: 700;">
+                <i class="fas fa-bolt" style="color: #667eea; margin-right: 0.75rem;"></i>
+                Quick Actions
+            </h3>
+            <div class="quick-actions">
+                <a href="{% url 'users:bookmarks' %}" class="quick-action">
+                    <i class="fas fa-bookmark"></i>
+                    <span>View Bookmarks</span>
+                </a>
+                
+                <a href="{% url 'services:search' %}" class="quick-action">
+                    <i class="fas fa-search"></i>
+                    <span>Search Services</span>
+                </a>
+                
+                <a href="{% url 'services:map' %}" class="quick-action">
+                    <i class="fas fa-map"></i>
+                    <span>View Map</span>
+                </a>
+                
+                <a href="{% url 'users:notifications' %}" class="quick-action">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-edit"></i>
+                Edit Profile
+            </h2>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        
+        <form id="editForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-input" value="{{ user.first_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-input" value="{{ user.last_name }}" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Display Name</label>
+                <input type="text" name="full_name" class="form-input" value="{{ user.full_name }}" placeholder="How you'd like to be displayed">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" name="phone" class="form-input" value="{{ user.phone }}" placeholder="+1 (555) 123-4567">
+            </div>
+            
+            <div class="form-group" style="display: none;">
+                <label class="form-label">Profile Picture</label>
+                <input type="file" name="avatar" class="form-input" accept="image/*">
+                <small style="color: #6b7280;">Avatar upload feature coming soon!</small>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="modern-btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="modern-btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="passwordModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-key"></i>
+                Change Password
+            </h2>
+            <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+        </div>
+        
+        <form id="passwordForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" name="old_password" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" name="new_password1" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" name="new_password2" class="form-input" required>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="modern-btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                <button type="submit" class="modern-btn btn-primary">Update Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Preferences Modal -->
+<div class="modal-overlay" id="preferencesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <i class="fas fa-cog"></i>
+                User Preferences
+            </h2>
+            <button class="modal-close" onclick="closePreferencesModal()">&times;</button>
+        </div>
+        
+        <form id="preferencesForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Default Search Radius (km)</label>
+                <input type="number" name="search_radius" class="form-input" value="10" min="1" max="100">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Theme Preference</label>
+                <select name="theme" class="form-input">
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
+                    <option value="system">System Default</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Language</label>
+                <select name="language" class="form-input">
+                    <option value="en">English</option>
+                    <option value="ms">Bahasa Malaysia</option>
+                    <option value="zh">中文</option>
+                    <option value="ta">தமிழ்</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Notification Preferences</label>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="email_notifications" id="emailNotif" checked>
+                        <label for="emailNotif">Email Notifications</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="emergency_alerts" id="emergencyAlerts" checked>
+                        <label for="emergencyAlerts">Emergency Alerts</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="service_updates" id="serviceUpdates">
+                        <label for="serviceUpdates">Service Updates</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Privacy Settings</label>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="profile_public" id="profilePublic">
+                        <label for="profilePublic">Make Profile Public</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="location_sharing" id="locationSharing" checked>
+                        <label for="locationSharing">Allow Location Sharing</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="modern-btn btn-secondary" onclick="closePreferencesModal()">Cancel</button>
+                <button type="submit" class="modern-btn btn-primary">Save Preferences</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modal Management
+function openEditModal() {
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+function openPasswordModal() {
+    document.getElementById('passwordModal').classList.add('active');
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').classList.remove('active');
+}
+
+function openPreferencesModal() {
+    document.getElementById('preferencesModal').classList.add('active');
+}
+
+function closePreferencesModal() {
+    document.getElementById('preferencesModal').classList.remove('active');
+}
+
+// Close modals when clicking outside
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Notification Toast
+function showNotification(message, type = 'success') {
+    // Remove existing notifications
+    document.querySelectorAll('.notification-toast').forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = `notification-toast ${type}`;
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Hide toast after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Form Submissions
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+    
+    // Make actual AJAX call
+    fetch('{% url "users:profile_edit" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            closeEditModal();
+            showNotification(data.message, 'success');
+            
+            // Update display values
+            if (data.data.display_name) {
+                document.querySelector('.profile-info h1').textContent = data.data.display_name;
+            }
+            
+            // Update info values
+            const infoValues = document.querySelectorAll('.info-value');
+            infoValues[0].textContent = data.data.first_name || 'Not provided';
+            infoValues[1].textContent = data.data.last_name || 'Not provided';
+            infoValues[2].textContent = data.data.phone || 'Not provided';
+            
+            // Update avatar if changed
+            if (data.data.avatar_url) {
+                const avatarImg = document.querySelector('.profile-avatar img');
+                if (avatarImg) {
+                    avatarImg.src = data.data.avatar_url;
+                } else {
+                    // Replace icon with image
+                    const avatarContainer = document.querySelector('.profile-avatar');
+                    avatarContainer.innerHTML = `
+                        <img src="${data.data.avatar_url}" alt="Profile Picture">
+                        <div class="avatar-upload-overlay">
+                            <i class="fas fa-camera" style="color: white; font-size: 1.5rem;"></i>
+                        </div>
+                    `;
+                }
+            }
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        showNotification('Error updating profile. Please try again.', 'error');
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const newPassword1 = formData.get('new_password1');
+    const newPassword2 = formData.get('new_password2');
+    
+    if (newPassword1 !== newPassword2) {
+        showNotification('Passwords do not match!', 'error');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    submitBtn.disabled = true;
+    
+    // Make actual AJAX call
+    fetch('{% url "users:password_change" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            closePasswordModal();
+            showNotification(data.message, 'success');
+            this.reset();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        showNotification('Error changing password. Please try again.', 'error');
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('preferencesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+    
+    // Make actual AJAX call
+    fetch('{% url "users:preferences_update" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            closePreferencesModal();
+            showNotification(data.message, 'success');
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        showNotification('Error saving preferences. Please try again.', 'error');
+        console.error('Error:', error);
+    });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+});
+
+// Auto-hide notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any initialization code here
+    console.log('Profile page loaded successfully');
+});
+</script>
+{% endblock %} 

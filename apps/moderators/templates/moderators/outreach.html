@@ -1,0 +1,603 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Outreach Management - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Enhanced Button Styles */
+    .btn-gradient {
+        background: linear-gradient(135deg, var(--color-1), var(--color-2));
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-transform: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-gradient::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-gradient:hover::before {
+        left: 100%;
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .btn-success-gradient {
+        --color-1: #10b981;
+        --color-2: #059669;
+    }
+    
+    .btn-error-gradient {
+        --color-1: #ef4444;
+        --color-2: #dc2626;
+    }
+    
+    .btn-info-gradient {
+        --color-1: #3b82f6;
+        --color-2: #1d4ed8;
+    }
+    
+    .btn-warning-gradient {
+        --color-1: #f59e0b;
+        --color-2: #d97706;
+    }
+    
+    .btn-purple-gradient {
+        --color-1: #8b5cf6;
+        --color-2: #7c3aed;
+    }
+    
+    /* Enhanced Outreach Cards */
+    .outreach-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid transparent;
+        border-radius: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .outreach-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 0;
+    }
+    
+    .outreach-card:hover::before {
+        opacity: 0.05;
+    }
+    
+    .outreach-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        border-color: #f59e0b;
+    }
+    
+    .outreach-card-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Stats Cards */
+    .stats-card {
+        background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .stats-card:hover::before {
+        opacity: 1;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+    
+    .stats-warning {
+        --bg-1: #fef3c7;
+        --bg-2: #fed7aa;
+        --border-color: #f59e0b;
+    }
+    
+    .stats-success {
+        --bg-1: #d1fae5;
+        --bg-2: #a7f3d0;
+        --border-color: #10b981;
+    }
+    
+    .stats-info {
+        --bg-1: #dbeafe;
+        --bg-2: #bfdbfe;
+        --border-color: #3b82f6;
+    }
+    
+    .stats-purple {
+        --bg-1: #ede9fe;
+        --bg-2: #ddd6fe;
+        --border-color: #8b5cf6;
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Banner Image Styling */
+    .post-banner {
+        border-radius: 12px;
+        overflow: hidden;
+        max-height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .post-banner:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Action Buttons */
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        min-width: 80px;
+        justify-content: center;
+    }
+    
+    .action-btn-view {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+    
+    .action-btn-view:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .action-btn-edit {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    
+    .action-btn-edit:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    .action-btn-delete {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .action-btn-delete:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Badge Styling */
+    .custom-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    
+    .badge-active {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        color: #065f46;
+        border: 1px solid #6ee7b7;
+    }
+    
+    .badge-inactive {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+    }
+    
+    .badge-expired {
+        background: linear-gradient(135deg, #fef3c7, #fed7aa);
+        color: #d97706;
+        border: 1px solid #fbbf24;
+        animation: pulse 2s infinite;
+    }
+    
+    .badge-category {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        color: #1e40af;
+        border: 1px solid #93c5fd;
+    }
+    
+    /* Enhanced Modal */
+    .enhanced-modal {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 16px;
+        border: 2px solid #e2e8f0;
+        max-width: 500px;
+        margin: auto;
+        padding: 2rem;
+    }
+    
+    /* Pagination Enhancement */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+    
+    .pagination-group {
+        display: flex;
+        items-center: center;
+        gap: 0.5rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: 2px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-base-100">
+    <!-- Enhanced Header -->
+    <div class="bg-gradient-to-r from-amber-400 to-orange-400 text-white p-6 mb-6">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">📢 Outreach Management</h1>
+                    <p class="text-lg opacity-90">Create and manage community outreach posts to engage with your audience</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="{% url 'moderators:outreach_create' %}" class="btn btn-gradient btn-purple-gradient btn-lg">
+                        <span class="text-lg">✨</span>
+                        New Post
+                    </a>
+                    <a href="{% url 'moderators:dashboard' %}" class="btn btn-gradient btn-info-gradient">
+                        <span>📊</span>
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6">
+        <!-- Enhanced Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card stats-warning">
+                <div class="text-amber-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-amber-700">{{ posts|length }}</div>
+                <div class="text-sm font-semibold text-amber-600">Total Posts</div>
+            </div>
+            
+            <div class="stats-card stats-success">
+                <div class="text-green-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-green-700">{{ posts|length }}</div>
+                <div class="text-sm font-semibold text-green-600">Active Posts</div>
+            </div>
+            
+            <div class="stats-card stats-info">
+                <div class="text-blue-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-blue-700">0</div>
+                <div class="text-sm font-semibold text-blue-600">Total Views</div>
+            </div>
+            
+            <div class="stats-card stats-purple">
+                <div class="text-purple-600">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="stats-number text-purple-700">0</div>
+                <div class="text-sm font-semibold text-purple-600">Expired Posts</div>
+            </div>
+        </div>
+
+        <!-- Enhanced Posts List -->
+        {% if posts %}
+            <div class="space-y-8">
+                {% for post in posts %}
+                <div class="outreach-card shadow-lg">
+                    <div class="outreach-card-content p-6">
+                        <div class="flex flex-col lg:flex-row gap-6">
+                            <!-- Enhanced Post Banner -->
+                            {% if post.banner_image_url %}
+                            <div class="lg:w-1/3">
+                                <div class="relative">
+                                    <img src="{{ post.banner_image_url }}" 
+                                         alt="{{ post.title }}" 
+                                         class="post-banner w-full"
+                                         onerror="this.style.display='none';">
+                                    <div class="absolute top-2 right-2">
+                                        <div class="bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-xs">
+                                            📸 Banner
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Enhanced Post Content -->
+                            <div class="{% if post.banner_image_url %}lg:w-2/3{% else %}w-full{% endif %}">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-gray-800 mb-3">{{ post.title }}</h3>
+                                        <p class="text-sm text-gray-500 mb-4 flex items-center gap-4">
+                                            <span class="flex items-center gap-1">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Created {{ post.created_at|timesince }} ago
+                                            </span>
+                                            {% if post.expires_at %}
+                                                <span class="flex items-center gap-1">
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    Expires {{ post.expires_at|date:"M d, Y" }}
+                                                </span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-2 ml-4">
+                                        {% if post.is_active %}
+                                            <span class="custom-badge badge-active">
+                                                ✅ Active
+                                            </span>
+                                        {% else %}
+                                            <span class="custom-badge badge-inactive">
+                                                ❌ Inactive
+                                            </span>
+                                        {% endif %}
+                                        {% if post.is_expired %}
+                                            <span class="custom-badge badge-expired">
+                                                ⏰ Expired
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <p class="text-gray-700 mb-6 leading-relaxed">{{ post.content|truncatewords:35 }}</p>
+                                
+                                <!-- Enhanced Target Categories -->
+                                {% if post.target_categories.all %}
+                                <div class="mb-6">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span class="text-sm font-semibold text-gray-700">Target Categories:</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        {% for category in post.target_categories.all %}
+                                            <span class="custom-badge badge-category">
+                                                📂 {{ category.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Enhanced Engagement Stats -->
+                                <div class="flex items-center gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span class="font-semibold">{{ post.view_count }}</span> views
+                                    </div>
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span class="font-semibold">0</span> engagements
+                                    </div>
+                                </div>
+                                
+                                <!-- Enhanced Action Buttons -->
+                                <div class="flex flex-wrap gap-3">
+                                    <a href="{% url 'moderators:outreach_detail' post.pk %}" 
+                                       class="action-btn action-btn-view">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        View
+                                    </a>
+                                    <a href="{% url 'moderators:outreach_edit' post.pk %}" 
+                                       class="action-btn action-btn-edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        Edit
+                                    </a>
+                                    <button onclick="deletePost('{{ post.pk }}', '{{ post.title }}')" 
+                                            class="action-btn action-btn-delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Enhanced Pagination -->
+            {% if is_paginated %}
+            <div class="pagination-container">
+                <div class="pagination-group">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="btn btn-gradient btn-info-gradient btn-sm">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-gradient btn-info-gradient btn-sm">Previous</a>
+                    {% endif %}
+                    
+                    <span class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-semibold">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-gradient btn-info-gradient btn-sm">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-gradient btn-info-gradient btn-sm">Last</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Enhanced Empty State -->
+            <div class="card bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 shadow-lg rounded-2xl">
+                <div class="card-body text-center py-20">
+                    <div class="text-6xl mb-6">📢</div>
+                    <h3 class="text-2xl font-bold text-amber-700 mb-4">No Outreach Posts Yet</h3>
+                    <p class="text-amber-600 text-lg mb-8 max-w-md mx-auto">
+                        Start engaging with your community by creating your first outreach post. Share announcements, promote services, and connect with your audience.
+                    </p>
+                    <a href="{% url 'moderators:outreach_create' %}" class="btn btn-gradient btn-warning-gradient btn-lg">
+                        <span class="text-lg">✨</span>
+                        Create Your First Post
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Enhanced Delete Confirmation Modal -->
+<div id="deleteModal" class="modal enhanced-modal">
+    <div class="modal-content">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">🗑️ Confirm Deletion</h3>
+        <p class="py-4 text-gray-700">
+            Are you sure you want to delete the post "<span id="postTitle" class="font-bold text-red-600"></span>"? 
+            This action cannot be undone and all engagement data will be lost.
+        </p>
+        <div class="flex justify-end gap-3 mt-6">
+            <form id="deleteForm" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-gradient btn-error-gradient">
+                    <span>🗑️</span>
+                    Delete Post
+                </button>
+            </form>
+            <button onclick="closeDeleteModal()" class="btn btn-gradient btn-info-gradient">
+                ❌ Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function deletePost(postId, postTitle) {
+    document.getElementById('postTitle').textContent = postTitle;
+    document.getElementById('deleteForm').action = `/moderator/outreach/${postId}/delete/`;
+    document.getElementById('deleteModal').classList.add('modal-open');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('modal-open');
+}
+
+// Close modal on outside click
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+
+// Enhanced interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scroll to top after actions
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Add loading states to action buttons
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (this.href && !this.onclick) { // Only for links, not delete buttons
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Loading...';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

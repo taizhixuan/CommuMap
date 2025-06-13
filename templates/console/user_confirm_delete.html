@@ -1,0 +1,1065 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Account Deactivation: {{ target_user.get_display_name }} - CommuMap Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-bg: #0f172a;
+        --secondary-bg: #1e293b;
+        --surface-bg: #334155;
+        --danger-bg: #dc2626;
+        --warning-bg: #f59e0b;
+        --success-bg: #059669;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --border-color: #475569;
+        --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    body {
+        background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 50%, var(--surface-bg) 100%);
+        min-height: 100vh;
+        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow-x: hidden;
+    }
+    
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        position: relative;
+    }
+    
+    .deactivation-header {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.9) 0%, rgba(153, 27, 27, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        border-radius: 20px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .deactivation-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .deactivation-header > * {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #fecaca 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: rgba(254, 202, 202, 0.9);
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+    
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1rem 1.5rem;
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .breadcrumb-item {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    
+    .breadcrumb-item:hover {
+        color: var(--text-primary);
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .action-cards-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .impact-card {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(245, 158, 11, 0.6);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-xl);
+        color: #451a03;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .impact-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+        transform: rotate(-45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) rotate(-45deg); }
+        100% { transform: translateX(200%) rotate(-45deg); }
+    }
+    
+    .protection-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(16, 185, 129, 0.6);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-xl);
+        color: #064e3b;
+    }
+    
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.75rem;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .impact-icon {
+        background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+        color: #92400e;
+    }
+    
+    .protection-icon {
+        background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        color: #047857;
+    }
+    
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .features-list li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        font-weight: 500;
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .features-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .features-list li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        top: 0.75rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.2);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .user-profile-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .profile-header {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+        padding: 2rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .user-info h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+    
+    .user-info p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 1.125rem;
+    }
+    
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 2.5rem;
+    }
+    
+    .detail-item {
+        padding: 1.5rem;
+        background: rgba(15, 23, 42, 0.3);
+        border-radius: 12px;
+        border: 1px solid rgba(71, 85, 105, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .detail-item:hover {
+        background: rgba(15, 23, 42, 0.5);
+        border-color: rgba(71, 85, 105, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    .detail-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    
+    .detail-value {
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .status-badges {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .badge-active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .badge-inactive {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+    
+    .badge-verified {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .badge-unverified {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .role-badge {
+        padding: 0.75rem 1.5rem;
+        border-radius: 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
+    }
+    
+    .role-admin {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+    }
+    
+    .role-service-manager {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .role-moderator {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .role-user {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+    
+    .confirmation-section {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.9) 100%);
+        backdrop-filter: blur(10px);
+        border: 2px solid var(--border-color);
+        border-radius: 20px;
+        padding: 3rem;
+        text-align: center;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .confirmation-section::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #dc2626, #f59e0b, #10b981, #3b82f6, #dc2626);
+        border-radius: 20px;
+        opacity: 0.3;
+        z-index: -1;
+        animation: borderRotate 4s linear infinite;
+    }
+    
+    @keyframes borderRotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .confirmation-steps {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+    
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        position: relative;
+    }
+    
+    .step.active {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+    }
+    
+    .step::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        width: 1rem;
+        height: 2px;
+        background: var(--text-muted);
+        margin-left: 0.5rem;
+    }
+    
+    .step:last-child::after {
+        display: none;
+    }
+    
+    .confirmation-checkbox {
+        background: rgba(15, 23, 42, 0.6);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem auto;
+        max-width: 600px;
+        transition: all 0.3s ease;
+    }
+    
+    .confirmation-checkbox:hover {
+        border-color: var(--danger-bg);
+        background: rgba(220, 38, 38, 0.1);
+    }
+    
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .custom-checkbox {
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--danger-bg);
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .custom-checkbox:checked {
+        background: var(--danger-bg);
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+    }
+    
+    .custom-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .checkbox-label {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.125rem;
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-lg);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+        background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(107, 114, 128, 0.4);
+    }
+    
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: var(--shadow-lg) !important;
+    }
+    
+    .floating-action {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: var(--shadow-xl);
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+    
+    .floating-action:hover {
+        transform: scale(1.1);
+        box-shadow: 0 15px 35px rgba(220, 38, 38, 0.5);
+    }
+    
+    .progress-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: rgba(220, 38, 38, 0.2);
+        z-index: 1001;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        width: 75%;
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        transition: width 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+        .page-container {
+            padding: 1rem;
+        }
+        
+        .action-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .details-grid {
+            grid-template-columns: 1fr;
+            padding: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .deactivation-header {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+    
+    .scroll-indicator {
+        position: fixed;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        z-index: 100;
+    }
+    
+    .scroll-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(148, 163, 184, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .scroll-dot.active {
+        background: var(--danger-bg);
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="progress-indicator">
+    <div class="progress-bar"></div>
+</div>
+
+<div class="scroll-indicator">
+    <div class="scroll-dot active" data-section="header"></div>
+    <div class="scroll-dot" data-section="impact"></div>
+    <div class="scroll-dot" data-section="details"></div>
+    <div class="scroll-dot" data-section="confirmation"></div>
+</div>
+
+<div class="page-container">
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-nav" id="header">
+        <a href="{% url 'console:dashboard' %}" class="breadcrumb-item">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <i class="fas fa-chevron-right text-muted"></i>
+        <a href="{% url 'console:users' %}" class="breadcrumb-item">User Management</a>
+        <i class="fas fa-chevron-right text-muted"></i>
+        <span class="breadcrumb-item active">Account Deactivation</span>
+    </nav>
+
+    <!-- Enhanced Header -->
+    <div class="deactivation-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-user-shield me-3"></i>
+                    Account Deactivation
+                </h1>
+                <p class="page-subtitle">
+                    Secure deactivation process with complete data protection
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'console:users' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Users
+                </a>
+                <a href="{% url 'console:user_edit' target_user.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit Instead
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Impact Cards -->
+    <div class="action-cards-grid" id="impact">
+        <div class="impact-card">
+            <div class="card-icon impact-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="card-title">
+                ⚠️ Deactivation Impact
+            </h3>
+            <p class="mb-3 fw-semibold">
+                Deactivating: <strong>{{ target_user.get_display_name }}</strong><br>
+                <span class="opacity-75">{{ target_user.email }}</span>
+            </p>
+            <ul class="features-list">
+                <li>Immediate login access termination</li>
+                <li>All active sessions will end</li>
+                <li>Account becomes inaccessible</li>
+                {% if target_user.role == 'service_manager' %}
+                <li>Managed services need reassignment</li>
+                {% endif %}
+                <li>Notification sent to user</li>
+            </ul>
+        </div>
+
+        <div class="protection-card">
+            <div class="card-icon protection-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="card-title">
+                🛡️ Data Protection
+            </h3>
+            <p class="mb-3 fw-semibold">
+                Complete data preservation and compliance
+            </p>
+            <ul class="features-list">
+                <li>Zero data loss or deletion</li>
+                <li>Full audit trail maintained</li>
+                <li>Content and reviews preserved</li>
+                <li>Reactivation possible anytime</li>
+                <li>GDPR and privacy compliant</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- User Profile Card -->
+    <div class="user-profile-card" id="details">
+        <div class="profile-header">
+            <div class="user-avatar">
+                {{ target_user.get_display_name|first|upper }}
+            </div>
+            <div class="user-info">
+                <h3>{{ target_user.get_display_name }}</h3>
+                <p>{{ target_user.email }}</p>
+                <div class="status-badges">
+                    <span class="role-badge role-{% if target_user.role == 'admin' %}admin{% elif target_user.role == 'service_manager' %}service-manager{% elif target_user.role == 'community_moderator' %}moderator{% else %}user{% endif %}">
+                        {{ target_user.get_role_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-label">Account Status</div>
+                <div class="detail-value">
+                    <div class="status-badges">
+                        <span class="status-badge {% if target_user.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                            <i class="fas fa-{% if target_user.is_active %}check-circle{% else %}times-circle{% endif %}"></i>
+                            {% if target_user.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                        <span class="status-badge {% if target_user.is_verified %}badge-verified{% else %}badge-unverified{% endif %}">
+                            <i class="fas fa-{% if target_user.is_verified %}shield-alt{% else %}clock{% endif %}"></i>
+                            {% if target_user.is_verified %}Verified{% else %}Unverified{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Account Created</div>
+                <div class="detail-value">
+                    <i class="fas fa-calendar-plus me-2 text-success"></i>
+                    {{ target_user.date_joined|date:"F j, Y" }}
+                    <small class="d-block text-muted mt-1">{{ target_user.date_joined|timesince }} ago</small>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Last Login</div>
+                <div class="detail-value">
+                    {% if target_user.last_login %}
+                        <i class="fas fa-sign-in-alt me-2 text-info"></i>
+                        {{ target_user.last_login|date:"F j, Y" }}
+                        <small class="d-block text-muted mt-1">{{ target_user.last_login|timesince }} ago</small>
+                    {% else %}
+                        <i class="fas fa-times me-2 text-muted"></i>
+                        <span class="text-muted">Never logged in</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Last Activity</div>
+                <div class="detail-value">
+                    {% if target_user.last_active %}
+                        <i class="fas fa-clock me-2 text-warning"></i>
+                        {{ target_user.last_active|timesince }} ago
+                    {% else %}
+                        <i class="fas fa-times me-2 text-muted"></i>
+                        <span class="text-muted">No activity recorded</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if target_user.phone %}
+            <div class="detail-item">
+                <div class="detail-label">Phone Number</div>
+                <div class="detail-value">
+                    <i class="fas fa-phone me-2 text-primary"></i>
+                    {{ target_user.phone }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if target_user.location %}
+            <div class="detail-item">
+                <div class="detail-label">Location</div>
+                <div class="detail-value">
+                    <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                    {{ target_user.location }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if target_user.role == 'service_manager' and target_user.organization %}
+            <div class="detail-item">
+                <div class="detail-label">Organization</div>
+                <div class="detail-value">
+                    <i class="fas fa-building me-2 text-secondary"></i>
+                    {{ target_user.organization }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if target_user.verified_by %}
+            <div class="detail-item">
+                <div class="detail-label">Verified By</div>
+                <div class="detail-value">
+                    <i class="fas fa-user-check me-2 text-success"></i>
+                    {{ target_user.verified_by.get_display_name }}
+                    {% if target_user.verification_notes %}
+                        <small class="d-block text-muted mt-1">{{ target_user.verification_notes }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Enhanced Confirmation Section -->
+    <div class="confirmation-section" id="confirmation">
+        <div class="confirmation-steps">
+            <div class="step active">1</div>
+            <div class="step active">2</div>
+            <div class="step">3</div>
+        </div>
+
+        <h3 class="mb-4 text-danger fw-bold">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Final Confirmation Required
+        </h3>
+
+        <p class="mb-4 text-lg">
+            You are about to deactivate the account for 
+            <strong class="text-warning">{{ target_user.get_display_name }}</strong>. 
+            This action will prevent them from accessing CommuMap.
+        </p>
+
+        <div class="confirmation-checkbox">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="confirmDeactivate" class="custom-checkbox" onchange="toggleDeactivateButton()">
+                <label for="confirmDeactivate" class="checkbox-label">
+                    I understand the consequences and confirm this account deactivation
+                </label>
+            </div>
+        </div>
+
+        <form method="post" class="d-inline" id="deactivationForm">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger" id="deactivateBtn" disabled>
+                    <i class="fas fa-user-times"></i>
+                    Deactivate Account
+                </button>
+                
+                <a href="{% url 'console:user_edit' target_user.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i>
+                    Edit Instead
+                </a>
+                
+                <a href="{% url 'console:users' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<button class="floating-action" onclick="scrollToTop()" title="Scroll to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<script>
+// Enhanced JavaScript functionality
+function toggleDeactivateButton() {
+    const checkbox = document.getElementById('confirmDeactivate');
+    const deactivateBtn = document.getElementById('deactivateBtn');
+    const step3 = document.querySelector('.step:last-child');
+    
+    deactivateBtn.disabled = !checkbox.checked;
+    
+    if (checkbox.checked) {
+        step3.classList.add('active');
+        updateProgress(100);
+    } else {
+        step3.classList.remove('active');
+        updateProgress(75);
+    }
+}
+
+function updateProgress(width) {
+    const progressBar = document.querySelector('.progress-bar');
+    progressBar.style.width = width + '%';
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Scroll indicator functionality
+function updateScrollIndicator() {
+    const sections = ['header', 'impact', 'details', 'confirmation'];
+    const scrollPosition = window.scrollY + window.innerHeight / 2;
+    
+    sections.forEach((sectionId, index) => {
+        const section = document.getElementById(sectionId);
+        const dot = document.querySelector(`[data-section="${sectionId}"]`);
+        
+        if (section && dot) {
+            const sectionTop = section.offsetTop;
+            const sectionBottom = sectionTop + section.offsetHeight;
+            
+            if (scrollPosition >= sectionTop && scrollPosition <= sectionBottom) {
+                document.querySelectorAll('.scroll-dot').forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+            }
+        }
+    });
+}
+
+// Scroll to section on dot click
+document.querySelectorAll('.scroll-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        const sectionId = dot.dataset.section;
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+
+// Enhanced form submission with better UX
+document.getElementById('deactivationForm').addEventListener('submit', function(e) {
+    const userName = "{{ target_user.get_display_name|escapejs }}";
+    const userEmail = "{{ target_user.email|escapejs }}";
+    
+    if (!confirm(`🚨 FINAL CONFIRMATION\n\nYou are about to deactivate:\n• Name: ${userName}\n• Email: ${userEmail}\n\nThis will immediately prevent them from logging in.\n\nProceed with deactivation?`)) {
+        e.preventDefault();
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('deactivateBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    submitBtn.disabled = true;
+    
+    // Add a small delay to show the loading state
+    setTimeout(() => {
+        // The form will submit naturally
+    }, 500);
+});
+
+// Initialize scroll indicator
+window.addEventListener('scroll', updateScrollIndicator);
+window.addEventListener('load', updateScrollIndicator);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Escape key to cancel
+    if (e.key === 'Escape') {
+        window.location.href = "{% url 'console:users' %}";
+    }
+    
+    // Ctrl/Cmd + Enter to confirm (only if checkbox is checked)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const checkbox = document.getElementById('confirmDeactivate');
+        const deactivateBtn = document.getElementById('deactivateBtn');
+        
+        if (checkbox.checked && !deactivateBtn.disabled) {
+            deactivateBtn.click();
+        }
+    }
+});
+
+// Initialize progress bar
+updateProgress(75);
+
+// Add subtle animations on scroll
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const parallax = document.querySelector('.deactivation-header');
+    const speed = scrolled * 0.5;
+    
+    if (parallax) {
+        parallax.style.transform = `translateY(${speed}px)`;
+    }
+});
+</script>
+{% endblock %} 

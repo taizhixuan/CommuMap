@@ -1,0 +1,615 @@
+{% extends 'base.html' %}
+
+{% block title %}Service Manager Dashboard - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Dashboard Styling */
+    .dashboard-container {
+        min-height: calc(100vh - 200px);
+        padding-top: 3rem;
+        padding-bottom: 4rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem 0;
+    }
+    
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .dashboard-subtitle {
+        color: #64748b;
+        font-size: 1.125rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* Enhanced KPI Cards */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+    
+    .kpi-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 
+            0 10px 25px rgba(102, 126, 234, 0.1),
+            0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+            0 20px 40px rgba(102, 126, 234, 0.15),
+            0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .kpi-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+        background: transparent !important;
+        background-image: none !important;
+        background-clip: border-box !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: #4b5563 !important;
+        text-fill-color: #4b5563 !important;
+        color: #4b5563 !important;
+    }
+    
+    /* Force remove purple from all dashboard icons */
+    .dashboard-container .kpi-icon,
+    .dashboard-container .quick-action-btn i,
+    .dashboard-container .section-title i,
+    .dashboard-container i.fa,
+    .dashboard-container i.fas,
+    .dashboard-container .fa,
+    .dashboard-container .fas {
+        background: transparent !important;
+        background-image: none !important;
+        background-clip: border-box !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: #4b5563 !important;
+        color: #4b5563 !important;
+        text-fill-color: #4b5563 !important;
+    }
+    
+    .kpi-number {
+        font-size: 3rem;
+        font-weight: 900;
+        margin: 0.75rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+    
+    .kpi-label {
+        font-size: 1rem;
+        color: #64748b;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Status Chips */
+    .status-chip {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-open { 
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+    .status-closed { 
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    .status-temp_closed { 
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    .status-full { 
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+    }
+    .status-limited { 
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: white;
+    }
+    
+    /* Quick Actions Section */
+    .quick-actions-section {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .section-title::before {
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: unset !important;
+        background-clip: unset !important;
+        color: #64748b !important;
+    }
+    
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        background: white;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+        border-radius: 1rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quick-action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        transition: left 0.3s ease;
+        z-index: 0;
+    }
+    
+    .quick-action-btn:hover::before {
+        left: 0;
+    }
+    
+    .quick-action-btn:hover {
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.25);
+    }
+    
+    .quick-action-btn i,
+    .quick-action-btn span {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .quick-action-btn.urgent {
+        border-color: #f59e0b;
+    }
+    
+    .quick-action-btn.urgent::before {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    
+    /* Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 3rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Recent Services Section */
+    .recent-services-section {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .service-card {
+        background: #f8fafc;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .service-card:last-child {
+        margin-bottom: 0;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+    
+    .service-header {
+        display: flex;
+        justify-content: between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .service-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+    
+    .service-category {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .service-description {
+        color: #475569;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    /* Capacity Bar */
+    .capacity-section {
+        margin-bottom: 1rem;
+    }
+    
+    .capacity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .capacity-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .capacity-numbers {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .capacity-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .capacity-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        position: relative;
+    }
+    
+    .capacity-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .capacity-low { 
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+    .capacity-medium { 
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    .capacity-high { 
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    /* Notifications Panel */
+    .notifications-panel {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.05),
+            0 4px 10px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        height: fit-content;
+    }
+    
+    .notification-item {
+        background: #f8fafc;
+        border-left: 4px solid #667eea;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-radius: 0 0.75rem 0.75rem 0;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #667eea;
+    }
+    
+    .notification-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .notification-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .notification-unread {
+        border-left-color: #ef4444;
+        background: linear-gradient(135deg, #fef7f7, #fef2f2);
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .notification-message {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    .notification-time {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+        
+        .dashboard-title {
+            font-size: 2rem;
+        }
+        
+        .kpi-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .kpi-card {
+            padding: 1.5rem;
+        }
+        
+        .kpi-number {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-user-cog" style="color: #6b7280; margin-right: 0.5rem;"></i>
+                Service Manager Dashboard
+            </h1>
+            <p class="dashboard-subtitle">
+                Welcome back! Here's an overview of your services and recent activity.
+            </p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">📊</div>
+                <div class="kpi-number">{{ total_services }}</div>
+                <div class="kpi-label">Total Services</div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">✅</div>
+                <div class="kpi-number">{{ open_services }}</div>
+                <div class="kpi-label">Currently Open</div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">⚠️</div>
+                <div class="kpi-number">{{ services_near_capacity }}</div>
+                <div class="kpi-label">Near Capacity</div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">⭐</div>
+                <div class="kpi-number">{{ avg_rating|floatformat:1 }}</div>
+                <div class="kpi-label">Average Rating</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+            <h2 class="section-title">
+                🚀 Quick Actions
+            </h2>
+            <div class="quick-actions-grid">
+                <a href="{% url 'manager:service_create' %}" class="quick-action-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add New Service</span>
+                </a>
+                <a href="{% url 'manager:services' %}" class="quick-action-btn">
+                    <i class="fas fa-list"></i>
+                    <span>Manage Services</span>
+                </a>
+                <a href="{% url 'manager:services' %}?needs_attention=1" class="quick-action-btn urgent">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Services Needing Attention</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Recent Services -->
+            <div class="recent-services-section">
+                <h2 class="section-title">
+                    📋 Recent Services
+                </h2>
+                {% if recent_services %}
+                    {% for service in recent_services %}
+                        <div class="service-card">
+                            <div class="service-header">
+                                <div>
+                                    <h3 class="service-title">{{ service.name }}</h3>
+                                    <p class="service-category">{{ service.category.name }}</p>
+                                </div>
+                                <span class="status-chip status-{{ service.current_status }}">
+                                    {{ service.get_current_status_display }}
+                                </span>
+                            </div>
+                            
+                            <p class="service-description">{{ service.short_description|truncatewords:20 }}</p>
+                            
+                            {% if service.max_capacity %}
+                                <div class="capacity-section">
+                                    <div class="capacity-header">
+                                        <span class="capacity-label">Capacity</span>
+                                        <span class="capacity-numbers">{{ service.current_capacity }}/{{ service.max_capacity }}</span>
+                                    </div>
+                                    <div class="capacity-bar">
+                                        {% with percentage=service.capacity_percentage %}
+                                            <div class="capacity-fill {% if percentage < 50 %}capacity-low{% elif percentage < 80 %}capacity-medium{% else %}capacity-high{% endif %}" 
+                                                 style="width: {{ percentage }}%"></div>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div style="margin-top: 1rem;">
+                                <a href="{% url 'manager:service_status' service.pk %}" 
+                                   class="quick-action-btn" 
+                                   style="padding: 0.5rem 1rem; font-size: 0.875rem; display: inline-flex;">
+                                    <i class="fas fa-cogs"></i>
+                                    <span>Manage</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 3rem; color: #64748b;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                        <h3 style="margin-bottom: 0.5rem;">No services yet</h3>
+                        <p>Create your first service to get started!</p>
+                        <a href="{% url 'manager:service_create' %}" class="quick-action-btn" style="margin-top: 1rem;">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Your First Service</span>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Notifications Panel -->
+            <div class="notifications-panel">
+                <h2 class="section-title">
+                    🔔 Recent Notifications
+                </h2>
+                {% if recent_notifications %}
+                    {% for notification in recent_notifications %}
+                        <div class="notification-item {% if not notification.is_read %}notification-unread{% endif %}">
+                            <div class="notification-title">{{ notification.title }}</div>
+                            <div class="notification-message">{{ notification.message|truncatewords:15 }}</div>
+                            <div class="notification-time">{{ notification.created_at|timesince }} ago</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🔔</div>
+                        <p>No notifications</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

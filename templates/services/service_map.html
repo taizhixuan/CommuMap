@@ -1,0 +1,599 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Service Map - CommuMap{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    /* Ensure proper page layout */
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    main {
+        flex: 1;
+    }
+
+         #map { 
+         height: calc(100vh - 240px); 
+         width: 100%; 
+         border-radius: 20px;
+         box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+         min-height: 500px;
+         border: 2px solid rgba(255,255,255,0.2);
+         position: relative;
+         overflow: hidden;
+     }
+    
+    .map-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 20px;
+        margin-bottom: 40px;
+        min-height: calc(100vh - 180px);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .map-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 20px 30px;
+        margin-bottom: 20px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .controls-panel {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .search-box {
+        flex: 1;
+        min-width: 300px;
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 12px 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 25px;
+        font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+    
+    .search-input:focus {
+        border-color: #667eea;
+    }
+    
+    .emergency-btn {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        animation: pulse 2s infinite;
+        transition: all 0.3s ease;
+    }
+    
+    .emergency-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+    
+    .emergency-btn.active {
+        background: linear-gradient(135deg, #dc2626, #991b1b);
+        animation: none;
+    }
+    
+    .category-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .category-chip {
+        padding: 8px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 20px;
+        background: white;
+        color: #6b7280;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .category-chip.active {
+        background: #667eea;
+        color: white;
+        border-color: #5a6fd8;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    
+    /* Enhanced Map Overlay */
+    .map-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        z-index: 1000;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .map-info {
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+    }
+    
+    /* Custom Map Marker Styles */
+    .service-marker {
+        background: none !important;
+        border: none !important;
+    }
+    
+    .service-marker div {
+        animation: markerPulse 3s infinite;
+    }
+    
+    @keyframes markerPulse {
+        0%, 100% {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        50% {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 0 8px rgba(255,255,255,0.3);
+        }
+    }
+    
+    /* Enhanced Popup Styles */
+    .leaflet-popup-content-wrapper {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+    }
+    
+    .leaflet-popup-content {
+        margin: 16px !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    }
+    
+    .leaflet-popup-tip {
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        #map {
+            height: calc(100vh - 280px);
+            min-height: 450px;
+        }
+        
+        .map-container {
+            margin-bottom: 30px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #map {
+            height: calc(100vh - 320px);
+            min-height: 400px;
+            border-radius: 16px;
+        }
+        
+        .map-container {
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .map-header {
+            padding: 16px 20px;
+            border-radius: 12px;
+        }
+        
+        .map-header h1 {
+            font-size: 1.8rem !important;
+        }
+        
+        .map-header p {
+            font-size: 1rem !important;
+        }
+        
+        .controls-panel {
+            padding: 12px 16px;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 10px;
+        }
+        
+        .search-box {
+            min-width: 100%;
+        }
+        
+        .category-filters {
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .category-chip {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .map-overlay {
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        #map {
+            height: calc(100vh - 300px);
+            min-height: 350px;
+        }
+        
+        .map-container {
+            padding: 12px;
+        }
+        
+        .emergency-btn {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-container">
+    <div class="map-header">
+        <h1 style="margin: 0 0 10px 0; font-size: 2.5rem;">Interactive Service Map</h1>
+        <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">Discover community services near you in real-time</p>
+    </div>
+    
+         <div class="controls-panel">
+         <div class="search-box">
+             <input type="text" id="searchInput" class="search-input" 
+                    placeholder="Search for services or locations..." 
+                    onkeyup="debounceSearch(this.value)"
+                    onkeypress="handleSearchKeyPress(event)">
+             <button class="search-btn-map" onclick="performSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #667eea; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                 <i class="fas fa-search"></i>
+             </button>
+         </div>
+         
+         <button class="emergency-btn" id="emergencyBtn" onclick="toggleEmergencyMode()">
+             <i class="fas fa-exclamation-triangle"></i>
+             <span class="hidden md:inline ml-2">HELP ME NOW</span>
+         </button>
+     </div>
+    
+    <div class="controls-panel">
+        <div class="category-filters">
+            <div class="category-chip active" data-category="" onclick="toggleCategory(this, '')">
+                <i class="fas fa-star"></i> All
+            </div>
+            <div class="category-chip" data-category="healthcare" onclick="toggleCategory(this, 'healthcare')">
+                <i class="fas fa-hospital"></i> Healthcare
+            </div>
+            <div class="category-chip" data-category="food" onclick="toggleCategory(this, 'food')">
+                <i class="fas fa-utensils"></i> Food
+            </div>
+            <div class="category-chip" data-category="shelter" onclick="toggleCategory(this, 'shelter')">
+                <i class="fas fa-home"></i> Shelter
+            </div>
+            <div class="category-chip" data-category="education" onclick="toggleCategory(this, 'education')">
+                <i class="fas fa-book"></i> Education
+            </div>
+            <div class="category-chip" data-category="emergency" onclick="toggleCategory(this, 'emergency')">
+                <i class="fas fa-ambulance"></i> Emergency
+            </div>
+            <div class="category-chip" data-category="social" onclick="toggleCategory(this, 'social')">
+                <i class="fas fa-users"></i> Social
+            </div>
+        </div>
+    </div>
+    
+    <div id="map" style="flex: 1;">
+        <div class="map-overlay">
+            <div class="map-info">
+                <div style="font-weight: 600; margin-bottom: 4px;">🗺️ Interactive Map</div>
+                <div>Click markers for details</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let map;
+let markers = [];
+let userLocationMarker = null;
+let userLocation = null;
+let isEmergencyMode = false;
+let searchTimeout;
+
+// Services from database
+const services = [
+    {% for service in services %}
+    {
+        id: '{{ service.id }}',
+        name: '{{ service.name|escapejs }}',
+        category: '{{ service.category.category_type }}',
+        lat: {{ service.latitude }},
+        lng: {{ service.longitude }},
+        status: '{{ service.current_status }}',
+        capacity: { 
+            current: {{ service.current_capacity|default:0 }}, 
+            max: {{ service.max_capacity|default:0 }} 
+        },
+        isEmergency: {{ service.is_emergency_service|yesno:"true,false" }},
+        phone: '{{ service.phone|escapejs }}',
+        address: '{{ service.address|escapejs }}',
+        description: '{{ service.short_description|escapejs }}'
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Initialize map
+function initMap() {
+    // Center on Selangor, Malaysia
+    map = L.map('map').setView([3.1478, 101.6953], 11);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    getUserLocation();
+    loadServices();
+}
+
+function getUserLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                
+                if (userLocationMarker) {
+                    map.removeLayer(userLocationMarker);
+                }
+                
+                userLocationMarker = L.marker([userLocation.lat, userLocation.lng], {
+                    icon: L.divIcon({
+                        html: '<div style="background: #3b82f6; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><i class="fas fa-user" style="font-size: 8px;"></i></div>',
+                        className: 'user-location-marker',
+                        iconSize: [20, 20]
+                    })
+                }).addTo(map);
+                
+                userLocationMarker.bindPopup('<b>Your Location</b>');
+            },
+            function(error) {
+                console.log('Geolocation error:', error);
+            }
+        );
+    }
+}
+
+function loadServices() {
+    clearMarkers();
+    
+    services.forEach(service => {
+        if (shouldShowService(service)) {
+            addServiceMarker(service);
+        }
+    });
+}
+
+function shouldShowService(service) {
+    if (isEmergencyMode && !service.isEmergency) {
+        return false;
+    }
+    
+    const activeCategories = getActiveCategories();
+    if (activeCategories.length > 0 && !activeCategories.includes(service.category)) {
+        return false;
+    }
+    
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    if (searchQuery && !service.name.toLowerCase().includes(searchQuery)) {
+        return false;
+    }
+    
+    return true;
+}
+
+function addServiceMarker(service) {
+    const icon = getServiceIcon(service);
+    
+    const marker = L.marker([service.lat, service.lng], {
+        icon: L.divIcon({
+            html: icon,
+            className: 'service-marker',
+            iconSize: [36, 36]
+        })
+    });
+    
+    const popupContent = createPopupContent(service);
+    marker.bindPopup(popupContent, { maxWidth: 300 });
+    
+    marker.addTo(map);
+    markers.push(marker);
+}
+
+function getServiceIcon(service) {
+    const categoryColors = {
+        healthcare: '#ef4444',
+        shelter: '#10b981',
+        food: '#f59e0b',
+        education: '#8b5cf6',
+        emergency: '#3b82f6',
+        social: '#06b6d4'
+    };
+    
+    const categoryIcons = {
+        healthcare: 'fa-hospital',
+        shelter: 'fa-home',
+        food: 'fa-utensils',
+        education: 'fa-book',
+        emergency: 'fa-ambulance',
+        social: 'fa-users'
+    };
+    
+    const color = categoryColors[service.category] || '#6b7280';
+    const icon = categoryIcons[service.category] || 'fa-map-marker';
+    
+    return `<div style="background: ${color}; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 6px 20px rgba(0,0,0,0.4); font-size: 14px; transition: transform 0.2s ease; cursor: pointer;" 
+                onmouseover="this.style.transform='scale(1.1)'" 
+                onmouseout="this.style.transform='scale(1)'">
+                <i class="fas ${icon}"></i>
+            </div>`;
+}
+
+function createPopupContent(service) {
+    const capacityPercentage = service.capacity.max > 0 ? 
+        (service.capacity.current / service.capacity.max) * 100 : 0;
+    
+    return `
+        <div>
+            <div style="font-weight: 600; margin-bottom: 8px;">${service.name}</div>
+            <div style="background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin-bottom: 8px;">${service.status.toUpperCase()}</div>
+            ${service.capacity.max > 0 ? `
+            <div style="margin-bottom: 8px; font-size: 12px;">
+                Capacity: ${service.capacity.current}/${service.capacity.max}
+                <div style="width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 4px;">
+                    <div style="height: 100%; background: #10b981; border-radius: 3px; width: ${capacityPercentage}%;"></div>
+                </div>
+            </div>
+            ` : ''}
+            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${service.description}</div>
+            <div style="font-size: 11px; color: #9ca3af;">${service.address}</div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button onclick="viewServiceDetails('${service.id}')" style="flex: 1; padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                    View Details
+                </button>
+                ${service.phone ? `
+                <button onclick="callService('${service.phone}')" style="padding: 6px 12px; background: #f3f4f6; color: #374151; border: none; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                    <i class="fas fa-phone"></i>
+                </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function clearMarkers() {
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+}
+
+function toggleEmergencyMode() {
+    const btn = document.getElementById('emergencyBtn');
+    isEmergencyMode = !isEmergencyMode;
+    
+    if (isEmergencyMode) {
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-times"></i><span class="hidden md:inline ml-2">EXIT EMERGENCY</span>';
+        btn.style.background = 'linear-gradient(135deg, #dc2626, #991b1b)';
+        btn.style.animation = 'none';
+    } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span class="hidden md:inline ml-2">HELP ME NOW</span>';
+        btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        btn.style.animation = 'pulse 2s infinite';
+    }
+    
+    loadServices();
+}
+
+function toggleCategory(element, category) {
+    // Remove active from all category chips
+    document.querySelectorAll('.category-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    
+    // Add active to clicked chip
+    element.classList.add('active');
+    
+    loadServices();
+}
+
+function getActiveCategories() {
+    const activeChips = document.querySelectorAll('.category-chip.active');
+    const categories = [];
+    activeChips.forEach(chip => {
+        const category = chip.dataset.category;
+        if (category) categories.push(category);
+    });
+    return categories;
+}
+
+ function debounceSearch(query) {
+     clearTimeout(searchTimeout);
+     searchTimeout = setTimeout(() => {
+         loadServices();
+     }, 300);
+ }
+ 
+ function handleSearchKeyPress(event) {
+     if (event.key === 'Enter') {
+         event.preventDefault();
+         performSearch();
+     }
+ }
+ 
+ function performSearch() {
+     const query = document.getElementById('searchInput').value.trim();
+     if (query) {
+         loadServices();
+     }
+ }
+
+function viewServiceDetails(serviceId) {
+    window.location.href = `/services/${serviceId}/`;
+}
+
+function callService(phone) {
+    if (phone) {
+        window.location.href = `tel:${phone}`;
+    }
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endblock %} 

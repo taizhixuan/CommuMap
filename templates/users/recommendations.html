@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recommendations - CommuMap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recommendations-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .header-section {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .recommendation-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .service-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        border-color: #667eea;
+    }
+    
+    .service-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .service-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    
+    .service-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .service-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 5px 0;
+        line-height: 1.3;
+    }
+    
+    .service-category {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #f3f4f6;
+        color: #6b7280;
+        border-radius: 12px;
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .service-description {
+        color: #6b7280;
+        font-size: 13px;
+        margin: 0 0 15px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .service-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #9ca3af;
+    }
+    
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .stars {
+        color: #fbbf24;
+    }
+    
+    .distance-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .service-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-action {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5a6fd8;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+    
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        color: #374151;
+        text-decoration: none;
+    }
+    
+    .recommendation-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .trending-badge {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+    }
+    
+    .nearby-badge {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+    
+    .personal-badge {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+    
+    .filters-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-chips {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-chip {
+        padding: 6px 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 20px;
+        background: white;
+        color: #6b7280;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-chip.active {
+        background: #667eea;
+        color: white;
+        border-color: #5a6fd8;
+    }
+    
+    @media (max-width: 768px) {
+        .services-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-chips {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recommendations-container">
+    <!-- Header -->
+    <div class="header-section">
+        <h1 style="margin: 0 0 10px 0; font-size: 2.5rem;">
+            <i class="fas fa-lightbulb"></i> Recommendations for You
+        </h1>
+        <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">Discover services tailored to your interests and needs</p>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-section">
+        <h3 style="margin: 0 0 15px 0; font-size: 1rem; color: #374151;">Filter Recommendations</h3>
+        <div class="filter-chips">
+            <div class="filter-chip active" data-filter="all">
+                <i class="fas fa-star"></i> All
+            </div>
+            <div class="filter-chip" data-filter="personalized">
+                <i class="fas fa-user"></i> For You
+            </div>
+            <div class="filter-chip" data-filter="trending">
+                <i class="fas fa-fire"></i> Trending
+            </div>
+            <div class="filter-chip" data-filter="nearby">
+                <i class="fas fa-map-marker-alt"></i> Nearby
+            </div>
+            <div class="filter-chip" data-filter="popular">
+                <i class="fas fa-heart"></i> Popular
+            </div>
+        </div>
+    </div>
+    
+    <!-- Personalized Recommendations -->
+    {% if personalized_recommendations %}
+    <div class="recommendation-section" data-category="personalized">
+        <h2 class="section-title">
+            <i class="fas fa-user-circle" style="color: #43e97b;"></i>
+            Personalized for You
+        </h2>
+        <p class="section-subtitle">Based on your bookmarks, searches, and activity patterns</p>
+        
+        <div class="services-grid">
+            {% for service in personalized_recommendations %}
+            <div class="service-card">
+                <div class="recommendation-badge personal-badge">For You</div>
+                <div class="service-header">
+                    <div class="service-icon" style="background: {% cycle '#ef4444' '#10b981' '#f59e0b' '#8b5cf6' '#3b82f6' %};">
+                        <i class="fas fa-{% if service.category.slug == 'healthcare' %}hospital{% elif service.category.slug == 'shelter' %}home{% elif service.category.slug == 'food' %}utensils{% elif service.category.slug == 'education' %}book{% elif service.category.slug == 'emergency' %}ambulance{% else %}users{% endif %}"></i>
+                    </div>
+                    <div class="service-info">
+                        <h3 class="service-name">{{ service.name }}</h3>
+                        <span class="service-category">{{ service.category.name }}</span>
+                    </div>
+                </div>
+                
+                <p class="service-description">{{ service.short_description|default:service.description|truncatechars:100 }}</p>
+                
+                <div class="service-meta">
+                    <div class="rating-display">
+                        <div class="stars">★★★★☆</div>
+                        <span>4.2 ({{ service.review_count|default:0 }})</span>
+                    </div>
+                    <div class="distance-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ service.distance|default:"2.3" }} km</span>
+                    </div>
+                </div>
+                
+                <div class="service-actions">
+                    <a href="{% url 'services:detail' service.pk %}" class="btn-action btn-primary">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <button onclick="toggleBookmark({{ service.pk }})" class="btn-action btn-secondary">
+                        <i class="fas fa-bookmark"></i> Save
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Trending Services -->
+    <div class="recommendation-section" data-category="trending">
+        <h2 class="section-title">
+            <i class="fas fa-fire" style="color: #f093fb;"></i>
+            Trending Services
+        </h2>
+        <p class="section-subtitle">Most popular services in your area this week</p>
+        
+        <div class="services-grid">
+            {% for service in trending_services %}
+            <div class="service-card">
+                <div class="recommendation-badge trending-badge">Trending</div>
+                <div class="service-header">
+                    <div class="service-icon" style="background: {% cycle '#10b981' '#f59e0b' '#8b5cf6' '#3b82f6' '#ef4444' %};">
+                        <i class="fas fa-{% if service.category.slug == 'healthcare' %}hospital{% elif service.category.slug == 'shelter' %}home{% elif service.category.slug == 'food' %}utensils{% elif service.category.slug == 'education' %}book{% elif service.category.slug == 'emergency' %}ambulance{% else %}users{% endif %}"></i>
+                    </div>
+                    <div class="service-info">
+                        <h3 class="service-name">{{ service.name }}</h3>
+                        <span class="service-category">{{ service.category.name }}</span>
+                    </div>
+                </div>
+                
+                <p class="service-description">{{ service.short_description|default:service.description|truncatechars:100 }}</p>
+                
+                <div class="service-meta">
+                    <div class="rating-display">
+                        <div class="stars">★★★★★</div>
+                        <span>4.8 ({{ service.review_count|default:0 }})</span>
+                    </div>
+                    <div class="distance-info">
+                        <i class="fas fa-trending-up"></i>
+                        <span>+{{ service.trending_score|default:15 }}% this week</span>
+                    </div>
+                </div>
+                
+                <div class="service-actions">
+                    <a href="{% url 'services:detail' service.pk %}" class="btn-action btn-primary">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <button onclick="toggleBookmark({{ service.pk }})" class="btn-action btn-secondary">
+                        <i class="fas fa-bookmark"></i> Save
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Nearby Services -->
+    <div class="recommendation-section" data-category="nearby">
+        <h2 class="section-title">
+            <i class="fas fa-map-marker-alt" style="color: #4facfe;"></i>
+            Near You
+        </h2>
+        <p class="section-subtitle">Services within 5km of your location</p>
+        
+        <div class="services-grid">
+            {% for service in nearby_services %}
+            <div class="service-card">
+                <div class="recommendation-badge nearby-badge">Nearby</div>
+                <div class="service-header">
+                    <div class="service-icon" style="background: {% cycle '#f59e0b' '#8b5cf6' '#3b82f6' '#ef4444' '#10b981' %};">
+                        <i class="fas fa-{% if service.category.slug == 'healthcare' %}hospital{% elif service.category.slug == 'shelter' %}home{% elif service.category.slug == 'food' %}utensils{% elif service.category.slug == 'education' %}book{% elif service.category.slug == 'emergency' %}ambulance{% else %}users{% endif %}"></i>
+                    </div>
+                    <div class="service-info">
+                        <h3 class="service-name">{{ service.name }}</h3>
+                        <span class="service-category">{{ service.category.name }}</span>
+                    </div>
+                </div>
+                
+                <p class="service-description">{{ service.short_description|default:service.description|truncatechars:100 }}</p>
+                
+                <div class="service-meta">
+                    <div class="rating-display">
+                        <div class="stars">★★★★☆</div>
+                        <span>4.5 ({{ service.review_count|default:0 }})</span>
+                    </div>
+                    <div class="distance-info">
+                        <i class="fas fa-walking"></i>
+                        <span>{{ service.distance|default:"1.2" }} km away</span>
+                    </div>
+                </div>
+                
+                <div class="service-actions">
+                    <a href="{% url 'services:detail' service.pk %}" class="btn-action btn-primary">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <button onclick="toggleBookmark({{ service.pk }})" class="btn-action btn-secondary">
+                        <i class="fas fa-bookmark"></i> Save
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Popular Services -->
+    <div class="recommendation-section" data-category="popular">
+        <h2 class="section-title">
+            <i class="fas fa-heart" style="color: #ef4444;"></i>
+            Community Favorites
+        </h2>
+        <p class="section-subtitle">Most bookmarked and highest-rated services</p>
+        
+        <div class="services-grid">
+            {% for service in popular_services %}
+            <div class="service-card">
+                <div class="recommendation-badge">Popular</div>
+                <div class="service-header">
+                    <div class="service-icon" style="background: {% cycle '#8b5cf6' '#3b82f6' '#ef4444' '#10b981' '#f59e0b' %};">
+                        <i class="fas fa-{% if service.category.slug == 'healthcare' %}hospital{% elif service.category.slug == 'shelter' %}home{% elif service.category.slug == 'food' %}utensils{% elif service.category.slug == 'education' %}book{% elif service.category.slug == 'emergency' %}ambulance{% else %}users{% endif %}"></i>
+                    </div>
+                    <div class="service-info">
+                        <h3 class="service-name">{{ service.name }}</h3>
+                        <span class="service-category">{{ service.category.name }}</span>
+                    </div>
+                </div>
+                
+                <p class="service-description">{{ service.short_description|default:service.description|truncatechars:100 }}</p>
+                
+                <div class="service-meta">
+                    <div class="rating-display">
+                        <div class="stars">★★★★★</div>
+                        <span>4.9 ({{ service.review_count|default:0 }})</span>
+                    </div>
+                    <div class="distance-info">
+                        <i class="fas fa-users"></i>
+                        <span>{{ service.bookmark_count|default:45 }} bookmarks</span>
+                    </div>
+                </div>
+                
+                <div class="service-actions">
+                    <a href="{% url 'services:detail' service.pk %}" class="btn-action btn-primary">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <button onclick="toggleBookmark({{ service.pk }})" class="btn-action btn-secondary">
+                        <i class="fas fa-bookmark"></i> Save
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Empty State if no recommendations -->
+    {% if not personalized_recommendations and not trending_services and not nearby_services and not popular_services %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-lightbulb"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; color: #374151;">
+            Building Your Recommendations
+        </h2>
+        <p style="margin-bottom: 25px; max-width: 400px; margin-left: auto; margin-right: auto;">
+            Start exploring services and bookmarking your favorites to get personalized recommendations!
+        </p>
+        <a href="{% url 'services:map' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search"></i> Discover Services
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const sections = document.querySelectorAll('.recommendation-section');
+    
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            // Remove active class from all chips
+            filterChips.forEach(c => c.classList.remove('active'));
+            // Add active class to clicked chip
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            // Show/hide sections based on filter
+            sections.forEach(section => {
+                if (filter === 'all') {
+                    section.style.display = 'block';
+                } else {
+                    const category = section.dataset.category;
+                    section.style.display = category === filter ? 'block' : 'none';
+                }
+            });
+        });
+    });
+});
+
+// Bookmark toggle functionality
+function toggleBookmark(serviceId) {
+    fetch(`/api/services/bookmark/${serviceId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button text/icon
+            const button = event.target.closest('button');
+            if (data.bookmarked) {
+                button.innerHTML = '<i class="fas fa-bookmark"></i> Saved';
+                button.style.background = '#10b981';
+                button.style.color = 'white';
+            } else {
+                button.innerHTML = '<i class="fas fa-bookmark"></i> Save';
+                button.style.background = '#f3f4f6';
+                button.style.color = '#6b7280';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Card hover animations
+document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+</script>
+{% endblock %} 
