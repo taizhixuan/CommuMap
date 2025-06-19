@@ -263,7 +263,7 @@ The architecture implements a sophisticated layered design with microservice pri
 • System outputs generate interactive PostGIS maps filtered service lists emergency notifications and capacity visualizations
 • RESTful API outputs support mobile integration third-party consumption and webhook-based external system communication
 • Administrative outputs deliver comprehensive analytics user role management system health monitoring and audit trails
-• Automated notification outputs provide email alerts SMS notifications dashboard updates and emergency broadcast messaging
+• Data export outputs enable CSV downloads GeoJSON spatial data bulk reporting and integration feeds for external partner systems
 
 The platform processes diverse input streams from multiple stakeholder types through web interfaces, mobile APIs, and automated data feeds. Outputs are delivered through responsive web dashboards, RESTful endpoints, real-time notifications, and comprehensive reporting systems, ensuring seamless information flow between community members, service providers, and administrative oversight while maintaining data integrity and accessibility compliance.
 
