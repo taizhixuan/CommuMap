@@ -60,16 +60,40 @@ python manage.py runserver
 
 #### Access the Application
 - **Main Application**: http://127.0.0.1:8000/
-- **Admin Panel**: http://127.0.0.1:8000/admin/
 
-### 👤 User Access
+### 👤 Test Account Details
 
-#### Admin Access
-To create an admin account, run:
-```bash
-python create_admin.py
-```
+The database includes pre-populated test accounts for immediate evaluation. Use these credentials to test different user roles:
 
-#### Test Accounts
-The database includes pre-populated test data with various user roles for immediate testing.
+#### 🔐 Login Credentials
+
+**System Administrator**
+- **Email**: admin@commumap.com
+- **Password**: admin123
+- **Access**: Full system control, admin panel access
+
+**Regular User**
+- **Email**: usertesting@gmail.com
+- **Password**: user@123
+- **Access**: Service discovery, feedback submission, profile management
+
+**Service Manager**
+- **Email**: smtest@gmail.com
+- **Password**: manager@123
+- **Access**: Service creation/management, analytics, user feedback monitoring
+
+**Community Moderator**
+- **Email**: cmtest@gmail.com
+- **Password**: moderator@123
+- **Access**: Content moderation, comment management, user reports
+
+### 🔍 Testing Workflow
+
+1. **Access the Homepage**: Navigate to http://127.0.0.1:8000/
+2. **Test User Registration**: Create a new account to test signup process
+3. **Login with Test Accounts**: Use provided credentials to test different user roles
+4. **Service Discovery**: Browse and search for services as a regular user
+5. **Admin Features**: Log into admin panel with admin credentials
+6. **Role-specific Features**: Test manager and moderator dashboards
+7. **Responsive Design**: Test on different screen sizes
 
