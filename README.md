@@ -495,12 +495,3 @@ CommuMap was inspired by the need to:
 - Advance UN Sustainable Development Goals 10 and 11
 - Build more equitable and resilient communities
 
-### Contact & Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/CommuMap/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/CommuMap/discussions)
-- **Email**: support@commumap.com
-
----
-
-**Made with ❤️ for building more inclusive communities**
