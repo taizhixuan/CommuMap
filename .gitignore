@@ -151,7 +151,5 @@ Thumbs.db
 logs/
 *.log
 
-# Custom project files (you may want to adjust these)
-# Uncomment if you don't want to track certain files
-# uploads/
-# fixtures/ 
+
+docs/
